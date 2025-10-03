@@ -2112,7 +2112,8 @@ async def on_message(message):
 # SISTEMA AUTOMÁTICO DE NICKNAMES
 # ========================================
 
-async def update_nickname_for_roles(member):
+# FUNÇÃO DESABILITADA - CAUSAVA DUPLICAÇÕES
+async def update_nickname_for_roles_DISABLED(member):
     """Atualiza o nickname do membro baseado nos cargos que possui"""
     try:
         # Salvar nickname original se ainda não foi salvo (SEM prefixos)
@@ -2183,9 +2184,10 @@ async def update_nickname_for_roles(member):
 # Evento COMPLETAMENTE removido para evitar duplicações
 
 # Comando para atualizar nicknames manualmente
-@bot.command(name='updatenicks')
-@commands.has_permissions(administrator=True)
-async def update_nicks_command(ctx):
+# COMANDO DESABILITADO - CAUSAVA DUPLICAÇÕES
+# @bot.command(name='updatenicks')
+# @commands.has_permissions(administrator=True)
+async def update_nicks_command_DISABLED(ctx):
     """Atualiza os nicknames de todos os membros baseado nos cargos"""
     
     embed_start = discord.Embed(
@@ -2202,7 +2204,8 @@ async def update_nicks_command(ctx):
         if member.bot:
             continue
             
-        success = await update_nickname_for_roles(member)
+        # success = await update_nickname_for_roles_DISABLED(member)
+        success = False  # Desabilitado
         if success:
             updated_count += 1
         
@@ -2257,28 +2260,10 @@ async def addrole_command(ctx, cargo: discord.Role = None, usuario: discord.Memb
         await ctx.reply(embed=embed)
         return
     
-    # Verificar se o usuário já tem o cargo (BUSCA POR ID EXATO)
-    user_already_has_role = any(role.id == cargo.id for role in usuario.roles)
-    
-    if user_already_has_role:
-        embed = discord.Embed(
-            title="⚠️ Cargo Já Possui",
-            description=f"**{usuario.display_name}** já possui o cargo **{cargo.name}**!",
-            color=0xffaa00
-        )
-        embed.add_field(
-            name="👤 Usuário",
-            value=usuario.mention,
-            inline=True
-        )
-        embed.add_field(
-            name="🏷️ Cargo",
-            value=cargo.mention,
-            inline=True
-        )
-        embed.set_footer(text="Sistema de Cargos • Caos Hub")
-        await ctx.reply(embed=embed)
-        return
+    # DESABILITAR verificação de cargo duplicado - deixar hierarquia resolver
+    # user_already_has_role = any(role.id == cargo.id for role in usuario.roles)
+    # if user_already_has_role:
+    #     return
     
     # Verificar permissões de hierarquia
     if cargo.position >= ctx.author.top_role.position and not ctx.author.guild_permissions.administrator:
