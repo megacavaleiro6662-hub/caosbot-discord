@@ -2317,7 +2317,7 @@ async def addrole_command(ctx, cargo: discord.Role = None, usuario: discord.Memb
             if success:
                 prefix_applied = f"\n🏷️ **Prefixo aplicado:** `{CARGO_PREFIXES[cargo.id]}`"
         
-        # Embed de sucesso
+        # Embed de sucesso - VERSÃO SIMPLIFICADA
         embed = discord.Embed(
             title="✅ CARGO ADICIONADO COM SUCESSO",
             description=f"**{usuario.display_name}** agora possui o cargo **{cargo.name}**!",
@@ -2326,17 +2326,6 @@ async def addrole_command(ctx, cargo: discord.Role = None, usuario: discord.Memb
         embed.add_field(
             name="📋 Detalhes da Ação",
             value=f"**Usuário:** {usuario.mention}\n**Cargo adicionado:** {cargo.mention}\n**Moderador:** {ctx.author.mention}{prefix_applied}",
-            inline=False
-        )
-        
-        # Mostrar informações do cargo
-        cargo_info = f"**Nome:** {cargo.name}\n**Cor:** {cargo.color}\n**Membros com este cargo:** {len(cargo.members)}"
-        if cargo.id in CARGO_PREFIXES:
-            cargo_info += f"\n**Prefixo automático:** `{CARGO_PREFIXES[cargo.id]}`"
-        
-        embed.add_field(
-            name="🏷️ Informações do Cargo",
-            value=cargo_info,
             inline=False
         )
         
