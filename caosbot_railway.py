@@ -177,6 +177,18 @@ WARNINGS_FILE = "warnings_data.json"
 user_warnings = {}
 user_warnings_details = {}  # Detalhes das advertências: motivo, moderador, timestamp
 
+# Sistema de nicknames automáticos por cargo (configurado com IDs reais)
+CARGO_PREFIXES = {
+    # Cargos de moderação do servidor (IDs fornecidos pelo usuário)
+    1365633918593794079: "[ADM]",  # Administrador
+    1365634226254254150: "[STF]",  # Staff
+    1365633102973763595: "[MOD]",  # Moderador
+    1365631940434333748: "[SBM]",  # Sub Moderador
+}
+
+# Armazenar nicknames originais
+original_nicknames = {}
+
 def save_warnings_data():
     """Salva os dados das advertências em arquivo JSON"""
     try:
@@ -271,6 +283,7 @@ def is_sub_moderator_or_higher():
 message_history = defaultdict(lambda: deque(maxlen=5))  # Últimas 5 mensagens por usuário
 user_message_times = defaultdict(lambda: deque(maxlen=5))  # Timestamps das mensagens
 spam_warnings = defaultdict(int)  # Avisos de spam por usuário
+user_spam_level = defaultdict(int)  # Nível de spam progressivo (0=5 msgs, 1=4 msgs, 2=3 msgs)
 
 async def get_or_create_mute_role(guild):
     """Obtém ou cria o cargo de mute"""
@@ -866,473 +879,7 @@ async def radvall_error(ctx, error):
     if isinstance(error, commands.CheckFailure):
         await ctx.reply("❌ Você precisa ser **Sub Moderador** ou ter permissões de moderação para usar este comando!")
 
-@bot.command(name='seeadv')
-@is_sub_moderator_or_higher()
-async def seeadv_command(ctx):
-    """Mostra TODOS os usuários com advertências de forma ULTRA DETALHADA"""
-    
-    # DEBUG: Verificar se os cargos existem
-    cargo_adv1 = ctx.guild.get_role(ADV_CARGO_1_ID)
-    cargo_adv2 = ctx.guild.get_role(ADV_CARGO_2_ID)
-    cargo_adv3 = ctx.guild.get_role(ADV_CARGO_3_ID)
-    
-    print(f"🔍 DEBUG SEEADV:")
-    print(f"📋 ADV_CARGO_1_ID: {ADV_CARGO_1_ID} -> {cargo_adv1.name if cargo_adv1 else 'NÃO ENCONTRADO'}")
-    print(f"📋 ADV_CARGO_2_ID: {ADV_CARGO_2_ID} -> {cargo_adv2.name if cargo_adv2 else 'NÃO ENCONTRADO'}")
-    print(f"📋 ADV_CARGO_3_ID: {ADV_CARGO_3_ID} -> {cargo_adv3.name if cargo_adv3 else 'NÃO ENCONTRADO'}")
-    print(f"👥 Total de membros no servidor: {len(ctx.guild.members)}")
-    print(f"💾 Dados salvos: {len(user_warnings)} usuários")
-    
-    # Listas para organizar usuários por nível
-    adv1_users = []
-    adv2_users = []
-    adv3_users = []
-    
-    # Contador de debug
-    members_checked = 0
-    members_with_roles = 0
-    
-    # Verificar TODOS os usuários (incluindo dados salvos E cargos atuais)
-    all_users_to_check = set()
-    
-    # 1. Adicionar usuários dos dados salvos
-    for user_id, warnings in user_warnings.items():
-        if warnings > 0:
-            all_users_to_check.add(user_id)
-            print(f"📊 Dados salvos: Usuário {user_id} tem {warnings} advertências")
-    
-    # 2. Adicionar usuários com cargos ADV
-    for member in ctx.guild.members:
-        if member.bot:
-            continue
-            
-        members_checked += 1
-        
-        # Verificar cargos ADV que o usuário POSSUI
-        has_adv1 = cargo_adv1 and cargo_adv1 in member.roles
-        has_adv2 = cargo_adv2 and cargo_adv2 in member.roles
-        has_adv3 = cargo_adv3 and cargo_adv3 in member.roles
-        
-        # Se tem algum cargo ADV, adicionar à verificação
-        if has_adv1 or has_adv2 or has_adv3:
-            all_users_to_check.add(member.id)
-            members_with_roles += 1
-            print(f"🎯 {member.display_name}: ADV1={has_adv1}, ADV2={has_adv2}, ADV3={has_adv3}")
-    
-    print(f"📊 Membros verificados: {members_checked}")
-    print(f"🎯 Membros com cargos ADV: {members_with_roles}")
-    print(f"📋 Total de usuários para processar: {len(all_users_to_check)}")
-    
-    # Processar todos os usuários identificados
-    for user_id in all_users_to_check:
-        # Tentar obter o membro
-        member = ctx.guild.get_member(user_id)
-        if not member:
-            print(f"⚠️ Usuário {user_id} não encontrado no servidor")
-            continue
-        
-        # Verificar cargos ADV atuais
-        has_adv1 = cargo_adv1 and cargo_adv1 in member.roles
-        has_adv2 = cargo_adv2 and cargo_adv2 in member.roles
-        has_adv3 = cargo_adv3 and cargo_adv3 in member.roles
-        
-        # Se não tem nenhum cargo ADV E não tem dados salvos, pular
-        saved_warnings = user_warnings.get(user_id, 0)
-        if not (has_adv1 or has_adv2 or has_adv3) and saved_warnings == 0:
-            continue
-        
-        # Obter dados salvos do usuário
-        warning_details = user_warnings_details.get(user_id, [])
-        
-        # Determinar nível mais alto (baseado em cargos OU dados salvos)
-        highest_level = max(saved_warnings, 0)
-        if has_adv3:
-            highest_level = max(highest_level, 3)
-        elif has_adv2:
-            highest_level = max(highest_level, 2)
-        elif has_adv1:
-            highest_level = max(highest_level, 1)
-        
-        # Se não tem nível, pular
-        if highest_level == 0:
-            continue
-        
-        print(f"✅ Processando {member.display_name}: Nível {highest_level}, Cargos: ADV1={has_adv1}, ADV2={has_adv2}, ADV3={has_adv3}, Salvos={saved_warnings}")
-        
-        # Criar informações detalhadas do usuário
-        user_data = {
-            'member': member,
-            'name': member.display_name,
-            'id': user_id,
-            'mention': member.mention,
-            'highest_level': highest_level,
-            'has_adv1': has_adv1,
-            'has_adv2': has_adv2,
-            'has_adv3': has_adv3,
-            'saved_warnings': saved_warnings,
-            'details': warning_details
-        }
-        
-        # Adicionar à lista apropriada baseado no nível mais alto
-        if highest_level >= 3:
-            adv3_users.append(user_data)
-            print(f"➡️ Adicionado à lista ADV 3: {member.display_name}")
-        elif highest_level == 2:
-            adv2_users.append(user_data)
-            print(f"➡️ Adicionado à lista ADV 2: {member.display_name}")
-        elif highest_level == 1:
-            adv1_users.append(user_data)
-            print(f"➡️ Adicionado à lista ADV 1: {member.display_name}")
-    
-    print(f"📊 RESULTADO FINAL:")
-    print(f"🔴 ADV 3: {len(adv3_users)} usuários")
-    print(f"🟠 ADV 2: {len(adv2_users)} usuários") 
-    print(f"🟡 ADV 1: {len(adv1_users)} usuários")
-    
-    # Verificar se há usuários com advertências
-    total_users = len(adv1_users) + len(adv2_users) + len(adv3_users)
-    
-    if total_users == 0:
-        embed = discord.Embed(
-            title="📊 RELATÓRIO DE ADVERTÊNCIAS",
-            description="🎉 **SERVIDOR 100% LIMPO!**\n\n✨ Nenhum usuário possui cargos de advertência ativos.\n🧹 Todas as punições foram removidas ou expiradas.",
-            color=0x00ff00
-        )
-        embed.add_field(
-            name="📈 ESTATÍSTICAS",
-            value="🟡 **ADV 1:** 0 usuários\n🟠 **ADV 2:** 0 usuários\n🔴 **ADV 3:** 0 usuários\n\n**TOTAL:** 0 usuários com advertências",
-            inline=False
-        )
-        embed.set_footer(text="Sistema de Advertências • Caos Hub")
-        await ctx.reply(embed=embed)
-        return
-    
-    # Criar embed principal ULTRA DETALHADO
-    embed = discord.Embed(
-        title="📊 RELATÓRIO DE ADVERTÊNCIAS",
-        description=f"**🔍 RESUMO DO SERVIDOR**\n\n📈 **Total:** {total_users} usuários com advertências\n🟡 **ADV 1:** {len(adv1_users)} • 🟠 **ADV 2:** {len(adv2_users)} • 🔴 **ADV 3:** {len(adv3_users)}\n\n📨 **Informações completas enviadas no privado de {ctx.author.display_name}**",
-        color=0xff4444
-    )
-    
-    # ========================================
-    # ADV 3 - NÍVEL CRÍTICO
-    # ========================================
-    if adv3_users:
-        adv3_text = ""
-        for i, user in enumerate(adv3_users, 1):  # TODOS os usuários
-            # Cargos ativos
-            active_roles = []
-            if user['has_adv1']:
-                active_roles.append("🟡 ADV 1")
-            if user['has_adv2']:
-                active_roles.append("🟠 ADV 2")
-            if user['has_adv3']:
-                active_roles.append("🔴 ADV 3")
-            
-            # Última advertência
-            last_warning = "Sem histórico disponível"
-            moderator = "Sistema"
-            timestamp = "Data desconhecida"
-            
-            if user['details']:
-                last_detail = user['details'][-1]
-                last_warning = last_detail.get('motivo', 'Sem motivo especificado')
-                moderator = last_detail.get('moderador', 'Moderador desconhecido')
-                if 'timestamp' in last_detail:
-                    timestamp = f"<t:{int(last_detail['timestamp'].timestamp())}:R>"
-            
-            adv3_text += f"**#{i} • {user['name']}**\n"
-            adv3_text += f"🎯 **Cargos:** {' • '.join(active_roles) if active_roles else 'Apenas dados salvos'}\n"
-            adv3_text += f"📝 **Motivo:** {last_warning[:40]}{'...' if len(last_warning) > 40 else ''}\n"
-            adv3_text += f"👮 **Por:** {moderator} • ⏰ {timestamp}\n\n"
-        
-        embed.add_field(
-            name=f"🔴 NÍVEL CRÍTICO - ADV 3 ({len(adv3_users)} usuários)",
-            value=adv3_text[:1024] if adv3_text else "Nenhum usuário neste nível",
-            inline=False
-        )
-    
-    # ========================================
-    # ADV 2 - NÍVEL ALTO
-    # ========================================
-    if adv2_users:
-        adv2_text = ""
-        for i, user in enumerate(adv2_users, 1):  # TODOS os usuários
-            # Cargos ativos
-            active_roles = []
-            if user['has_adv1']:
-                active_roles.append("🟡 ADV 1")
-            if user['has_adv2']:
-                active_roles.append("🟠 ADV 2")
-            if user['has_adv3']:
-                active_roles.append("🔴 ADV 3")
-            
-            # Última advertência
-            last_warning = "Sem histórico disponível"
-            moderator = "Sistema"
-            timestamp = "Data desconhecida"
-            
-            if user['details']:
-                last_detail = user['details'][-1]
-                last_warning = last_detail.get('motivo', 'Sem motivo especificado')
-                moderator = last_detail.get('moderador', 'Moderador desconhecido')
-                if 'timestamp' in last_detail:
-                    timestamp = f"<t:{int(last_detail['timestamp'].timestamp())}:R>"
-            
-            adv2_text += f"**#{i} • {user['name']}**\n"
-            adv2_text += f"🎯 **Cargos:** {' • '.join(active_roles) if active_roles else 'Apenas dados salvos'}\n"
-            adv2_text += f"📝 **Motivo:** {last_warning[:40]}{'...' if len(last_warning) > 40 else ''}\n"
-            adv2_text += f"👮 **Por:** {moderator} • ⏰ {timestamp}\n\n"
-        
-        embed.add_field(
-            name=f"🟠 NÍVEL ALTO - ADV 2 ({len(adv2_users)} usuários)",
-            value=adv2_text[:1024] if adv2_text else "Nenhum usuário neste nível",
-            inline=False
-        )
-    
-    # ========================================
-    # ADV 1 - NÍVEL BAIXO
-    # ========================================
-    if adv1_users:
-        adv1_text = ""
-        for i, user in enumerate(adv1_users, 1):  # TODOS os usuários
-            # Cargos ativos
-            active_roles = []
-            if user['has_adv1']:
-                active_roles.append("🟡 ADV 1")
-            if user['has_adv2']:
-                active_roles.append("🟠 ADV 2")
-            if user['has_adv3']:
-                active_roles.append("🔴 ADV 3")
-            
-            # Última advertência
-            last_warning = "Sem histórico disponível"
-            moderator = "Sistema"
-            timestamp = "Data desconhecida"
-            
-            if user['details']:
-                last_detail = user['details'][-1]
-                last_warning = last_detail.get('motivo', 'Sem motivo especificado')
-                moderator = last_detail.get('moderador', 'Moderador desconhecido')
-                if 'timestamp' in last_detail:
-                    timestamp = f"<t:{int(last_detail['timestamp'].timestamp())}:R>"
-            
-            adv1_text += f"**#{i} • {user['name']}**\n"
-            adv1_text += f"🎯 **Cargos:** {' • '.join(active_roles) if active_roles else 'Apenas dados salvos'}\n"
-            adv1_text += f"📝 **Motivo:** {last_warning[:40]}{'...' if len(last_warning) > 40 else ''}\n"
-            adv1_text += f"👮 **Por:** {moderator} • ⏰ {timestamp}\n\n"
-        
-        embed.add_field(
-            name=f"🟡 NÍVEL BAIXO - ADV 1 ({len(adv1_users)} usuários)",
-            value=adv1_text[:1024] if adv1_text else "Nenhum usuário neste nível",
-            inline=False
-        )
-    
-    # ========================================
-    # ESTATÍSTICAS FINAIS
-    # ========================================
-    embed.add_field(
-        name="📈 ESTATÍSTICAS DETALHADAS",
-        value=f"🎯 **Total geral:** {total_users} usuários com advertências\n\n🟡 **ADV 1 (Baixo):** {len(adv1_users)} usuários\n🟠 **ADV 2 (Alto):** {len(adv2_users)} usuários\n🔴 **ADV 3 (Crítico):** {len(adv3_users)} usuários\n\n📊 **Dados salvos:** {len([u for u in user_warnings.values() if u > 0])} registros\n🗂️ **Histórico completo:** {sum(len(details) for details in user_warnings_details.values())} advertências aplicadas",
-        inline=False
-    )
-    
-    # Verificar se alguma categoria foi truncada devido ao limite do Discord (1024 caracteres por field)
-    truncated_categories = []
-    if adv3_users and len(str(adv3_text)) >= 1024:
-        truncated_categories.append("ADV 3")
-    if adv2_users and len(str(adv2_text)) >= 1024:
-        truncated_categories.append("ADV 2") 
-    if adv1_users and len(str(adv1_text)) >= 1024:
-        truncated_categories.append("ADV 1")
-    
-    if truncated_categories:
-        embed.add_field(
-            name="⚠️ AVISO DE TRUNCAMENTO",
-            value=f"📋 As seguintes categorias foram **truncadas** devido ao limite do Discord:\n**{', '.join(truncated_categories)}**\n\n🔢 **Motivo:** Muitos usuários para exibir em uma única mensagem\n💡 **Solução:** Use `.debugadv` para ver lista completa ou remova algumas advertências",
-            inline=False
-        )
-    
-    embed.set_footer(text=f"📊 Sistema de Advertências • Consultado por {ctx.author.display_name} • Caos Hub")
-    
-    # PRIMEIRO: Enviar relatório no privado
-    dm_success = False
-    try:
-        print(f"🔄 Tentando enviar DM para {ctx.author.display_name}...")
-        
-        # Testar se consegue enviar DM
-        test_embed = discord.Embed(
-            title="📨 RELATÓRIO COMPLETO DE ADVERTÊNCIAS",
-            description=f"**🔍 SERVIDOR: {ctx.guild.name}**\n\n📊 **Estatísticas:**\n🎯 **Total:** {total_users} usuários\n🔴 **ADV 3:** {len(adv3_users)} • 🟠 **ADV 2:** {len(adv2_users)} • 🟡 **ADV 1:** {len(adv1_users)}",
-            color=0xff4444
-        )
-        await ctx.author.send(embed=test_embed)
-        dm_success = True
-        print(f"✅ DM enviada com sucesso!")
-        
-    except discord.Forbidden:
-        print(f"❌ DM bloqueada para {ctx.author.display_name}")
-        dm_success = False
-    except Exception as e:
-        print(f"❌ Erro ao enviar DM: {e}")
-        dm_success = False
-    
-    # SEGUNDO: Responder no canal com status
-    if dm_success:
-        embed.add_field(
-            name="✅ RELATÓRIO ENVIADO",
-            value=f"📨 **Lista completa enviada no privado!**\n📋 Verifique suas mensagens diretas para detalhes completos de todos os {total_users} usuários.",
-            inline=False
-        )
-    else:
-        embed.add_field(
-            name="❌ ERRO NO ENVIO PRIVADO",
-            value=f"🔒 **Não foi possível enviar no privado!**\n💡 **Solução:** Abra suas DMs e use o comando novamente\n📋 **Resumo:** {total_users} usuários com advertências no servidor",
-            inline=False
-        )
-    
-    await ctx.reply(embed=embed)
-    
-    # TERCEIRO: Se DM funcionou, enviar detalhes completos
-    if dm_success and total_users > 0:
-        
-        try:
-            # ========================================
-            # ENVIAR DETALHES DE CADA CATEGORIA
-            # ========================================
-            
-            # ADV 3 - Usuários críticos
-            if adv3_users:
-                for i, user in enumerate(adv3_users, 1):
-                    # Cargos ativos
-                    active_roles = []
-                    if user['has_adv1']: active_roles.append("🟡 ADV 1")
-                    if user['has_adv2']: active_roles.append("🟠 ADV 2")
-                    if user['has_adv3']: active_roles.append("🔴 ADV 3")
-                    
-                    # Última advertência
-                    last_warning = "Sem histórico disponível"
-                    moderator = "Sistema"
-                    timestamp = "Data desconhecida"
-                    
-                    if user['details']:
-                        last_detail = user['details'][-1]
-                        last_warning = last_detail.get('motivo', 'Sem motivo especificado')
-                        moderator = last_detail.get('moderador', 'Moderador desconhecido')
-                        if 'timestamp' in last_detail:
-                            timestamp = f"<t:{int(last_detail['timestamp'].timestamp())}:R>"
-                    
-                    user_embed = discord.Embed(
-                        title=f"🔴 ADV 3 - USUÁRIO #{i}",
-                        description=f"**{user['name']}**",
-                        color=0xff0000
-                    )
-                    user_embed.add_field(name="🎯 Cargos Ativos", value=' • '.join(active_roles) if active_roles else 'Apenas dados salvos', inline=False)
-                    user_embed.add_field(name="📝 Último Motivo", value=last_warning, inline=False)
-                    user_embed.add_field(name="👮 Moderador", value=moderator, inline=True)
-                    user_embed.add_field(name="⏰ Quando", value=timestamp, inline=True)
-                    user_embed.add_field(name="🆔 ID", value=f"`{user['id']}`", inline=True)
-                    user_embed.add_field(name="📊 Advertências Salvas", value=str(user['saved_warnings']), inline=True)
-                    
-                    await ctx.author.send(embed=user_embed)
-                    await asyncio.sleep(0.3)  # Pausa para evitar rate limit
-            
-            # ADV 2 - Usuários de alto risco
-            if adv2_users:
-                for i, user in enumerate(adv2_users, 1):
-                    # Cargos ativos
-                    active_roles = []
-                    if user['has_adv1']: active_roles.append("🟡 ADV 1")
-                    if user['has_adv2']: active_roles.append("🟠 ADV 2")
-                    if user['has_adv3']: active_roles.append("🔴 ADV 3")
-                    
-                    # Última advertência
-                    last_warning = "Sem histórico disponível"
-                    moderator = "Sistema"
-                    timestamp = "Data desconhecida"
-                    
-                    if user['details']:
-                        last_detail = user['details'][-1]
-                        last_warning = last_detail.get('motivo', 'Sem motivo especificado')
-                        moderator = last_detail.get('moderador', 'Moderador desconhecido')
-                        if 'timestamp' in last_detail:
-                            timestamp = f"<t:{int(last_detail['timestamp'].timestamp())}:R>"
-                    
-                    user_embed = discord.Embed(
-                        title=f"🟠 ADV 2 - USUÁRIO #{i}",
-                        description=f"**{user['name']}**",
-                        color=0xff8800
-                    )
-                    user_embed.add_field(name="🎯 Cargos Ativos", value=' • '.join(active_roles) if active_roles else 'Apenas dados salvos', inline=False)
-                    user_embed.add_field(name="📝 Último Motivo", value=last_warning, inline=False)
-                    user_embed.add_field(name="👮 Moderador", value=moderator, inline=True)
-                    user_embed.add_field(name="⏰ Quando", value=timestamp, inline=True)
-                    user_embed.add_field(name="🆔 ID", value=f"`{user['id']}`", inline=True)
-                    user_embed.add_field(name="📊 Advertências Salvas", value=str(user['saved_warnings']), inline=True)
-                    
-                    await ctx.author.send(embed=user_embed)
-                    await asyncio.sleep(0.3)
-            
-            # ADV 1 - Usuários de baixo risco
-            if adv1_users:
-                for i, user in enumerate(adv1_users, 1):
-                    # Cargos ativos
-                    active_roles = []
-                    if user['has_adv1']: active_roles.append("🟡 ADV 1")
-                    if user['has_adv2']: active_roles.append("🟠 ADV 2")
-                    if user['has_adv3']: active_roles.append("🔴 ADV 3")
-                    
-                    # Última advertência
-                    last_warning = "Sem histórico disponível"
-                    moderator = "Sistema"
-                    timestamp = "Data desconhecida"
-                    
-                    if user['details']:
-                        last_detail = user['details'][-1]
-                        last_warning = last_detail.get('motivo', 'Sem motivo especificado')
-                        moderator = last_detail.get('moderador', 'Moderador desconhecido')
-                        if 'timestamp' in last_detail:
-                            timestamp = f"<t:{int(last_detail['timestamp'].timestamp())}:R>"
-                    
-                    user_embed = discord.Embed(
-                        title=f"🟡 ADV 1 - USUÁRIO #{i}",
-                        description=f"**{user['name']}**",
-                        color=0xffdd00
-                    )
-                    user_embed.add_field(name="🎯 Cargos Ativos", value=' • '.join(active_roles) if active_roles else 'Apenas dados salvos', inline=False)
-                    user_embed.add_field(name="📝 Último Motivo", value=last_warning, inline=False)
-                    user_embed.add_field(name="👮 Moderador", value=moderator, inline=True)
-                    user_embed.add_field(name="⏰ Quando", value=timestamp, inline=True)
-                    user_embed.add_field(name="🆔 ID", value=f"`{user['id']}`", inline=True)
-                    user_embed.add_field(name="📊 Advertências Salvas", value=str(user['saved_warnings']), inline=True)
-                    
-                    await ctx.author.send(embed=user_embed)
-                    await asyncio.sleep(0.3)
-            
-            # Embed final
-            final_embed = discord.Embed(
-                title="📋 RELATÓRIO CONCLUÍDO",
-                description=f"✅ **Relatório completo enviado!**\n\n📊 **Total:** {total_users} usuários processados\n🔴 **ADV 3:** {len(adv3_users)} • 🟠 **ADV 2:** {len(adv2_users)} • 🟡 **ADV 1:** {len(adv1_users)}\n\n💡 **Comandos úteis:**\n• `.radvallserver` - Limpar todas\n• `.radv @usuário` - Remover uma",
-                color=0x00ff00
-            )
-            final_embed.set_footer(text=f"Relatório de {ctx.guild.name} • Gerado por {ctx.author.display_name}")
-            await ctx.author.send(embed=final_embed)
-            
-            print(f"✅ Relatório completo enviado para {ctx.author.display_name}: {total_users} usuários")
-            
-        except Exception as e:
-            print(f"❌ Erro ao enviar detalhes completos: {e}")
-            error_embed = discord.Embed(
-                title="❌ ERRO NO ENVIO DETALHADO",
-                description=f"Houve um erro ao enviar os detalhes completos:\n```{str(e)}```",
-                color=0xff0000
-            )
-            await ctx.author.send(embed=error_embed)
-
-@seeadv_command.error
-async def seeadv_error(ctx, error):
-    if isinstance(error, commands.CheckFailure):
-        await ctx.reply("❌ Você precisa ser **Sub Moderador** ou ter permissões de moderação para usar este comando!")
+# COMANDO SEEADV REMOVIDO - ESTAVA BUGADO
 
 @bot.command(name='debugadv')
 @is_sub_moderator_or_higher()
@@ -1528,205 +1075,7 @@ async def unmute_error(ctx, error):
     if isinstance(error, commands.CheckFailure):
         await ctx.reply("❌ Você precisa ser **Sub Moderador** ou ter permissões de moderação para usar este comando!")
 
-@bot.command(name='radvallserver')
-@commands.has_permissions(administrator=True)
-async def radvallserver_command(ctx):
-    """Remove todas as advertências de TODOS os usuários do servidor"""
-    
-    # Verificar se há usuários com advertências
-    if not user_warnings or all(count == 0 for count in user_warnings.values()):
-        embed = discord.Embed(
-            title="ℹ️ SERVIDOR LIMPO",
-            description="🎉 **Nenhum usuário possui advertências para remover!**\n\nO servidor já está limpo! ✨",
-            color=0x00ff00
-        )
-        embed.set_footer(text="Sistema de Advertências • Caos Hub")
-        await ctx.reply(embed=embed)
-        return
-    
-    # Confirmação de segurança
-    embed_confirm = discord.Embed(
-        title="⚠️ CONFIRMAÇÃO NECESSÁRIA",
-        description="🚨 **ATENÇÃO!** Você está prestes a remover **TODAS** as advertências de **TODOS** os usuários do servidor!\n\n**Esta ação é IRREVERSÍVEL!**",
-        color=0xff8c00
-    )
-    embed_confirm.add_field(
-        name="📊 Usuários Afetados",
-        value=f"**Total:** {len([u for u, c in user_warnings.items() if c > 0])} usuários",
-        inline=True
-    )
-    embed_confirm.add_field(
-        name="🔄 Para Confirmar",
-        value="Digite `CONFIRMAR` em 30 segundos",
-        inline=True
-    )
-    embed_confirm.set_footer(text="Sistema de Advertências • Caos Hub")
-    
-    await ctx.reply(embed=embed_confirm)
-    
-    # Aguardar confirmação
-    def check(message):
-        return message.author == ctx.author and message.channel == ctx.channel and message.content.upper() == "CONFIRMAR"
-    
-    try:
-        await bot.wait_for('message', check=check, timeout=30.0)
-    except asyncio.TimeoutError:
-        embed_timeout = discord.Embed(
-            title="⏰ TEMPO ESGOTADO",
-            description="❌ Operação cancelada por timeout.\n\nNenhuma advertência foi removida.",
-            color=0xff0000
-        )
-        await ctx.reply(embed=embed_timeout)
-        return
-    
-    # Executar limpeza geral
-    try:
-        users_cleaned = []
-        roles_removed_total = []
-        
-        # Obter cargos ADV
-        cargo_adv1 = ctx.guild.get_role(ADV_CARGO_1_ID)
-        cargo_adv2 = ctx.guild.get_role(ADV_CARGO_2_ID)
-        cargo_adv3 = ctx.guild.get_role(ADV_CARGO_3_ID)
-        
-        print(f"🧹 Iniciando limpeza TOTAL do servidor...")
-        print(f"📊 Membros no servidor: {len(ctx.guild.members)}")
-        print(f"📋 Dados salvos antes da limpeza: {len(user_warnings)} usuários")
-        
-        # Processar TODOS os membros do servidor para remover cargos ADV
-        members_processed = 0
-        for member in ctx.guild.members:
-            if member.bot:  # Pular bots
-                continue
-                
-            members_processed += 1
-            try:
-                roles_removed = []
-                user_id = member.id
-                
-                # Verificar e remover CADA cargo ADV individualmente
-                if cargo_adv1 and cargo_adv1 in member.roles:
-                    try:
-                        await member.remove_roles(cargo_adv1, reason="🧹 LIMPEZA TOTAL - Remoção de ADV 1")
-                        roles_removed.append("🟡 ADV 1")
-                        print(f"✅ Removido ADV 1 de {member.display_name}")
-                    except Exception as e:
-                        print(f"❌ Erro ao remover ADV 1 de {member.display_name}: {e}")
-                
-                if cargo_adv2 and cargo_adv2 in member.roles:
-                    try:
-                        await member.remove_roles(cargo_adv2, reason="🧹 LIMPEZA TOTAL - Remoção de ADV 2")
-                        roles_removed.append("🟠 ADV 2")
-                        print(f"✅ Removido ADV 2 de {member.display_name}")
-                    except Exception as e:
-                        print(f"❌ Erro ao remover ADV 2 de {member.display_name}: {e}")
-                
-                if cargo_adv3 and cargo_adv3 in member.roles:
-                    try:
-                        await member.remove_roles(cargo_adv3, reason="🧹 LIMPEZA TOTAL - Remoção de ADV 3")
-                        roles_removed.append("🔴 ADV 3")
-                        print(f"✅ Removido ADV 3 de {member.display_name}")
-                    except Exception as e:
-                        print(f"❌ Erro ao remover ADV 3 de {member.display_name}: {e}")
-                
-                # Se removeu algum cargo, adicionar à lista
-                if roles_removed:
-                    warning_count = user_warnings.get(user_id, 0)
-                    users_cleaned.append({
-                        'name': member.display_name,
-                        'id': user_id,
-                        'warnings': warning_count,
-                        'roles_removed': roles_removed
-                    })
-                    roles_removed_total.extend(roles_removed)
-                    print(f"🎯 {member.display_name}: Removidos {len(roles_removed)} cargos")
-                
-            except Exception as e:
-                print(f"❌ ERRO CRÍTICO ao processar {member.display_name}: {e}")
-                continue
-        
-        print(f"📊 Membros processados: {members_processed}")
-        print(f"🎯 Usuários limpos: {len(users_cleaned)}")
-        print(f"🗑️ Cargos removidos: {len(roles_removed_total)}")
-        
-        # Limpar TODOS os dados de advertências
-        user_warnings.clear()
-        user_warnings_details.clear()
-        
-        # Salvar dados limpos
-        save_warnings_data()
-        
-        # Criar embed de resultado ULTRA DETALHADO
-        embed_result = discord.Embed(
-            title="🧹 LIMPEZA TOTAL CONCLUÍDA COM SUCESSO!",
-            description="✅ **OPERAÇÃO COMPLETA - SERVIDOR 100% LIMPO!**\n\n🎯 **Todas as advertências foram removidas sem exceção**\n🗑️ **Todos os cargos ADV foram eliminados**\n💾 **Todos os dados foram apagados**",
-            color=0x00ff00
-        )
-        
-        # Estatísticas detalhadas
-        embed_result.add_field(
-            name="📊 ESTATÍSTICAS DA OPERAÇÃO",
-            value=f"👥 **Membros processados:** {members_processed}\n🎯 **Usuários limpos:** {len(users_cleaned)}\n🗑️ **Total de cargos removidos:** {len(roles_removed_total)}\n\n📋 **Dados apagados:** {len(user_warnings)} registros\n🗂️ **Histórico limpo:** {sum(len(details) for details in user_warnings_details.values())} advertências",
-            inline=False
-        )
-        
-        # Contagem por tipo de cargo
-        adv1_count = len([r for r in roles_removed_total if "ADV 1" in r])
-        adv2_count = len([r for r in roles_removed_total if "ADV 2" in r])
-        adv3_count = len([r for r in roles_removed_total if "ADV 3" in r])
-        
-        embed_result.add_field(
-            name="🎯 CARGOS REMOVIDOS POR TIPO",
-            value=f"🟡 **ADV 1:** {adv1_count} cargos removidos\n🟠 **ADV 2:** {adv2_count} cargos removidos\n🔴 **ADV 3:** {adv3_count} cargos removidos\n\n**TOTAL GERAL:** {len(roles_removed_total)} cargos eliminados",
-            inline=False
-        )
-        
-        # Detalhes dos usuários (primeiros 8)
-        if users_cleaned:
-            users_text = ""
-            for i, user_data in enumerate(users_cleaned[:8]):
-                roles_text = " • ".join(user_data['roles_removed'])
-                users_text += f"**#{i+1}** {user_data['name']}\n🗑️ Removidos: {roles_text}\n📊 Advertências salvas: {user_data['warnings']}\n\n"
-            
-            if len(users_cleaned) > 8:
-                users_text += f"**... e mais {len(users_cleaned) - 8} usuários processados**"
-            
-            embed_result.add_field(
-                name="👤 USUÁRIOS PROCESSADOS (Detalhes)",
-                value=users_text[:1024],
-                inline=False
-            )
-        
-        embed_result.add_field(
-            name="👮 MODERADOR",
-            value=ctx.author.mention,
-            inline=True
-        )
-        
-        embed_result.add_field(
-            name="⏰ EXECUTADO EM",
-            value=f"<t:{int(time.time())}:F>",
-            inline=True
-        )
-        
-        embed_result.set_footer(text="Sistema de Advertências • Caos Hub")
-        await ctx.reply(embed=embed_result)
-        
-        # Enviar log especial
-        await send_adv_log(ctx, ctx.author, f"LIMPEZA GERAL: {len(users_cleaned)} usuários limpos", 0, "remocao")
-        
-    except Exception as e:
-        embed_error = discord.Embed(
-            title="❌ ERRO NA LIMPEZA",
-            description=f"Ocorreu um erro durante a limpeza geral:\n```{str(e)}```",
-            color=0xff0000
-        )
-        await ctx.reply(embed=embed_error)
-
-@radvallserver_command.error
-async def radvallserver_error(ctx, error):
-    if isinstance(error, commands.MissingPermissions):
-        await ctx.reply("❌ Você precisa ser **ADMINISTRADOR** para usar este comando!")
+# COMANDO RADVALLSERVER REMOVIDO - CONFORME SOLICITADO
 
 # ========================================
 # COMANDOS BÁSICOS DE MODERAÇÃO
@@ -1998,13 +1347,9 @@ async def clear_error(ctx, error):
 # SISTEMAS DE PROTEÇÃO AUTOMÁTICA
 # ========================================
 
-async def auto_moderate(message, violation_type, details=""):
-    """Sistema automático de moderação"""
+async def auto_moderate_progressive(message, violation_type, details=""):
+    """Sistema automático de moderação PROGRESSIVO"""
     user_id = message.author.id
-    
-    # Incrementar avisos de spam
-    spam_warnings[user_id] += 1
-    current_warnings = spam_warnings[user_id]
     
     # Deletar mensagem
     try:
@@ -2012,49 +1357,68 @@ async def auto_moderate(message, violation_type, details=""):
     except:
         pass
     
-    # Determinar punição baseada nos avisos
+    # Incrementar avisos de spam
+    spam_warnings[user_id] += 1
+    current_warnings = spam_warnings[user_id]
+    current_level = user_spam_level[user_id]
+    
+    # Sistema progressivo: 5 → 4 → 3 mensagens
     if current_warnings == 1:
-        # Primeiro aviso - apenas aviso
+        # PRIMEIRO AVISO (ainda no nível atual)
+        if current_level == 0:
+            limit_msg = "5 mensagens"
+        elif current_level == 1:
+            limit_msg = "4 mensagens"
+        else:
+            limit_msg = "3 mensagens"
+            
         embed = discord.Embed(
-            title="⚠️ AVISO AUTOMÁTICO",
+            title="⚠️ PRIMEIRO AVISO AUTOMÁTICO",
             description=f"**{message.author.display_name}**, cuidado com {violation_type}!",
             color=0xffff00
         )
         embed.add_field(
             name="📋 Detalhes",
-            value=f"**Violação:** {violation_type}\n**Detalhes:** {details}\n**Avisos:** {current_warnings}/3",
+            value=f"**Violação:** {violation_type}\n**Detalhes:** {details}\n**Limite atual:** {limit_msg}\n**Avisos:** 1/2",
             inline=False
         )
-        embed.set_footer(text="Sistema de Proteção Automática • Caos Hub")
+        embed.set_footer(text="Sistema Anti-Spam Progressivo • Caos Hub")
         
         msg = await message.channel.send(embed=embed)
         await asyncio.sleep(5)
         await msg.delete()
         
     elif current_warnings == 2:
-        # Segundo aviso - timeout 5 minutos
+        # SEGUNDO AVISO (ainda no nível atual)
+        if current_level == 0:
+            limit_msg = "5 mensagens"
+        elif current_level == 1:
+            limit_msg = "4 mensagens"
+        else:
+            limit_msg = "3 mensagens"
+            
         try:
-            timeout_duration = discord.utils.utcnow() + discord.timedelta(minutes=5)
+            timeout_duration = discord.utils.utcnow() + discord.timedelta(minutes=3)
             await message.author.timeout(timeout_duration, reason=f"Auto-moderação: {violation_type}")
             
             embed = discord.Embed(
-                title="🔇 TIMEOUT AUTOMÁTICO",
-                description=f"**{message.author.display_name}** foi silenciado por 5 minutos!",
+                title="🔇 SEGUNDO AVISO + TIMEOUT",
+                description=f"**{message.author.display_name}** foi silenciado por 3 minutos!",
                 color=0xff8c00
             )
             embed.add_field(
                 name="📋 Detalhes",
-                value=f"**Violação:** {violation_type}\n**Detalhes:** {details}\n**Avisos:** {current_warnings}/3\n**Duração:** 5 minutos",
+                value=f"**Violação:** {violation_type}\n**Detalhes:** {details}\n**Limite atual:** {limit_msg}\n**Duração:** 3 minutos",
                 inline=False
             )
-            embed.set_footer(text="Sistema de Proteção Automática • Caos Hub")
+            embed.set_footer(text="Sistema Anti-Spam Progressivo • Caos Hub")
             
             await message.channel.send(embed=embed)
         except:
             pass
             
     elif current_warnings >= 3:
-        # Terceiro aviso - aplicar ADV 1
+        # TERCEIRO AVISO - APLICAR ADV + AUMENTAR NÍVEL
         try:
             # Aplicar advertência automática
             if user_id not in user_warnings:
@@ -2063,31 +1427,63 @@ async def auto_moderate(message, violation_type, details=""):
             user_warnings[user_id] += 1
             warning_count = user_warnings[user_id]
             
-            # Aplicar cargo ADV 1
-            guild = message.guild
-            cargo = guild.get_role(ADV_CARGO_1_ID)
+            # Determinar cargo baseado no nível de advertência
+            if warning_count == 1:
+                cargo = message.guild.get_role(ADV_CARGO_1_ID)
+                adv_level = "ADV 1"
+                color = 0xffff00
+            elif warning_count == 2:
+                # Remover ADV 1 e aplicar ADV 2
+                cargo_antigo = message.guild.get_role(ADV_CARGO_1_ID)
+                if cargo_antigo and cargo_antigo in message.author.roles:
+                    await message.author.remove_roles(cargo_antigo)
+                cargo = message.guild.get_role(ADV_CARGO_2_ID)
+                adv_level = "ADV 2"
+                color = 0xff8c00
+            else:
+                # Remover cargos anteriores e aplicar ADV 3 + BAN
+                cargo_adv1 = message.guild.get_role(ADV_CARGO_1_ID)
+                cargo_adv2 = message.guild.get_role(ADV_CARGO_2_ID)
+                if cargo_adv1 and cargo_adv1 in message.author.roles:
+                    await message.author.remove_roles(cargo_adv1)
+                if cargo_adv2 and cargo_adv2 in message.author.roles:
+                    await message.author.remove_roles(cargo_adv2)
+                cargo = message.guild.get_role(ADV_CARGO_3_ID)
+                adv_level = "ADV 3 + BAN"
+                color = 0xff0000
+            
+            # Aplicar cargo
             if cargo:
                 await message.author.add_roles(cargo)
             
             embed = discord.Embed(
                 title="🚨 ADVERTÊNCIA AUTOMÁTICA",
-                description=f"**{message.author.display_name}** recebeu ADV 1 por violações repetidas!",
-                color=0xff0000
+                description=f"**{message.author.display_name}** recebeu {adv_level} por spam repetido!",
+                color=color
             )
             embed.add_field(
                 name="📋 Detalhes",
-                value=f"**Violação:** {violation_type}\n**Detalhes:** {details}\n**Advertência:** ADV {warning_count}\n**Motivo:** Violações automáticas repetidas",
+                value=f"**Violação:** {violation_type}\n**Detalhes:** {details}\n**Advertência:** {adv_level}\n**Motivo:** Spam automático progressivo",
                 inline=False
             )
-            embed.set_footer(text="Sistema de Proteção Automática • Caos Hub")
+            embed.set_footer(text="Sistema Anti-Spam Progressivo • Caos Hub")
             
             await message.channel.send(embed=embed)
             
-            # Reset avisos de spam após aplicar advertência
-            spam_warnings[user_id] = 0
+            # Se chegou no ADV 3, banir
+            if warning_count >= 3:
+                await message.author.ban(reason="3 advertências - Ban automático por spam")
+                user_warnings[user_id] = 0  # Reset após ban
             
-        except:
-            pass
+            # Reset avisos e aumentar nível de dificuldade
+            spam_warnings[user_id] = 0
+            user_spam_level[user_id] = min(user_spam_level[user_id] + 1, 2)  # Máximo nível 2 (3 mensagens)
+            
+            # Salvar dados
+            save_warnings_data()
+            
+        except Exception as e:
+            print(f"Erro na moderação automática: {e}")
 
 # ========================================
 # SISTEMA DE AJUDA PERSONALIZADO
@@ -2482,20 +1878,29 @@ async def on_message(message):
     if len(message_history[user_id]) >= 3:
         recent_messages = list(message_history[user_id])[-3:]
         if len(set(recent_messages)) == 1:  # Todas as mensagens são iguais
-            await auto_moderate(message, "spam de mensagens idênticas", f"Enviou 3 mensagens iguais: '{content[:50]}...'")
+            await auto_moderate_progressive(message, "spam de mensagens idênticas", f"Enviou 3 mensagens iguais: '{content[:50]}...'")
             return
     
     # ========================================
-    # SISTEMA ANTI-FLOOD
+    # SISTEMA ANTI-FLOOD PROGRESSIVO
     # ========================================
     
+    # Determinar limite baseado no nível do usuário
+    current_level = user_spam_level[user_id]
+    if current_level == 0:
+        flood_limit = 5  # Nível inicial: 5 mensagens
+    elif current_level == 1:
+        flood_limit = 4  # Nível médio: 4 mensagens
+    else:
+        flood_limit = 3  # Nível alto: 3 mensagens
+    
     # Verificar flood (muitas mensagens em pouco tempo)
-    if len(user_message_times[user_id]) >= 5:
-        recent_times = list(user_message_times[user_id])[-5:]
+    if len(user_message_times[user_id]) >= flood_limit:
+        recent_times = list(user_message_times[user_id])[-flood_limit:]
         time_diff = recent_times[-1] - recent_times[0]
         
-        if time_diff < 10:  # 5 mensagens em menos de 10 segundos
-            await auto_moderate(message, "flood de mensagens", f"Enviou 5 mensagens em {time_diff:.1f} segundos")
+        if time_diff < 8:  # Mensagens em menos de 8 segundos
+            await auto_moderate_progressive(message, "flood de mensagens", f"Enviou {flood_limit} mensagens em {time_diff:.1f} segundos (limite: {flood_limit})")
             return
     
     # ========================================
@@ -2578,6 +1983,144 @@ async def on_message(message):
     
     # Processar comandos normalmente
     await bot.process_commands(message)
+
+# ========================================
+# SISTEMA AUTOMÁTICO DE NICKNAMES
+# ========================================
+
+async def update_nickname_for_roles(member):
+    """Atualiza o nickname do membro baseado nos cargos que possui"""
+    try:
+        # Salvar nickname original se ainda não foi salvo
+        if member.id not in original_nicknames:
+            original_nicknames[member.id] = member.display_name
+        
+        # Verificar se o membro tem algum cargo com prefixo
+        prefixes_to_add = []
+        for role in member.roles:
+            if role.id in CARGO_PREFIXES:
+                prefix = CARGO_PREFIXES[role.id]
+                if prefix not in prefixes_to_add:
+                    prefixes_to_add.append(prefix)
+        
+        # Obter nickname original (sem prefixos)
+        original_nick = original_nicknames.get(member.id, member.name)
+        
+        # Remover prefixos existentes do nickname atual
+        current_nick = member.display_name
+        for prefix in CARGO_PREFIXES.values():
+            if current_nick.startswith(prefix + " "):
+                current_nick = current_nick[len(prefix + " "):]
+        
+        # Construir novo nickname
+        if prefixes_to_add:
+            # Ordenar prefixos por importância (admin > mod > vip, etc)
+            priority_order = ["[OWNER]", "[ADMIN]", "[MOD]", "[SUB]", "[STAFF]", "[DEV]", "[DESIGN]", "[YT]", "[LIVE]", "[VIP]", "[PREMIUM]", "[BOOST]"]
+            prefixes_to_add.sort(key=lambda x: priority_order.index(x) if x in priority_order else 999)
+            
+            # Usar apenas o prefixo de maior prioridade
+            new_nickname = f"{prefixes_to_add[0]} {current_nick}"
+        else:
+            # Sem cargos especiais, usar nickname original
+            new_nickname = original_nick
+        
+        # Limitar tamanho do nickname (Discord tem limite de 32 caracteres)
+        if len(new_nickname) > 32:
+            # Truncar o nome mas manter o prefixo
+            if prefixes_to_add:
+                prefix = prefixes_to_add[0]
+                max_name_length = 32 - len(prefix) - 1  # -1 para o espaço
+                truncated_name = current_nick[:max_name_length]
+                new_nickname = f"{prefix} {truncated_name}"
+            else:
+                new_nickname = new_nickname[:32]
+        
+        # Atualizar nickname se mudou
+        if member.display_name != new_nickname:
+            await member.edit(nick=new_nickname, reason="Atualização automática de nickname por cargo")
+            print(f"✅ Nickname atualizado: {member.name} -> {new_nickname}")
+            return True
+        
+        return False
+        
+    except discord.Forbidden:
+        print(f"❌ Sem permissão para alterar nickname de {member.display_name}")
+        return False
+    except Exception as e:
+        print(f"❌ Erro ao atualizar nickname de {member.display_name}: {e}")
+        return False
+
+@bot.event
+async def on_member_update(before, after):
+    """Detecta mudanças nos cargos dos membros"""
+    # Verificar se os cargos mudaram
+    if before.roles != after.roles:
+        # Aguardar um pouco para evitar conflitos
+        await asyncio.sleep(1)
+        
+        # Atualizar nickname baseado nos novos cargos
+        success = await update_nickname_for_roles(after)
+        
+        if success:
+            # Log da mudança (opcional)
+            added_roles = set(after.roles) - set(before.roles)
+            removed_roles = set(before.roles) - set(after.roles)
+            
+            if added_roles:
+                for role in added_roles:
+                    if role.id in CARGO_PREFIXES:
+                        print(f"🎯 Cargo {role.name} adicionado a {after.display_name} - Nickname atualizado!")
+            
+            if removed_roles:
+                for role in removed_roles:
+                    if role.id in CARGO_PREFIXES:
+                        print(f"🗑️ Cargo {role.name} removido de {after.display_name} - Nickname atualizado!")
+
+# Comando para atualizar nicknames manualmente
+@bot.command(name='updatenicks')
+@commands.has_permissions(administrator=True)
+async def update_nicks_command(ctx):
+    """Atualiza os nicknames de todos os membros baseado nos cargos"""
+    
+    embed_start = discord.Embed(
+        title="🔄 ATUALIZANDO NICKNAMES",
+        description="Iniciando atualização automática de nicknames...",
+        color=0x00ff00
+    )
+    msg = await ctx.reply(embed=embed_start)
+    
+    updated_count = 0
+    total_members = len([m for m in ctx.guild.members if not m.bot])
+    
+    for member in ctx.guild.members:
+        if member.bot:
+            continue
+            
+        success = await update_nickname_for_roles(member)
+        if success:
+            updated_count += 1
+        
+        # Pequena pausa para evitar rate limit
+        await asyncio.sleep(0.1)
+    
+    embed_result = discord.Embed(
+        title="✅ NICKNAMES ATUALIZADOS",
+        description=f"**Processo concluído!**\n\n📊 **Estatísticas:**\n👥 **Membros processados:** {total_members}\n✅ **Nicknames atualizados:** {updated_count}\n🎯 **Taxa de sucesso:** {(updated_count/total_members*100):.1f}%",
+        color=0x00ff00
+    )
+    embed_result.add_field(
+        name="🔧 Cargos Monitorados",
+        value="• `Administrador` → `[ADM]`\n• `Staff` → `[STF]`\n• `Moderador` → `[MOD]`\n• `Sub Moderador` → `[SBM]`",
+        inline=False
+    )
+    embed_result.set_footer(text="Sistema de Nicknames Automáticos • Caos Hub")
+    
+    await msg.edit(embed=embed_result)
+
+@update_nicks_command.error
+async def update_nicks_error(ctx, error):
+    if isinstance(error, commands.MissingPermissions):
+        await ctx.reply("❌ Você precisa ser **ADMINISTRADOR** para usar este comando!")
 
 # ========================================
 # CONFIGURAÇÃO E INICIALIZAÇÃO
