@@ -2180,11 +2180,7 @@ async def update_nickname_for_roles(member):
         print(f"❌ Erro ao atualizar nickname de {member.display_name}: {e}")
         return False
 
-# Evento removido para evitar mensagens duplicadas e conflitos
-# @bot.event
-# async def on_member_update(before, after):
-#     """Detecta mudanças nos cargos dos membros"""
-#     pass
+# Evento COMPLETAMENTE removido para evitar duplicações
 
 # Comando para atualizar nicknames manualmente
 @bot.command(name='updatenicks')
@@ -2261,12 +2257,8 @@ async def addrole_command(ctx, cargo: discord.Role = None, usuario: discord.Memb
         await ctx.reply(embed=embed)
         return
     
-    # Verificar se o usuário já tem o cargo (BUSCA INTELIGENTE)
-    user_already_has_role = False
-    for role in usuario.roles:
-        if role.id == cargo.id:
-            user_already_has_role = True
-            break
+    # Verificar se o usuário já tem o cargo (BUSCA POR ID EXATO)
+    user_already_has_role = any(role.id == cargo.id for role in usuario.roles)
     
     if user_already_has_role:
         embed = discord.Embed(
@@ -2318,25 +2310,21 @@ async def addrole_command(ctx, cargo: discord.Role = None, usuario: discord.Memb
         }
         
         # REMOVER cargos conflitantes ANTES de adicionar o novo
+        removed_roles = []
+        
+        # SEMPRE remover outros cargos da hierarquia quando adicionar um novo
         if cargo.id in HIERARCHY:
-            removed_roles = []
-            
-            # Lista de cargos para remover
-            roles_to_remove = []
-            for role in usuario.roles:
+            for role in list(usuario.roles):  # Criar cópia da lista
                 if role.id in HIERARCHY and role.id != cargo.id:
-                    roles_to_remove.append(role)
-            
-            # Remover os cargos da hierarquia ANTES
-            for role in roles_to_remove:
-                try:
-                    await usuario.remove_roles(role, reason=f"Hierarquia: {cargo.name} substitui {role.name}")
-                    removed_roles.append(role.name)
-                except Exception as e:
-                    print(f"Erro ao remover cargo {role.name}: {e}")
-            
-            if removed_roles:
-                hierarchy_changes = f"\n🔄 **Cargos removidos:** {', '.join(removed_roles)}"
+                    try:
+                        await usuario.remove_roles(role, reason=f"Hierarquia: {cargo.name} substitui {role.name}")
+                        removed_roles.append(role.name)
+                        print(f"✅ Cargo {role.name} removido de {usuario.display_name}")
+                    except Exception as e:
+                        print(f"❌ Erro ao remover cargo {role.name}: {e}")
+        
+        if removed_roles:
+            hierarchy_changes = f"\n🔄 **Cargos removidos:** {', '.join(removed_roles)}"
         
         # ADICIONAR o cargo APÓS remover conflitos
         await usuario.add_roles(cargo, reason=f"Cargo adicionado por {ctx.author.display_name}")
@@ -2464,12 +2452,8 @@ async def removerole_command(ctx, cargo: discord.Role = None, usuario: discord.M
         await ctx.reply(embed=embed)
         return
     
-    # Verificar se o usuário tem o cargo (BUSCA MAIS INTELIGENTE)
-    user_has_role = False
-    for role in usuario.roles:
-        if role.id == cargo.id or role.name.lower() == cargo.name.lower():
-            user_has_role = True
-            break
+    # Verificar se o usuário tem o cargo (BUSCA POR ID EXATO)
+    user_has_role = any(role.id == cargo.id for role in usuario.roles)
     
     if not user_has_role:
         embed = discord.Embed(
@@ -2487,9 +2471,20 @@ async def removerole_command(ctx, cargo: discord.Role = None, usuario: discord.M
             value=cargo.mention,
             inline=True
         )
+        # DEBUG: Mostrar IDs dos cargos para debug
+        debug_roles = []
+        for role in usuario.roles:
+            if role.name != '@everyone':
+                debug_roles.append(f"• {role.name} (ID: {role.id})")
+        
         embed.add_field(
-            name="📝 Cargos do Usuário",
-            value="\n".join([f"• {role.name}" for role in usuario.roles if not role.name == '@everyone'][:10]) or "Nenhum cargo",
+            name="📝 Cargos do Usuário (DEBUG)",
+            value="\n".join(debug_roles[:10]) or "Nenhum cargo",
+            inline=False
+        )
+        embed.add_field(
+            name="🎯 Cargo Procurado",
+            value=f"Nome: {cargo.name}\nID: {cargo.id}",
             inline=False
         )
         embed.set_footer(text="Sistema de Cargos • Caos Hub")
