@@ -2180,31 +2180,11 @@ async def update_nickname_for_roles(member):
         print(f"❌ Erro ao atualizar nickname de {member.display_name}: {e}")
         return False
 
-@bot.event
-async def on_member_update(before, after):
-    """Detecta mudanças nos cargos dos membros"""
-    # Verificar se os cargos mudaram
-    if before.roles != after.roles:
-        # Aguardar um pouco para evitar conflitos
-        await asyncio.sleep(1)
-        
-        # Atualizar nickname baseado nos novos cargos
-        success = await update_nickname_for_roles(after)
-        
-        if success:
-            # Log da mudança (opcional)
-            added_roles = set(after.roles) - set(before.roles)
-            removed_roles = set(before.roles) - set(after.roles)
-            
-            if added_roles:
-                for role in added_roles:
-                    if role.id in CARGO_PREFIXES:
-                        print(f"🎯 Cargo {role.name} adicionado a {after.display_name} - Nickname atualizado!")
-            
-            if removed_roles:
-                for role in removed_roles:
-                    if role.id in CARGO_PREFIXES:
-                        print(f"🗑️ Cargo {role.name} removido de {after.display_name} - Nickname atualizado!")
+# Evento removido para evitar mensagens duplicadas e conflitos
+# @bot.event
+# async def on_member_update(before, after):
+#     """Detecta mudanças nos cargos dos membros"""
+#     pass
 
 # Comando para atualizar nicknames manualmente
 @bot.command(name='updatenicks')
@@ -2325,10 +2305,8 @@ async def addrole_command(ctx, cargo: discord.Role = None, usuario: discord.Memb
         return
     
     try:
-        # Adicionar o cargo
-        await usuario.add_roles(cargo, reason=f"Cargo adicionado por {ctx.author.display_name}")
         
-        # SISTEMA DE HIERARQUIA AUTOMÁTICA - CORRIGIDO
+        # SISTEMA DE HIERARQUIA AUTOMÁTICA - REMOVER ANTES DE ADICIONAR
         hierarchy_changes = ""
         
         # Definir hierarquia dos cargos (maior = mais importante)
@@ -2339,18 +2317,17 @@ async def addrole_command(ctx, cargo: discord.Role = None, usuario: discord.Memb
             1365631940434333748: 1   # SBM - mais baixo
         }
         
-        # Se o cargo adicionado tem hierarquia, remover cargos conflitantes
+        # REMOVER cargos conflitantes ANTES de adicionar o novo
         if cargo.id in HIERARCHY:
-            new_level = HIERARCHY[cargo.id]
             removed_roles = []
             
-            # Lista de cargos para remover (criar lista primeiro para evitar modificação durante iteração)
+            # Lista de cargos para remover
             roles_to_remove = []
             for role in usuario.roles:
                 if role.id in HIERARCHY and role.id != cargo.id:
                     roles_to_remove.append(role)
             
-            # Remover os cargos da hierarquia
+            # Remover os cargos da hierarquia ANTES
             for role in roles_to_remove:
                 try:
                     await usuario.remove_roles(role, reason=f"Hierarquia: {cargo.name} substitui {role.name}")
@@ -2360,6 +2337,9 @@ async def addrole_command(ctx, cargo: discord.Role = None, usuario: discord.Memb
             
             if removed_roles:
                 hierarchy_changes = f"\n🔄 **Cargos removidos:** {', '.join(removed_roles)}"
+        
+        # ADICIONAR o cargo APÓS remover conflitos
+        await usuario.add_roles(cargo, reason=f"Cargo adicionado por {ctx.author.display_name}")
         
         # FORÇAR mudança de nickname se cargo tem prefixo
         prefix_applied = ""
@@ -2558,12 +2538,18 @@ async def removerole_command(ctx, cargo: discord.Role = None, usuario: discord.M
                     1365631940434333748: 1   # SBM
                 }
                 
-                # Encontrar cargo de maior hierarquia que o usuário ainda possui (EXCLUINDO o que foi removido)
+                # AGUARDAR um pouco para garantir que o cargo foi removido
+                await asyncio.sleep(0.5)
+                
+                # Recarregar os cargos do usuário após remoção
+                usuario = ctx.guild.get_member(usuario.id)
+                
+                # Encontrar cargo de maior hierarquia que o usuário AINDA possui
                 highest_role = None
                 highest_level = 0
                 
                 for role in usuario.roles:
-                    if role.id in HIERARCHY and role.id in CARGO_PREFIXES and role.id != cargo.id:
+                    if role.id in HIERARCHY and role.id in CARGO_PREFIXES:
                         if HIERARCHY[role.id] > highest_level:
                             highest_level = HIERARCHY[role.id]
                             highest_role = role
@@ -2574,7 +2560,7 @@ async def removerole_command(ctx, cargo: discord.Role = None, usuario: discord.M
                     await usuario.edit(nick=new_nickname, reason=f"Prefixo atualizado: {CARGO_PREFIXES[highest_role.id]}")
                     nickname_restored = f"\n🏷️ **Nickname atualizado para:** `{new_nickname}`"
                 else:
-                    # NÃO TEM MAIS CARGOS COM PREFIXO - RESTAURAR ORIGINAL
+                    # NÃO TEM MAIS CARGOS COM PREFIXO - RESTAURAR ORIGINAL LIMPO
                     await usuario.edit(nick=original_nick, reason="Nickname restaurado - sem cargos com prefixo")
                     nickname_restored = f"\n🏷️ **Nickname restaurado para:** `{original_nick}`"
                 
