@@ -3,20 +3,21 @@
 
 import discord
 from discord.ext import commands
+import os
+import json
 import asyncio
 import random
 import time
-import json
-import os
-import math
-import datetime
 from collections import defaultdict, deque
-import aiohttp
+from datetime import datetime, timedelta
+from threading import Thread
+from http.server import HTTPServer, BaseHTTPRequestHandler
 import re
 
 # Configuração do bot
 intents = discord.Intents.default()
 intents.message_content = True
+{{ ... }}
 intents.guilds = True
 intents.members = True
 intents.reactions = True
@@ -1405,6 +1406,23 @@ async def on_message(message):
 # INICIALIZAÇÃO DO BOT
 # ========================================
 
+# Servidor HTTP simples para o Render
+class HealthHandler(BaseHTTPRequestHandler):
+    def do_GET(self):
+        self.send_response(200)
+        self.send_header('Content-type', 'text/plain')
+        self.end_headers()
+        self.wfile.write(b'Bot Discord Caos - Online!')
+    
+    def log_message(self, format, *args):
+        pass  # Silencia logs HTTP
+
+def start_http_server():
+    port = int(os.environ.get('PORT', 10000))
+    server = HTTPServer(('0.0.0.0', port), HealthHandler)
+    print(f'🌐 Servidor HTTP iniciado na porta {port}')
+    server.serve_forever()
+
 if __name__ == '__main__':
     try:
         print('🚀 Iniciando bot Discord Caos...')
@@ -1415,6 +1433,11 @@ if __name__ == '__main__':
             print('💡 Configure a variável de ambiente DISCORD_TOKEN no Render')
             exit(1)
         
+        # Inicia servidor HTTP em thread separada
+        http_thread = Thread(target=start_http_server, daemon=True)
+        http_thread.start()
+        
+        # Inicia o bot Discord
         bot.run(TOKEN)
     except discord.LoginFailure:
         print('❌ Erro de login: Token inválido!')
