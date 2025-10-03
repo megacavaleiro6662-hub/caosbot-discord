@@ -282,8 +282,7 @@ def is_sub_moderator_or_higher():
 # Sistemas de proteção
 message_history = defaultdict(lambda: deque(maxlen=5))  # Últimas 5 mensagens por usuário
 user_message_times = defaultdict(lambda: deque(maxlen=5))  # Timestamps das mensagens
-spam_warnings = defaultdict(int)  # Avisos de spam por usuário
-user_spam_level = defaultdict(int)  # Nível de spam progressivo (0=5 msgs, 1=4 msgs, 2=3 msgs)
+spam_warnings = defaultdict(int)  # Avisos de spam por usuário (0=5msgs, 1=4msgs, 2+=3msgs)
 
 async def get_or_create_mute_role(guild):
     """Obtém ou cria o cargo de mute"""
@@ -1348,7 +1347,7 @@ async def clear_error(ctx, error):
 # ========================================
 
 async def auto_moderate_progressive(message, violation_type, details=""):
-    """Sistema automático de moderação PROGRESSIVO"""
+    """Sistema automático de moderação PROGRESSIVO - Conforme solicitado pelo usuário"""
     user_id = message.author.id
     
     # Deletar mensagem
@@ -1360,65 +1359,58 @@ async def auto_moderate_progressive(message, violation_type, details=""):
     # Incrementar avisos de spam
     spam_warnings[user_id] += 1
     current_warnings = spam_warnings[user_id]
-    current_level = user_spam_level[user_id]
     
-    # Sistema progressivo: 5 → 4 → 3 mensagens
+    # Sistema: 5 msgs → aviso, 4 msgs → aviso, 3 msgs → ADV
     if current_warnings == 1:
-        # PRIMEIRO AVISO (ainda no nível atual)
-        if current_level == 0:
-            limit_msg = "5 mensagens"
-        elif current_level == 1:
-            limit_msg = "4 mensagens"
-        else:
-            limit_msg = "3 mensagens"
-            
-        embed = discord.Embed(
-            title="⚠️ PRIMEIRO AVISO AUTOMÁTICO",
-            description=f"**{message.author.display_name}**, cuidado com {violation_type}!",
-            color=0xffff00
-        )
-        embed.add_field(
-            name="📋 Detalhes",
-            value=f"**Violação:** {violation_type}\n**Detalhes:** {details}\n**Limite atual:** {limit_msg}\n**Avisos:** 1/2",
-            inline=False
-        )
-        embed.set_footer(text="Sistema Anti-Spam Progressivo • Caos Hub")
-        
-        msg = await message.channel.send(embed=embed)
-        await asyncio.sleep(5)
-        await msg.delete()
-        
-    elif current_warnings == 2:
-        # SEGUNDO AVISO (ainda no nível atual)
-        if current_level == 0:
-            limit_msg = "5 mensagens"
-        elif current_level == 1:
-            limit_msg = "4 mensagens"
-        else:
-            limit_msg = "3 mensagens"
-            
+        # PRIMEIRO AVISO (5 mensagens) + 1 minuto timeout
         try:
-            timeout_duration = discord.utils.utcnow() + discord.timedelta(minutes=3)
-            await message.author.timeout(timeout_duration, reason=f"Auto-moderação: {violation_type}")
+            timeout_duration = discord.utils.utcnow() + discord.timedelta(minutes=1)
+            await message.author.timeout(timeout_duration, reason=f"Primeiro aviso: {violation_type}")
             
             embed = discord.Embed(
-                title="🔇 SEGUNDO AVISO + TIMEOUT",
-                description=f"**{message.author.display_name}** foi silenciado por 3 minutos!",
+                title="⚠️ PRIMEIRO AVISO - SPAM DETECTADO",
+                description=f"**{message.author.display_name}**, você pode levar advertência se continuar!",
+                color=0xffff00
+            )
+            embed.add_field(
+                name="📋 Detalhes",
+                value=f"**Violação:** {violation_type}\n**Detalhes:** {details}\n**Castigo:** 1 minuto de timeout\n**Próximo:** Segundo aviso (4 mensagens)",
+                inline=False
+            )
+            embed.set_footer(text="Sistema Anti-Spam • Caos Hub")
+            
+            msg = await message.channel.send(embed=embed)
+            await asyncio.sleep(8)
+            await msg.delete()
+        except:
+            pass
+        
+    elif current_warnings == 2:
+        # SEGUNDO AVISO (4 mensagens) + 1 minuto timeout
+        try:
+            timeout_duration = discord.utils.utcnow() + discord.timedelta(minutes=1)
+            await message.author.timeout(timeout_duration, reason=f"Segundo aviso: {violation_type}")
+            
+            embed = discord.Embed(
+                title="🚨 SEGUNDO AVISO - ÚLTIMA CHANCE",
+                description=f"**{message.author.display_name}**, próxima vez será ADV 1!",
                 color=0xff8c00
             )
             embed.add_field(
                 name="📋 Detalhes",
-                value=f"**Violação:** {violation_type}\n**Detalhes:** {details}\n**Limite atual:** {limit_msg}\n**Duração:** 3 minutos",
+                value=f"**Violação:** {violation_type}\n**Detalhes:** {details}\n**Castigo:** 1 minuto de timeout\n**Próximo:** ADV 1 (3 mensagens)",
                 inline=False
             )
-            embed.set_footer(text="Sistema Anti-Spam Progressivo • Caos Hub")
+            embed.set_footer(text="Sistema Anti-Spam • Caos Hub")
             
-            await message.channel.send(embed=embed)
+            msg = await message.channel.send(embed=embed)
+            await asyncio.sleep(8)
+            await msg.delete()
         except:
             pass
             
     elif current_warnings >= 3:
-        # TERCEIRO AVISO - APLICAR ADV + AUMENTAR NÍVEL
+        # TERCEIRA VIOLAÇÃO - APLICAR ADV
         try:
             # Aplicar advertência automática
             if user_id not in user_warnings:
@@ -1429,19 +1421,22 @@ async def auto_moderate_progressive(message, violation_type, details=""):
             
             # Determinar cargo baseado no nível de advertência
             if warning_count == 1:
+                # ADV 1
                 cargo = message.guild.get_role(ADV_CARGO_1_ID)
                 adv_level = "ADV 1"
                 color = 0xffff00
+                next_punishment = "ADV 2"
             elif warning_count == 2:
-                # Remover ADV 1 e aplicar ADV 2
+                # ADV 2 (remover ADV 1)
                 cargo_antigo = message.guild.get_role(ADV_CARGO_1_ID)
                 if cargo_antigo and cargo_antigo in message.author.roles:
                     await message.author.remove_roles(cargo_antigo)
                 cargo = message.guild.get_role(ADV_CARGO_2_ID)
                 adv_level = "ADV 2"
                 color = 0xff8c00
+                next_punishment = "ADV 3 + BAN"
             else:
-                # Remover cargos anteriores e aplicar ADV 3 + BAN
+                # ADV 3 + BAN (remover cargos anteriores)
                 cargo_adv1 = message.guild.get_role(ADV_CARGO_1_ID)
                 cargo_adv2 = message.guild.get_role(ADV_CARGO_2_ID)
                 if cargo_adv1 and cargo_adv1 in message.author.roles:
@@ -1449,35 +1444,43 @@ async def auto_moderate_progressive(message, violation_type, details=""):
                 if cargo_adv2 and cargo_adv2 in message.author.roles:
                     await message.author.remove_roles(cargo_adv2)
                 cargo = message.guild.get_role(ADV_CARGO_3_ID)
-                adv_level = "ADV 3 + BAN"
+                adv_level = "ADV 3"
                 color = 0xff0000
+                next_punishment = "BANIMENTO"
             
             # Aplicar cargo
             if cargo:
                 await message.author.add_roles(cargo)
             
             embed = discord.Embed(
-                title="🚨 ADVERTÊNCIA AUTOMÁTICA",
+                title=f"🚨 {adv_level.upper()} APLICADA AUTOMATICAMENTE",
                 description=f"**{message.author.display_name}** recebeu {adv_level} por spam repetido!",
                 color=color
             )
             embed.add_field(
-                name="📋 Detalhes",
-                value=f"**Violação:** {violation_type}\n**Detalhes:** {details}\n**Advertência:** {adv_level}\n**Motivo:** Spam automático progressivo",
+                name="📋 Detalhes da Punição",
+                value=f"**Violação:** {violation_type}\n**Detalhes:** {details}\n**Advertência:** {adv_level}\n**Próxima punição:** {next_punishment}",
                 inline=False
             )
-            embed.set_footer(text="Sistema Anti-Spam Progressivo • Caos Hub")
+            embed.set_footer(text="Sistema Anti-Spam Automático • Caos Hub")
             
             await message.channel.send(embed=embed)
             
             # Se chegou no ADV 3, banir
             if warning_count >= 3:
-                await message.author.ban(reason="3 advertências - Ban automático por spam")
+                await asyncio.sleep(2)  # Pausa antes do ban
+                await message.author.ban(reason="ADV 3 - Ban automático por spam repetido")
                 user_warnings[user_id] = 0  # Reset após ban
+                
+                ban_embed = discord.Embed(
+                    title="🔨 USUÁRIO BANIDO AUTOMATICAMENTE",
+                    description=f"**{message.author.display_name}** foi banido por atingir ADV 3!",
+                    color=0x000000
+                )
+                await message.channel.send(embed=ban_embed)
             
-            # Reset avisos e aumentar nível de dificuldade
+            # Reset avisos após aplicar ADV
             spam_warnings[user_id] = 0
-            user_spam_level[user_id] = min(user_spam_level[user_id] + 1, 2)  # Máximo nível 2 (3 mensagens)
             
             # Salvar dados
             save_warnings_data()
@@ -1885,14 +1888,15 @@ async def on_message(message):
     # SISTEMA ANTI-FLOOD PROGRESSIVO
     # ========================================
     
-    # Determinar limite baseado no nível do usuário
-    current_level = user_spam_level[user_id]
-    if current_level == 0:
-        flood_limit = 5  # Nível inicial: 5 mensagens
-    elif current_level == 1:
-        flood_limit = 4  # Nível médio: 4 mensagens
+    # Determinar limite baseado nos avisos já recebidos
+    current_warnings = spam_warnings[user_id]
+    
+    if current_warnings == 0:
+        flood_limit = 5  # Primeira violação: 5 mensagens
+    elif current_warnings == 1:
+        flood_limit = 4  # Segunda violação: 4 mensagens
     else:
-        flood_limit = 3  # Nível alto: 3 mensagens
+        flood_limit = 3  # Terceira violação: 3 mensagens (ADV)
     
     # Verificar flood (muitas mensagens em pouco tempo)
     if len(user_message_times[user_id]) >= flood_limit:
@@ -1900,7 +1904,7 @@ async def on_message(message):
         time_diff = recent_times[-1] - recent_times[0]
         
         if time_diff < 8:  # Mensagens em menos de 8 segundos
-            await auto_moderate_progressive(message, "flood de mensagens", f"Enviou {flood_limit} mensagens em {time_diff:.1f} segundos (limite: {flood_limit})")
+            await auto_moderate_progressive(message, "flood de mensagens", f"Enviou {flood_limit} mensagens em {time_diff:.1f} segundos")
             return
     
     # ========================================
@@ -1916,7 +1920,7 @@ async def on_message(message):
             caps_percentage = (uppercase_count / total_letters) * 100
             
             if caps_percentage > 70 and total_letters > 15:  # Mais de 70% em caps e mais de 15 letras
-                await auto_moderate(message, "excesso de maiúsculas", f"Mensagem com {caps_percentage:.1f}% em maiúsculas")
+                await auto_moderate_progressive(message, "excesso de maiúsculas", f"Mensagem com {caps_percentage:.1f}% em maiúsculas")
                 return
     
     # ========================================
@@ -1926,7 +1930,7 @@ async def on_message(message):
     # Verificar spam de menções
     mention_count = len(message.mentions) + len(message.role_mentions)
     if mention_count > 5:
-        await auto_moderate(message, "spam de menções", f"Mencionou {mention_count} usuários/cargos")
+        await auto_moderate_progressive(message, "spam de menções", f"Mencionou {mention_count} usuários/cargos")
         return
     
     # ========================================
@@ -1944,7 +1948,7 @@ async def on_message(message):
     total_emojis = unicode_emojis + custom_emojis
     
     if total_emojis > 10:
-        await auto_moderate(message, "spam de emojis", f"Enviou {total_emojis} emojis em uma mensagem")
+        await auto_moderate_progressive(message, "spam de emojis", f"Enviou {total_emojis} emojis em uma mensagem")
         return
     
     # ========================================
@@ -1956,7 +1960,7 @@ async def on_message(message):
     link_count = sum(content.lower().count(pattern) for pattern in link_patterns)
     
     if link_count > 3:
-        await auto_moderate(message, "spam de links", f"Enviou {link_count} links em uma mensagem")
+        await auto_moderate_progressive(message, "spam de links", f"Enviou {link_count} links em uma mensagem")
         return
     
     # ========================================
