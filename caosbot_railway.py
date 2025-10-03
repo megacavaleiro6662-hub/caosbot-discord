@@ -53,14 +53,31 @@ async def oi_command(ctx):
         'Salve! Tudo certo? 🔥'
     ]
     resposta = random.choice(saudacoes)
-    await ctx.reply(resposta)
+    
+    embed = discord.Embed(
+        title="👋 Olá!",
+        description=resposta,
+        color=0x00ff88
+    )
+    embed.set_footer(text="Comandos de Conversa • Caos Hub")
+    await ctx.reply(embed=embed)
 
 @bot.command(name='comoesta')
 async def comoesta_command(ctx, usuario: discord.Member = None):
     if usuario:
-        await ctx.reply(f'{usuario.mention}, como você está hoje?')
+        embed = discord.Embed(
+            title="🤔 Como você está?",
+            description=f'{usuario.mention}, como você está hoje?',
+            color=0x87ceeb
+        )
     else:
-        await ctx.reply('Como você está hoje?')
+        embed = discord.Embed(
+            title="🤔 Como você está?",
+            description='Como você está hoje?',
+            color=0x87ceeb
+        )
+    embed.set_footer(text="Comandos de Conversa • Caos Hub")
+    await ctx.reply(embed=embed)
 
 @bot.command(name='conversa')
 async def conversa_command(ctx):
@@ -77,7 +94,14 @@ async def conversa_command(ctx):
         'Se você pudesse jantar com qualquer pessoa, quem seria?'
     ]
     topico = random.choice(topicos)
-    await ctx.reply(f'💭 {topico}')
+    
+    embed = discord.Embed(
+        title="💭 Tópico de Conversa",
+        description=topico,
+        color=0xff69b4
+    )
+    embed.set_footer(text="Comandos de Conversa • Caos Hub")
+    await ctx.reply(embed=embed)
 
 @bot.command(name='clima')
 async def clima_command(ctx):
@@ -89,7 +113,14 @@ async def clima_command(ctx):
         'Qual é seu mood de hoje? 🎭'
     ]
     pergunta = random.choice(perguntas)
-    await ctx.reply(pergunta)
+    
+    embed = discord.Embed(
+        title="🌤️ Como está seu clima?",
+        description=pergunta,
+        color=0xffd700
+    )
+    embed.set_footer(text="Comandos de Conversa • Caos Hub")
+    await ctx.reply(embed=embed)
 
 @bot.command(name='tchau')
 async def tchau_command(ctx):
@@ -101,7 +132,14 @@ async def tchau_command(ctx):
         'Até a próxima! 👋✨'
     ]
     despedida = random.choice(despedidas)
-    await ctx.reply(despedida)
+    
+    embed = discord.Embed(
+        title="👋 Tchau!",
+        description=despedida,
+        color=0xff6b6b
+    )
+    embed.set_footer(text="Comandos de Conversa • Caos Hub")
+    await ctx.reply(embed=embed)
 
 # ========================================
 # COMANDOS DE INTERAÇÃO
@@ -1649,6 +1687,12 @@ async def help_command(ctx, categoria=None):
             inline=False
         )
         
+        embed.add_field(
+            name="🎯 `.addrole @cargo @usuário`",
+            value="**Adiciona** cargo ao usuário e aplica prefixo\n*Exemplo: `.addrole @Moderador @João`*",
+            inline=False
+        )
+        
         embed.set_footer(text="🛡️ Moderação • Use com responsabilidade")
         
     elif categoria in ['advertencias', 'advertências', 'adv']:
@@ -1828,17 +1872,7 @@ async def help_command(ctx, categoria=None):
             inline=False
         )
         
-        embed.add_field(
-            name="🎯 `.addrole [@cargo] [prefixo]`",
-            value="**Gerencia** prefixos automáticos nos nicknames\n*Exemplo: `.addrole @Moderador [MOD]`*",
-            inline=False
-        )
         
-        embed.add_field(
-            name="🔄 `.updatenicks`",
-            value="**Atualiza** todos os nicknames baseado nos cargos\n*Aplica prefixos automaticamente*",
-            inline=False
-        )
         
         embed.add_field(
             name="🔧 **EM DESENVOLVIMENTO**",
@@ -1888,17 +1922,47 @@ async def piada_command(ctx):
         'O que a fechadura disse para a chave? Você é a chave do meu coração! 🔐'
     ]
     piada = random.choice(piadas)
-    await ctx.reply(f'😄 {piada}')
+    
+    embed = discord.Embed(
+        title="😄 Piada do Dia",
+        description=piada,
+        color=0xffff00
+    )
+    embed.set_footer(text="Comandos de Diversão • Caos Hub")
+    await ctx.reply(embed=embed)
 
 @bot.command(name='escolher')
 async def escolher_command(ctx, *, opcoes):
     lista_opcoes = [opcao.strip() for opcao in opcoes.split(',')]
     if len(lista_opcoes) < 2:
-        await ctx.reply('Preciso de pelo menos 2 opções separadas por vírgula!')
+        embed = discord.Embed(
+            title="❌ Erro no Comando",
+            description='Preciso de pelo menos 2 opções separadas por vírgula!',
+            color=0xff0000
+        )
+        embed.add_field(
+            name="📝 Exemplo",
+            value="`.escolher pizza, hambúrguer, sushi`",
+            inline=False
+        )
+        embed.set_footer(text="Comandos de Diversão • Caos Hub")
+        await ctx.reply(embed=embed)
         return
     
     escolha = random.choice(lista_opcoes)
-    await ctx.reply(f'🎲 Eu escolho: **{escolha}**!')
+    
+    embed = discord.Embed(
+        title="🎲 Escolha Aleatória",
+        description=f'Eu escolho: **{escolha}**!',
+        color=0x9932cc
+    )
+    embed.add_field(
+        name="📋 Opções Disponíveis",
+        value=", ".join(lista_opcoes),
+        inline=False
+    )
+    embed.set_footer(text="Comandos de Diversão • Caos Hub")
+    await ctx.reply(embed=embed)
 
 # ========================================
 # RESPOSTAS AUTOMÁTICAS E PROTEÇÕES
@@ -2177,212 +2241,157 @@ async def update_nicks_error(ctx, error):
         await ctx.reply("❌ Você precisa ser **ADMINISTRADOR** para usar este comando!")
 
 # ========================================
-# COMANDO ADDROLE - GERENCIAR PREFIXOS
+# COMANDO ADDROLE - ADICIONAR CARGOS E PREFIXOS
 # ========================================
 
 @bot.command(name='addrole')
-@commands.has_permissions(administrator=True)
-async def addrole_command(ctx, cargo: discord.Role = None, *, prefixo=None):
-    """Adiciona ou remove prefixos automáticos para cargos"""
+@is_sub_moderator_or_higher()
+async def addrole_command(ctx, cargo: discord.Role = None, usuario: discord.Member = None):
+    """Adiciona cargo ao usuário e aplica prefixo automaticamente"""
     
-    if cargo is None:
-        # Mostrar lista atual de cargos configurados
+    if cargo is None or usuario is None:
         embed = discord.Embed(
-            title="🎯 SISTEMA DE PREFIXOS AUTOMÁTICOS",
-            description="**Cargos configurados com prefixos automáticos:**",
-            color=0x00ff88
+            title="❌ Erro no Comando",
+            description="Você precisa mencionar um cargo e um usuário!",
+            color=0xff0000
         )
-        
-        if CARGO_PREFIXES:
-            cargo_list = []
-            for role_id, prefix in CARGO_PREFIXES.items():
-                role = ctx.guild.get_role(role_id)
-                if role:
-                    cargo_list.append(f"• **{role.name}** → `{prefix}`")
-                else:
-                    cargo_list.append(f"• **[Cargo Deletado]** (ID: {role_id}) → `{prefix}`")
-            
-            embed.add_field(
-                name="📋 Lista de Cargos",
-                value="\n".join(cargo_list) if cargo_list else "Nenhum cargo configurado",
-                inline=False
-            )
-        else:
-            embed.add_field(
-                name="📋 Lista de Cargos",
-                value="Nenhum cargo configurado",
-                inline=False
-            )
-        
         embed.add_field(
-            name="💡 Como usar",
-            value="**Adicionar:** `.addrole @cargo [prefixo]`\n**Remover:** `.addrole @cargo remove`\n**Listar:** `.addrole`",
+            name="📝 Uso Correto",
+            value="`.addrole @cargo @usuário`",
             inline=False
         )
-        
         embed.add_field(
             name="📝 Exemplos",
-            value="`.addrole @Moderador [MOD]`\n`.addrole @Admin [ADM]`\n`.addrole @VIP [VIP]`\n`.addrole @Moderador remove`",
+            value="`.addrole @Moderador @João`\n`.addrole @VIP @Maria`\n`.addrole @Staff @Pedro`",
             inline=False
         )
-        
-        embed.set_footer(text="Sistema de Nicknames Automáticos • Caos Hub")
+        embed.set_footer(text="Sistema de Cargos • Caos Hub")
         await ctx.reply(embed=embed)
         return
     
-    if prefixo is None:
-        await ctx.reply("❌ Você precisa especificar um prefixo ou 'remove'!\n\n**Uso:** `.addrole @cargo [prefixo]` ou `.addrole @cargo remove`")
-        return
-    
-    # Remover cargo
-    if prefixo.lower() == 'remove':
-        if cargo.id in CARGO_PREFIXES:
-            old_prefix = CARGO_PREFIXES[cargo.id]
-            del CARGO_PREFIXES[cargo.id]
-            save_role_config()
-            
-            embed = discord.Embed(
-                title="🗑️ PREFIXO REMOVIDO",
-                description=f"Prefixo removido com sucesso!",
-                color=0xff4444
-            )
-            embed.add_field(
-                name="📋 Detalhes",
-                value=f"**Cargo:** {cargo.mention}\n**Prefixo removido:** `{old_prefix}`\n**Status:** Nicknames não serão mais atualizados automaticamente",
-                inline=False
-            )
-            embed.set_footer(text="Sistema de Nicknames Automáticos • Caos Hub")
-            await ctx.reply(embed=embed)
-            
-            # Atualizar nicknames de todos os membros com esse cargo
-            updated = 0
-            for member in ctx.guild.members:
-                if cargo in member.roles:
-                    success = await update_nickname_for_roles(member)
-                    if success:
-                        updated += 1
-                    await asyncio.sleep(0.1)  # Evitar rate limit
-            
-            if updated > 0:
-                await ctx.send(f"✅ {updated} nicknames foram atualizados automaticamente!")
-        else:
-            await ctx.reply(f"❌ O cargo {cargo.mention} não possui prefixo configurado!")
-        return
-    
-    # Validar prefixo
-    if not prefixo.startswith('[') or not prefixo.endswith(']'):
-        await ctx.reply("❌ O prefixo deve estar no formato `[TEXTO]`!\n\n**Exemplos válidos:** `[MOD]`, `[ADM]`, `[VIP]`")
-        return
-    
-    if len(prefixo) > 10:
-        await ctx.reply("❌ O prefixo deve ter no máximo 10 caracteres!")
-        return
-    
-    # Adicionar/atualizar cargo
-    old_prefix = CARGO_PREFIXES.get(cargo.id)
-    CARGO_PREFIXES[cargo.id] = prefixo
-    save_role_config()
-    
-    if old_prefix:
+    # Verificar se o usuário já tem o cargo
+    if cargo in usuario.roles:
         embed = discord.Embed(
-            title="🔄 PREFIXO ATUALIZADO",
-            description=f"Prefixo atualizado com sucesso!",
-            color=0x00ff88
+            title="⚠️ Cargo Já Possui",
+            description=f"**{usuario.display_name}** já possui o cargo **{cargo.name}**!",
+            color=0xffaa00
         )
         embed.add_field(
-            name="📋 Detalhes",
-            value=f"**Cargo:** {cargo.mention}\n**Prefixo anterior:** `{old_prefix}`\n**Novo prefixo:** `{prefixo}`\n**Status:** Ativo para novos membros",
-            inline=False
-        )
-    else:
-        embed = discord.Embed(
-            title="✅ PREFIXO ADICIONADO",
-            description=f"Novo prefixo configurado com sucesso!",
-            color=0x00ff88
+            name="👤 Usuário",
+            value=usuario.mention,
+            inline=True
         )
         embed.add_field(
-            name="📋 Detalhes",
-            value=f"**Cargo:** {cargo.mention}\n**Prefixo:** `{prefixo}`\n**Status:** Ativo para novos membros",
+            name="🏷️ Cargo",
+            value=cargo.mention,
+            inline=True
+        )
+        embed.set_footer(text="Sistema de Cargos • Caos Hub")
+        await ctx.reply(embed=embed)
+        return
+    
+    # Verificar permissões de hierarquia
+    if cargo.position >= ctx.author.top_role.position and not ctx.author.guild_permissions.administrator:
+        embed = discord.Embed(
+            title="❌ Permissão Negada",
+            description="Você não pode adicionar um cargo igual ou superior ao seu!",
+            color=0xff0000
+        )
+        embed.add_field(
+            name="📊 Hierarquia",
+            value=f"**Seu cargo mais alto:** {ctx.author.top_role.mention}\n**Cargo solicitado:** {cargo.mention}",
             inline=False
         )
-    
-    embed.add_field(
-        name="🔧 Próximos Passos",
-        value="• Membros que ganharem este cargo terão o prefixo adicionado automaticamente\n• Use `.updatenicks` para atualizar todos os nicknames existentes",
-        inline=False
-    )
-    
-    embed.set_footer(text="Sistema de Nicknames Automáticos • Caos Hub")
-    await ctx.reply(embed=embed)
-    
-    # Perguntar se quer atualizar nicknames existentes
-    confirm_embed = discord.Embed(
-        title="🤔 ATUALIZAR NICKNAMES EXISTENTES?",
-        description=f"Deseja atualizar os nicknames de todos os membros que já possuem o cargo {cargo.mention}?",
-        color=0xffaa00
-    )
-    confirm_embed.add_field(
-        name="⚡ Ação Rápida",
-        value="Reaja com ✅ para atualizar automaticamente ou ❌ para cancelar",
-        inline=False
-    )
-    
-    msg = await ctx.send(embed=confirm_embed)
-    await msg.add_reaction('✅')
-    await msg.add_reaction('❌')
-    
-    def check(reaction, user):
-        return user == ctx.author and str(reaction.emoji) in ['✅', '❌'] and reaction.message == msg
+        embed.set_footer(text="Sistema de Cargos • Caos Hub")
+        await ctx.reply(embed=embed)
+        return
     
     try:
-        reaction, user = await bot.wait_for('reaction_add', timeout=30.0, check=check)
+        # Adicionar o cargo
+        await usuario.add_roles(cargo, reason=f"Cargo adicionado por {ctx.author.display_name}")
         
-        if str(reaction.emoji) == '✅':
-            # Atualizar nicknames existentes
-            processing_embed = discord.Embed(
-                title="🔄 PROCESSANDO...",
-                description="Atualizando nicknames existentes, aguarde...",
-                color=0x00ff88
-            )
-            await msg.edit(embed=processing_embed)
-            
-            updated = 0
-            members_with_role = [member for member in ctx.guild.members if cargo in member.roles and not member.bot]
-            
-            for member in members_with_role:
-                success = await update_nickname_for_roles(member)
-                if success:
-                    updated += 1
-                await asyncio.sleep(0.1)  # Evitar rate limit
-            
-            final_embed = discord.Embed(
-                title="✅ PROCESSO CONCLUÍDO",
-                description=f"**{updated}** de **{len(members_with_role)}** nicknames foram atualizados!",
-                color=0x00ff88
-            )
-            await msg.edit(embed=final_embed)
-        else:
-            cancel_embed = discord.Embed(
-                title="❌ CANCELADO",
-                description="Atualização de nicknames existentes cancelada.",
-                color=0xff4444
-            )
-            await msg.edit(embed=cancel_embed)
-    
-    except asyncio.TimeoutError:
-        timeout_embed = discord.Embed(
-            title="⏰ TEMPO ESGOTADO",
-            description="Atualização automática cancelada por timeout.",
-            color=0x808080
+        # Verificar se o cargo tem prefixo configurado e atualizar nickname
+        prefix_applied = ""
+        if cargo.id in CARGO_PREFIXES:
+            success = await update_nickname_for_roles(usuario)
+            if success:
+                prefix_applied = f"\n🏷️ **Prefixo aplicado:** `{CARGO_PREFIXES[cargo.id]}`"
+        
+        # Embed de sucesso
+        embed = discord.Embed(
+            title="✅ CARGO ADICIONADO COM SUCESSO",
+            description=f"**{usuario.display_name}** agora possui o cargo **{cargo.name}**!",
+            color=0x00ff88
         )
-        await msg.edit(embed=timeout_embed)
+        embed.add_field(
+            name="📋 Detalhes da Ação",
+            value=f"**Usuário:** {usuario.mention}\n**Cargo adicionado:** {cargo.mention}\n**Moderador:** {ctx.author.mention}{prefix_applied}",
+            inline=False
+        )
+        
+        # Mostrar informações do cargo
+        cargo_info = f"**Nome:** {cargo.name}\n**Cor:** {cargo.color}\n**Membros com este cargo:** {len(cargo.members)}"
+        if cargo.id in CARGO_PREFIXES:
+            cargo_info += f"\n**Prefixo automático:** `{CARGO_PREFIXES[cargo.id]}`"
+        
+        embed.add_field(
+            name="🏷️ Informações do Cargo",
+            value=cargo_info,
+            inline=False
+        )
+        
+        embed.set_thumbnail(url=usuario.display_avatar.url)
+        embed.set_footer(text="Sistema de Cargos • Caos Hub")
+        await ctx.reply(embed=embed)
+        
+    except discord.Forbidden:
+        embed = discord.Embed(
+            title="❌ Erro de Permissão",
+            description="Não tenho permissão para adicionar este cargo!",
+            color=0xff0000
+        )
+        embed.add_field(
+            name="🔧 Possíveis Soluções",
+            value="• Verifique se meu cargo está acima do cargo que você quer adicionar\n• Verifique se tenho a permissão 'Gerenciar Cargos'",
+            inline=False
+        )
+        embed.set_footer(text="Sistema de Cargos • Caos Hub")
+        await ctx.reply(embed=embed)
+    except Exception as e:
+        embed = discord.Embed(
+            title="❌ Erro Inesperado",
+            description=f"Ocorreu um erro ao adicionar o cargo: {e}",
+            color=0xff0000
+        )
+        embed.set_footer(text="Sistema de Cargos • Caos Hub")
+        await ctx.reply(embed=embed)
 
 @addrole_command.error
 async def addrole_error(ctx, error):
-    if isinstance(error, commands.MissingPermissions):
-        await ctx.reply("❌ Você precisa ser **ADMINISTRADOR** para usar este comando!")
+    if isinstance(error, commands.CheckFailure):
+        embed = discord.Embed(
+            title="❌ Permissão Negada",
+            description="Você precisa ser **Sub Moderador** ou ter permissões de moderação para usar este comando!",
+            color=0xff0000
+        )
+        embed.set_footer(text="Sistema de Cargos • Caos Hub")
+        await ctx.reply(embed=embed)
     elif isinstance(error, commands.RoleNotFound):
-        await ctx.reply("❌ Cargo não encontrado! Certifique-se de mencionar um cargo válido.")
+        embed = discord.Embed(
+            title="❌ Cargo Não Encontrado",
+            description="Cargo não encontrado! Certifique-se de mencionar um cargo válido.",
+            color=0xff0000
+        )
+        embed.set_footer(text="Sistema de Cargos • Caos Hub")
+        await ctx.reply(embed=embed)
+    elif isinstance(error, commands.MemberNotFound):
+        embed = discord.Embed(
+            title="❌ Usuário Não Encontrado",
+            description="Usuário não encontrado! Certifique-se de mencionar um usuário válido.",
+            color=0xff0000
+        )
+        embed.set_footer(text="Sistema de Cargos • Caos Hub")
+        await ctx.reply(embed=embed)
 
 # ========================================
 # CONFIGURAÇÃO E INICIALIZAÇÃO
