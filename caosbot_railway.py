@@ -2310,12 +2310,34 @@ async def addrole_command(ctx, cargo: discord.Role = None, usuario: discord.Memb
         # Adicionar o cargo
         await usuario.add_roles(cargo, reason=f"Cargo adicionado por {ctx.author.display_name}")
         
-        # Verificar se o cargo tem prefixo configurado e atualizar nickname
+        # FORÇAR mudança de nickname se cargo tem prefixo
         prefix_applied = ""
         if cargo.id in CARGO_PREFIXES:
-            success = await update_nickname_for_roles(usuario)
-            if success:
-                prefix_applied = f"\n🏷️ **Prefixo aplicado:** `{CARGO_PREFIXES[cargo.id]}`"
+            try:
+                # Obter nickname original (sem prefixos)
+                original_nick = usuario.display_name
+                # Remover prefixos existentes
+                for prefix in CARGO_PREFIXES.values():
+                    if original_nick.startswith(prefix + " "):
+                        original_nick = original_nick[len(prefix + " "):]
+                
+                # Aplicar novo prefixo
+                new_nickname = f"{CARGO_PREFIXES[cargo.id]} {original_nick}"
+                
+                # Limitar tamanho (Discord limite: 32 caracteres)
+                if len(new_nickname) > 32:
+                    max_name_length = 32 - len(CARGO_PREFIXES[cargo.id]) - 1
+                    truncated_name = original_nick[:max_name_length]
+                    new_nickname = f"{CARGO_PREFIXES[cargo.id]} {truncated_name}"
+                
+                # FORÇAR mudança do nickname
+                await usuario.edit(nick=new_nickname, reason=f"Prefixo aplicado: {CARGO_PREFIXES[cargo.id]}")
+                prefix_applied = f"\n🏷️ **Nickname alterado para:** `{new_nickname}`"
+                
+            except discord.Forbidden:
+                prefix_applied = f"\n⚠️ **Erro:** Sem permissão para alterar nickname"
+            except Exception as e:
+                prefix_applied = f"\n⚠️ **Erro no nickname:** {e}"
         
         # Embed de sucesso - VERSÃO SIMPLIFICADA
         embed = discord.Embed(
