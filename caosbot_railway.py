@@ -2226,10 +2226,10 @@ async def update_nicks_command_DISABLED(ctx):
     
     await msg.edit(embed=embed_result)
 
-@update_nicks_command.error
-async def update_nicks_error(ctx, error):
-    if isinstance(error, commands.MissingPermissions):
-        await ctx.reply("❌ Você precisa ser **ADMINISTRADOR** para usar este comando!")
+# @update_nicks_command.error
+# async def update_nicks_error(ctx, error):
+#     if isinstance(error, commands.MissingPermissions):
+#         await ctx.reply("❌ Você precisa ser **ADMINISTRADOR** para usar este comando!")
 
 # ========================================
 # COMANDO ADDROLE - ADICIONAR CARGOS E PREFIXOS
