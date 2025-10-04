@@ -2285,6 +2285,22 @@ async def add_role_new(ctx, cargo: discord.Role = None, usuario: discord.Member 
         await ctx.reply(embed=embed)
         return
     
+    # Verificar se usuário já tem o cargo
+    if cargo in usuario.roles:
+        embed = discord.Embed(
+            title="⚠️ Cargo Já Possui",
+            description=f"**{usuario.display_name}** já possui o cargo **{cargo.name}**!",
+            color=0xffaa00
+        )
+        embed.add_field(
+            name="📋 Informação",
+            value=f"**Usuário:** {usuario.mention}\n**Cargo:** {cargo.mention}",
+            inline=False
+        )
+        embed.set_footer(text="Sistema de Cargos • Caos Hub")
+        await ctx.reply(embed=embed)
+        return
+    
     try:
         # Definir hierarquia dos cargos (maior = mais importante)
         HIERARCHY = {
