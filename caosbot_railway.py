@@ -2550,45 +2550,102 @@ async def ticket_error(ctx, error):
     if isinstance(error, commands.MissingPermissions):
         await ctx.reply("❌ Você precisa ser **ADMINISTRADOR** para usar este comando!")
 
-# Modal para coletar informações do ticket
-class TicketModal(discord.ui.Modal, title="🎫 Abrir Ticket - Informações"):
-    def __init__(self, config, category):
+# Painel de seleção de categoria
+class TicketCategoryView(discord.ui.View):
+    def __init__(self, config, category_channel, user):
+        super().__init__(timeout=300)  # 5 minutos
+        self.config = config
+        self.category_channel = category_channel
+        self.user = user
+        self.selected_category = "📁 Geral"
+        self.selected_priority = "🟡 Média"
+    
+    @discord.ui.select(
+        placeholder="🏷️ Selecione a Categoria do Ticket",
+        options=[
+            discord.SelectOption(label="Geral", description="Assuntos gerais", emoji="📁", value="geral"),
+            discord.SelectOption(label="Suporte Técnico", description="Problemas técnicos", emoji="🔧", value="tecnico"),
+            discord.SelectOption(label="Denúncia", description="Reportar usuário/conteúdo", emoji="🚨", value="denuncia"),
+            discord.SelectOption(label="Parceria", description="Proposta de parceria", emoji="🤝", value="parceria"),
+            discord.SelectOption(label="Financeiro", description="Questões de pagamento", emoji="💰", value="financeiro"),
+            discord.SelectOption(label="Moderação", description="Questões de moderação", emoji="🛡️", value="moderacao"),
+        ]
+    )
+    async def select_category(self, interaction: discord.Interaction, select: discord.ui.Select):
+        if interaction.user.id != self.user.id:
+            await interaction.response.send_message("❌ Este painel não é seu!", ephemeral=True)
+            return
+        
+        category_map = {
+            "geral": "📁 Geral",
+            "tecnico": "🔧 Suporte Técnico",
+            "denuncia": "🚨 Denúncia",
+            "parceria": "🤝 Parceria",
+            "financeiro": "💰 Financeiro",
+            "moderacao": "🛡️ Moderação"
+        }
+        
+        self.selected_category = category_map.get(select.values[0], "📁 Geral")
+        await interaction.response.send_message(f"✅ Categoria selecionada: **{self.selected_category}**", ephemeral=True)
+    
+    @discord.ui.select(
+        placeholder="⚡ Selecione a Prioridade",
+        options=[
+            discord.SelectOption(label="Baixa", description="Não é urgente", emoji="🟢", value="baixa"),
+            discord.SelectOption(label="Média", description="Prioridade normal", emoji="🟡", value="media"),
+            discord.SelectOption(label="Alta", description="Precisa de atenção", emoji="🟠", value="alta"),
+            discord.SelectOption(label="Urgente", description="Muito urgente!", emoji="🔴", value="urgente"),
+        ]
+    )
+    async def select_priority(self, interaction: discord.Interaction, select: discord.ui.Select):
+        if interaction.user.id != self.user.id:
+            await interaction.response.send_message("❌ Este painel não é seu!", ephemeral=True)
+            return
+        
+        priority_map = {
+            "baixa": "🟢 Baixa",
+            "media": "🟡 Média",
+            "alta": "🟠 Alta",
+            "urgente": "🔴 Urgente"
+        }
+        
+        self.selected_priority = priority_map.get(select.values[0], "🟡 Média")
+        await interaction.response.send_message(f"✅ Prioridade selecionada: **{self.selected_priority}**", ephemeral=True)
+    
+    @discord.ui.button(label="Continuar", style=discord.ButtonStyle.green, emoji="✅", row=2)
+    async def continue_button(self, interaction: discord.Interaction, button: discord.ui.Button):
+        if interaction.user.id != self.user.id:
+            await interaction.response.send_message("❌ Este painel não é seu!", ephemeral=True)
+            return
+        
+        # Abrir modal com as seleções salvas
+        modal = TicketModal(self.config, self.category_channel, self.selected_category, self.selected_priority)
+        await interaction.response.send_modal(modal)
+        self.stop()
+
+# Modal para coletar informações do ticket (com seleções salvas)
+class TicketModal(discord.ui.Modal, title="🎫 Informações do Ticket"):
+    def __init__(self, config, category, selected_category, selected_priority):
         super().__init__()
         self.config = config
         self.category = category
+        self.selected_category = selected_category
+        self.selected_priority = selected_priority
         
         # Campo 1: Assunto (OBRIGATÓRIO)
         self.assunto = discord.ui.TextInput(
             label="📋 Assunto do Ticket",
-            placeholder="Ex: Dúvida, Suporte, Denúncia, Parceria, etc.",
+            placeholder="Ex: Dúvida sobre cargos, Bug no bot, etc.",
             required=True,
             max_length=100,
             min_length=3
         )
         self.add_item(self.assunto)
         
-        # Campo 2: Categoria (OPCIONAL)
-        self.categoria = discord.ui.TextInput(
-            label="🏷️ Categoria",
-            placeholder="Ex: Técnico, Financeiro, Moderação, Geral (deixe vazio = Geral)",
-            required=False,
-            max_length=50
-        )
-        self.add_item(self.categoria)
-        
-        # Campo 3: Prioridade (OPCIONAL)
-        self.prioridade = discord.ui.TextInput(
-            label="⚡ Prioridade",
-            placeholder="Baixa, Média, Alta, Urgente (deixe vazio = Média)",
-            required=False,
-            max_length=20
-        )
-        self.add_item(self.prioridade)
-        
-        # Campo 4: Descrição (OBRIGATÓRIO)
+        # Campo 2: Descrição (OBRIGATÓRIO)
         self.descricao = discord.ui.TextInput(
             label="📝 Descrição Detalhada",
-            placeholder="Descreva seu problema, dúvida ou solicitação com o máximo de detalhes possível...",
+            placeholder="Descreva seu problema, dúvida ou solicitação com detalhes...",
             style=discord.TextStyle.paragraph,
             required=True,
             max_length=1000,
@@ -2596,10 +2653,10 @@ class TicketModal(discord.ui.Modal, title="🎫 Abrir Ticket - Informações"):
         )
         self.add_item(self.descricao)
         
-        # Campo 5: Informações Adicionais (OPCIONAL)
+        # Campo 3: Informações Adicionais (OPCIONAL)
         self.info_adicional = discord.ui.TextInput(
             label="ℹ️ Informações Adicionais (Opcional)",
-            placeholder="Links, prints, IDs de usuários, etc. (deixe vazio se não tiver)",
+            placeholder="Links, prints, IDs de usuários, etc.",
             style=discord.TextStyle.paragraph,
             required=False,
             max_length=500
@@ -2607,22 +2664,19 @@ class TicketModal(discord.ui.Modal, title="🎫 Abrir Ticket - Informações"):
         self.add_item(self.info_adicional)
     
     async def on_submit(self, interaction: discord.Interaction):
-        # Processar campos opcionais com valores padrão
-        categoria_valor = self.categoria.value.strip() if self.categoria.value else "📁 Geral"
-        prioridade_valor = self.prioridade.value.strip() if self.prioridade.value else "Média"
+        # Usar seleções salvas do painel
+        categoria_valor = self.selected_category
+        prioridade_valor = self.selected_priority
         info_adicional_valor = self.info_adicional.value.strip() if self.info_adicional.value else "Nenhuma informação adicional fornecida"
         
-        # Definir cor baseado na prioridade
-        prioridade_lower = prioridade_valor.lower()
-        if 'urgente' in prioridade_lower or 'alta' in prioridade_lower:
+        # Definir cor baseado na prioridade selecionada
+        if "🔴" in prioridade_valor or "🟠" in prioridade_valor:
             cor_embed = 0xff0000  # Vermelho
-            emoji_prioridade = "🔴"
-        elif 'baixa' in prioridade_lower:
+        elif "🟢" in prioridade_valor:
             cor_embed = 0x00ff00  # Verde
-            emoji_prioridade = "🟢"
         else:
             cor_embed = 0xffaa00  # Laranja (Média)
-            emoji_prioridade = "🟡"
+            emoji_prioridade = prioridade_valor.split()[0]  # Pega o emoji
         
         # Criar canal de ticket
         overwrites = {
@@ -2676,7 +2730,7 @@ class TicketModal(discord.ui.Modal, title="🎫 Abrir Ticket - Informações"):
         )
         
         embed.add_field(
-            name=f"{emoji_prioridade} Prioridade",
+            name="⚡ Prioridade",
             value=prioridade_valor,
             inline=True
         )
@@ -2713,7 +2767,7 @@ class TicketModal(discord.ui.Modal, title="🎫 Abrir Ticket - Informações"):
             f"✅ **Ticket criado com sucesso!**\n\n"
             f"📌 Canal: {ticket_channel.mention}\n"
             f"🏷️ Categoria: **{categoria_valor}**\n"
-            f"{emoji_prioridade} Prioridade: **{prioridade_valor}**\n\n"
+            f"⚡ Prioridade: **{prioridade_valor}**\n\n"
             f"*Nossa equipe foi notificada e responderá em breve!*",
             ephemeral=True
         )
@@ -2750,9 +2804,19 @@ class TicketView(discord.ui.View):
                 await interaction.response.send_message(f"❌ Você já tem um ticket aberto: {channel.mention}", ephemeral=True)
                 return
         
-        # Abrir modal para coletar informações
-        modal = TicketModal(config, category)
-        await interaction.response.send_modal(modal)
+        # Mostrar painel de seleção
+        panel_embed = discord.Embed(
+            title="🎫 CONFIGURAR SEU TICKET",
+            description="**Selecione as opções abaixo antes de continuar:**\n\n"
+                       "🏷️ **Categoria** - Tipo do seu ticket\n"
+                       "⚡ **Prioridade** - Urgência do atendimento\n\n"
+                       "*Após selecionar, clique em ✅ Continuar*",
+            color=0x00ff88
+        )
+        panel_embed.set_footer(text="As seleções são salvas automaticamente")
+        
+        panel_view = TicketCategoryView(config, category, interaction.user)
+        await interaction.response.send_message(embed=panel_embed, view=panel_view, ephemeral=True)
 
 # View com botão para fechar ticket
 class CloseTicketView(discord.ui.View):
