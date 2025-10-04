@@ -2571,8 +2571,7 @@ async def ticket_command(ctx, acao=None, *args):
         
         await ctx.reply(embed=embed, view=config_view)
     
-    else:
-        await ctx.reply("❌ Ação inválida! Use `.ticket` para ver os comandos.")
+    # Removido else para não dar erro
 
 @ticket_command.error
 async def ticket_error(ctx, error):
@@ -2608,18 +2607,24 @@ class TicketConfigView(discord.ui.View):
             self.category_select.callback = self.category_callback
             self.add_item(self.category_select)
         
-        # Criar dropdown de cargos (excluindo @everyone e cargos de bot)
+        # Criar dropdown de cargos (apenas cargos de staff específicos)
         role_options = []
+        staff_keywords = ['moderador', 'sub moderador', 'staff', 'administrador', 'sub dono', 'founder']
+        
         for role in guild.roles:
-            if role.name != "@everyone" and not role.managed:  # Exclui cargos de bot
-                role_options.append(
-                    discord.SelectOption(
-                        label=role.name[:100],
-                        description=f"ID: {role.id}",
-                        value=str(role.id),
-                        emoji="👮" if "mod" in role.name.lower() or "staff" in role.name.lower() else "👤"
+            if role.name != "@everyone" and not role.managed:  # Exclui @everyone e cargos de bot
+                # Verificar se é cargo de staff
+                is_staff = any(keyword in role.name.lower() for keyword in staff_keywords)
+                
+                if is_staff:
+                    role_options.append(
+                        discord.SelectOption(
+                            label=role.name[:100],
+                            description=f"ID: {role.id}",
+                            value=str(role.id),
+                            emoji="👮"
+                        )
                     )
-                )
         
         if role_options:
             self.role_select = discord.ui.Select(
@@ -2712,6 +2717,7 @@ class TicketCategoryView(discord.ui.View):
         placeholder="🏷️ Selecione a Categoria do Ticket",
         options=[
             discord.SelectOption(label="Geral", description="Assuntos gerais", emoji="📁", value="geral"),
+            discord.SelectOption(label="Compras", description="Dúvidas sobre compras", emoji="🛒", value="compras"),
             discord.SelectOption(label="Suporte Técnico", description="Problemas técnicos", emoji="🔧", value="tecnico"),
             discord.SelectOption(label="Denúncia", description="Reportar usuário/conteúdo", emoji="🚨", value="denuncia"),
             discord.SelectOption(label="Parceria", description="Proposta de parceria", emoji="🤝", value="parceria"),
@@ -2726,6 +2732,7 @@ class TicketCategoryView(discord.ui.View):
         
         category_map = {
             "geral": "📁 Geral",
+            "compras": "🛒 Compras",
             "tecnico": "🔧 Suporte Técnico",
             "denuncia": "🚨 Denúncia",
             "parceria": "🤝 Parceria",
@@ -2826,6 +2833,20 @@ class TicketModal(discord.ui.Modal, title="🎫 Informações do Ticket"):
             cor_embed = 0xffaa00  # Laranja (Média)
             emoji_prioridade = prioridade_valor.split()[0]  # Pega o emoji
         
+        # Definir categoria baseado no tipo de ticket
+        # Compras, Parceria, Financeiro → Caos Hub
+        # Outros → Suporte
+        if "Compras" in categoria_valor or "Parceria" in categoria_valor or "Financeiro" in categoria_valor:
+            category_id = 1424026743748169860  # Caos Hub
+        else:
+            category_id = 1417548428984188929  # Suporte
+        
+        target_category = interaction.guild.get_channel(category_id)
+        
+        if not target_category:
+            await interaction.response.send_message("❌ Categoria não encontrada!", ephemeral=True)
+            return
+        
         # Criar canal de ticket
         overwrites = {
             interaction.guild.default_role: discord.PermissionOverwrite(read_messages=False),
@@ -2841,7 +2862,7 @@ class TicketModal(discord.ui.Modal, title="🎫 Informações do Ticket"):
         
         # Contar quantos tickets já existem na categoria para numeração
         ticket_number = 1
-        for channel in self.category.channels:
+        for channel in target_category.channels:
             if channel.name.startswith("carrinho-"):
                 try:
                     num = int(channel.name.split("-")[1])
@@ -2851,7 +2872,7 @@ class TicketModal(discord.ui.Modal, title="🎫 Informações do Ticket"):
                     pass
         
         # Criar canal com nome numerado
-        ticket_channel = await self.category.create_text_channel(
+        ticket_channel = await target_category.create_text_channel(
             name=f"carrinho-{ticket_number}",
             overwrites=overwrites
         )
