@@ -2927,18 +2927,22 @@ class TicketModal(discord.ui.Modal, title="🎫 Informações do Ticket"):
                 cor_embed = 0xffaa00  # Laranja (Média)
                 emoji_prioridade = prioridade_valor.split()[0]  # Pega o emoji
             
-            # Usar a categoria STUFF para todos os tickets
-            category_id = 1365692340651556896  # Categoria STUFF
+            # Buscar categoria configurada
+            category_id = self.config.get('category_id')
             
-            target_category = interaction.guild.get_channel(category_id)
-            
-            if not target_category:
-                await interaction.response.send_message("❌ Categoria não encontrada! Verifique se o bot tem acesso.", ephemeral=True)
+            if not category_id:
+                await interaction.response.send_message("❌ Sistema não configurado! Use `.ticket categoria [ID]`", ephemeral=True)
                 return
             
-            # Verificar se é realmente uma categoria
-            if not isinstance(target_category, discord.CategoryChannel):
-                await interaction.response.send_message("❌ O ID fornecido não é uma categoria!", ephemeral=True)
+            # Buscar em todas as categorias do servidor
+            target_category = None
+            for cat in interaction.guild.categories:
+                if cat.id == int(category_id):
+                    target_category = cat
+                    break
+            
+            if not target_category:
+                await interaction.response.send_message("❌ Categoria não encontrada! Reconfigure com `.ticket categoria [ID]`", ephemeral=True)
                 return
             
             # Criar canal de ticket
