@@ -2819,33 +2819,34 @@ class TicketModal(discord.ui.Modal, title="🎫 Informações do Ticket"):
         self.add_item(self.info_adicional)
     
     async def on_submit(self, interaction: discord.Interaction):
-        # Usar seleções salvas do painel
-        categoria_valor = self.selected_category
-        prioridade_valor = self.selected_priority
-        info_adicional_valor = self.info_adicional.value.strip() if self.info_adicional.value else "Nenhuma informação adicional fornecida"
-        
-        # Definir cor baseado na prioridade selecionada
-        if "🔴" in prioridade_valor or "🟠" in prioridade_valor:
-            cor_embed = 0xff0000  # Vermelho
-        elif "🟢" in prioridade_valor:
-            cor_embed = 0x00ff00  # Verde
-        else:
-            cor_embed = 0xffaa00  # Laranja (Média)
-            emoji_prioridade = prioridade_valor.split()[0]  # Pega o emoji
-        
-        # Definir categoria baseado no tipo de ticket
-        # Compras, Parceria, Financeiro → Caos Hub
-        # Outros → Suporte
-        if "Compras" in categoria_valor or "Parceria" in categoria_valor or "Financeiro" in categoria_valor:
-            category_id = 1424026743748169860  # Caos Hub
-        else:
-            category_id = 1417548428984188929  # Suporte
-        
-        target_category = interaction.guild.get_channel(category_id)
-        
-        if not target_category:
-            await interaction.response.send_message("❌ Categoria não encontrada!", ephemeral=True)
-            return
+        try:
+            # Usar seleções salvas do painel
+            categoria_valor = self.selected_category
+            prioridade_valor = self.selected_priority
+            info_adicional_valor = self.info_adicional.value.strip() if self.info_adicional.value else "Nenhuma informação adicional fornecida"
+            
+            # Definir cor baseado na prioridade selecionada
+            if "🔴" in prioridade_valor or "🟠" in prioridade_valor:
+                cor_embed = 0xff0000  # Vermelho
+            elif "🟢" in prioridade_valor:
+                cor_embed = 0x00ff00  # Verde
+            else:
+                cor_embed = 0xffaa00  # Laranja (Média)
+                emoji_prioridade = prioridade_valor.split()[0]  # Pega o emoji
+            
+            # Definir categoria baseado no tipo de ticket
+            # Compras, Parceria, Financeiro → Caos Hub
+            # Outros → Suporte
+            if "Compras" in categoria_valor or "Parceria" in categoria_valor or "Financeiro" in categoria_valor:
+                category_id = 1424026743748169860  # Caos Hub
+            else:
+                category_id = 1417548428984188929  # Suporte
+            
+            target_category = interaction.guild.get_channel(category_id)
+            
+            if not target_category:
+                await interaction.response.send_message("❌ Categoria não encontrada! Verifique se o bot tem acesso.", ephemeral=True)
+                return
         
         # Criar canal de ticket
         overwrites = {
@@ -2937,15 +2938,31 @@ class TicketModal(discord.ui.Modal, title="🎫 Informações do Ticket"):
         close_view = CloseTicketView()
         await ticket_channel.send(f"{interaction.user.mention}", embed=embed, view=close_view)
         
-        # Mensagem de confirmação
-        await interaction.response.send_message(
-            f"✅ **Ticket criado com sucesso!**\n\n"
-            f"📌 Canal: {ticket_channel.mention}\n"
-            f"🏷️ Categoria: **{categoria_valor}**\n"
-            f"⚡ Prioridade: **{prioridade_valor}**\n\n"
-            f"*Nossa equipe foi notificada e responderá em breve!*",
-            ephemeral=True
-        )
+            # Mensagem de confirmação
+            await interaction.response.send_message(
+                f"✅ **Ticket criado com sucesso!**\n\n"
+                f"📌 Canal: {ticket_channel.mention}\n"
+                f"🏷️ Categoria: **{categoria_valor}**\n"
+                f"⚡ Prioridade: **{prioridade_valor}**\n\n"
+                f"*Nossa equipe foi notificada e responderá em breve!*",
+                ephemeral=True
+            )
+        
+        except discord.Forbidden:
+            await interaction.response.send_message(
+                "❌ **Erro de Permissão!**\n\n"
+                "O bot não tem permissão para criar canais nesta categoria.\n"
+                "Verifique as permissões do bot!",
+                ephemeral=True
+            )
+        except Exception as e:
+            print(f"[ERRO TICKET] {e}")  # Log do erro
+            await interaction.response.send_message(
+                f"❌ **Erro ao criar ticket!**\n\n"
+                f"Detalhes: `{str(e)}`\n\n"
+                f"Entre em contato com um administrador!",
+                ephemeral=True
+            )
 
 # View com botão para abrir ticket
 class TicketView(discord.ui.View):
