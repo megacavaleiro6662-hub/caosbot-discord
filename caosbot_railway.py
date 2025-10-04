@@ -1370,13 +1370,26 @@ async def ban_error(ctx, error):
 
 @bot.command(name='timeout')
 @is_sub_moderator_or_higher()
-async def timeout_command(ctx, usuario: discord.Member = None, tempo: int = 10, *, motivo="Sem motivo especificado"):
+async def timeout_command(ctx, usuario: discord.Member = None, *, args=None):
+    """Aplica timeout com tempo - Uso: .timeout @usuário motivo tempo"""
+    
     if usuario is None:
         embed = discord.Embed(
             title="❌ Erro no Comando",
-            description="Você precisa mencionar um usuário!\n\n**Uso:** `.timeout @usuário [tempo_minutos] [motivo]`",
+            description="Você precisa mencionar um usuário!",
             color=0xff0000
         )
+        embed.add_field(
+            name="📝 Uso Correto",
+            value="`.timeout @usuário [motivo] [tempo]`",
+            inline=False
+        )
+        embed.add_field(
+            name="📝 Exemplos",
+            value="`.timeout @João spam 10m` (10 minutos)\n`.timeout @João flood 1h` (1 hora)\n`.timeout @João toxic 30m` (30 minutos)\n`.timeout @João raid 2d` (2 dias)",
+            inline=False
+        )
+        embed.set_footer(text="Sistema de Moderação • Caos Hub")
         await ctx.reply(embed=embed)
         return
     
@@ -1393,34 +1406,58 @@ async def timeout_command(ctx, usuario: discord.Member = None, tempo: int = 10, 
         await ctx.reply("❌ Este usuário já está em timeout!")
         return
     
-    # Limitar tempo (Discord permite máximo 28 dias = 40320 minutos)
-    if tempo > 40320:
-        tempo = 40320
-    elif tempo < 1:
-        tempo = 1
+    # Processar argumentos (motivo e tempo)
+    motivo = "Sem motivo especificado"
+    duracao_texto = "10 minutos"
+    duracao_minutos = 10  # Padrão
+    
+    if args:
+        import re
+        # Procurar padrão de tempo (1h, 30m, 2d, etc)
+        tempo_match = re.search(r'(\d+)([smhd])', args.lower())
+        
+        if tempo_match:
+            numero = int(tempo_match.group(1))
+            unidade = tempo_match.group(2)
+            
+            # Converter para minutos
+            if unidade == 's':  # segundos
+                duracao_minutos = numero // 60 if numero >= 60 else 1
+                duracao_texto = f"{numero} segundos"
+            elif unidade == 'm':  # minutos
+                duracao_minutos = numero
+                duracao_texto = f"{numero} minutos"
+            elif unidade == 'h':  # horas
+                duracao_minutos = numero * 60
+                duracao_texto = f"{numero} horas"
+            elif unidade == 'd':  # dias
+                duracao_minutos = numero * 1440
+                duracao_texto = f"{numero} dias"
+            
+            # Limitar a 28 dias (limite do Discord)
+            if duracao_minutos > 40320:
+                duracao_minutos = 40320
+                duracao_texto = "28 dias (máximo)"
+            
+            # Remover tempo do motivo
+            motivo = args.replace(tempo_match.group(0), '').strip()
+        else:
+            motivo = args
+        
+        if not motivo:
+            motivo = "Sem motivo especificado"
     
     try:
         # Calcular duração do timeout
-        timeout_duration = discord.utils.utcnow() + discord.timedelta(minutes=tempo)
+        timeout_duration = discord.utils.utcnow() + discord.timedelta(minutes=duracao_minutos)
         
-        # Aplicar timeout PRIMEIRO
+        # Aplicar timeout
         await usuario.timeout(timeout_duration, reason=f"Timeout por {ctx.author.display_name} | Motivo: {motivo}")
         
-        # Depois mostrar confirmação
         embed = discord.Embed(
-            title="🔇 USUÁRIO SILENCIADO",
+            title="🔇 USUÁRIO EM TIMEOUT",
             description=f"**{usuario.display_name}** foi silenciado com sucesso!",
             color=0xffa500
-        )
-        embed.add_field(
-            name="⏰ Duração",
-            value=f"`{tempo} minutos`",
-            inline=True
-        )
-        embed.add_field(
-            name="📅 Expira em",
-            value=f"<t:{int(timeout_duration.timestamp())}:F>",
-            inline=True
         )
         embed.add_field(
             name="📝 Motivo",
@@ -1436,6 +1473,16 @@ async def timeout_command(ctx, usuario: discord.Member = None, tempo: int = 10, 
             name="👮 Moderador",
             value=ctx.author.mention,
             inline=True
+        )
+        embed.add_field(
+            name="⏰ Duração",
+            value=duracao_texto,
+            inline=True
+        )
+        embed.add_field(
+            name="📅 Expira em",
+            value=f"<t:{int(timeout_duration.timestamp())}:F>",
+            inline=False
         )
         embed.set_footer(text="Sistema de Moderação • Caos Hub")
         await ctx.reply(embed=embed)
@@ -1619,10 +1666,15 @@ async def apply_adv_punishment(message, user_id, violation_type, details):
         # APLICAR TIMEOUT DE 1 MINUTO junto com ADV
         timeout_aplicado = False
         try:
-            timeout_duration = discord.utils.utcnow() + discord.timedelta(minutes=1)
-            await message.author.timeout(timeout_duration, reason=f"{adv_level} - Spam automático")
-            timeout_aplicado = True
-            print(f"✅ Timeout de 1 minuto aplicado em {message.author.display_name}")
+            # Buscar o membro corretamente (garantir que é Member, não User)
+            member = message.guild.get_member(message.author.id)
+            if member:
+                timeout_duration = discord.utils.utcnow() + discord.timedelta(minutes=1)
+                await member.timeout(timeout_duration, reason=f"{adv_level} - Spam automático")
+                timeout_aplicado = True
+                print(f"✅ Timeout de 1 minuto aplicado em {member.display_name}")
+            else:
+                print(f"❌ Membro não encontrado: {message.author.display_name}")
         except discord.Forbidden:
             print(f"❌ Sem permissão para aplicar timeout em {message.author.display_name}")
         except Exception as timeout_error:
