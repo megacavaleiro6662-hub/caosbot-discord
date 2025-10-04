@@ -3110,19 +3110,108 @@ class CloseTicketView(discord.ui.View):
     
     @discord.ui.button(label="Fechar Ticket", style=discord.ButtonStyle.red, emoji="🔒", custom_id="close_ticket")
     async def close_ticket(self, interaction: discord.Interaction, button: discord.ui.Button):
-        # Verificar se é staff ou o dono do ticket
-        guild_id = str(interaction.guild.id)
-        config = ticket_config.get(guild_id, {})
-        
-        is_staff = any(role.id in config.get('staff_role_ids', []) for role in interaction.user.roles)
-        is_owner = str(interaction.user.id) in interaction.channel.name
-        
-        if not (is_staff or is_owner or interaction.user.guild_permissions.administrator):
-            await interaction.response.send_message("❌ Você não tem permissão para fechar este ticket!", ephemeral=True)
+        if not interaction.user.guild_permissions.manage_channels:
+            await interaction.response.send_message("❌ Apenas staff pode fechar!", ephemeral=True)
             return
         
-        await interaction.response.send_message("🔒 Fechando ticket em 5 segundos...", ephemeral=False)
-        await asyncio.sleep(5)
+        # CANAL DE LOG
+        log_channel_id = 1424050835460980889
+        log_channel = interaction.guild.get_channel(log_channel_id)
+        
+        if log_channel:
+            try:
+                ticket_channel = interaction.channel
+                
+                # Coletar mensagens do ticket
+                messages = []
+                async for msg in ticket_channel.history(limit=100, oldest_first=True):
+                    messages.append(msg)
+                
+                # EMBED DE LOG DETALHADO
+                log_embed = discord.Embed(
+                    title="🔒 TICKET FECHADO",
+                    description=f"**Canal:** {ticket_channel.name}\n**ID:** `{ticket_channel.id}`",
+                    color=0xff0000,
+                    timestamp=discord.utils.utcnow()
+                )
+                
+                # Extrair informações do primeiro embed
+                if messages and messages[0].embeds:
+                    embed_inicial = messages[0].embeds[0]
+                    
+                    for field in embed_inicial.fields:
+                        if "Aberto por" in field.name:
+                            log_embed.add_field(name="👤 Aberto por", value=field.value, inline=True)
+                        elif "Assunto" in field.name:
+                            log_embed.add_field(name="📋 Assunto", value=field.value, inline=False)
+                        elif "Descrição" in field.name:
+                            log_embed.add_field(name="📝 Descrição", value=field.value[:1024], inline=False)
+                        elif "Info Adicional" in field.name:
+                            log_embed.add_field(name="ℹ️ Info Adicional", value=field.value[:1024], inline=False)
+                
+                # Quem fechou
+                log_embed.add_field(
+                    name="🔒 Fechado por",
+                    value=f"{interaction.user.mention}\n`ID: {interaction.user.id}`",
+                    inline=True
+                )
+                
+                # Estatísticas
+                total_mensagens = len(messages)
+                usuarios_participantes = len(set(msg.author.id for msg in messages if not msg.author.bot))
+                
+                log_embed.add_field(
+                    name="📊 Estatísticas",
+                    value=f"**Mensagens:** {total_mensagens}\n**Participantes:** {usuarios_participantes}",
+                    inline=True
+                )
+                
+                # Duração
+                if messages:
+                    criado_em = messages[0].created_at
+                    fechado_em = discord.utils.utcnow()
+                    duracao = fechado_em - criado_em
+                    
+                    horas = int(duracao.total_seconds() // 3600)
+                    minutos = int((duracao.total_seconds() % 3600) // 60)
+                    
+                    log_embed.add_field(
+                        name="⏱️ Duração",
+                        value=f"{horas}h {minutos}m",
+                        inline=True
+                    )
+                
+                log_embed.set_footer(text="Sistema de Tickets • Caos Hub")
+                
+                # Enviar embed
+                await log_channel.send(embed=log_embed)
+                
+                # CRIAR ARQUIVO COM HISTÓRICO COMPLETO
+                historico_texto = f"=== HISTÓRICO DO TICKET: {ticket_channel.name} ===\n\n"
+                
+                for msg in messages:
+                    timestamp = msg.created_at.strftime("%d/%m/%Y %H:%M:%S")
+                    autor = f"{msg.author.display_name} ({msg.author.id})"
+                    conteudo = msg.content if msg.content else "[Embed ou anexo]"
+                    
+                    historico_texto += f"[{timestamp}] {autor}:\n{conteudo}\n\n"
+                
+                # Enviar arquivo
+                import io
+                arquivo = discord.File(
+                    io.BytesIO(historico_texto.encode('utf-8')),
+                    filename=f"ticket_{ticket_channel.name}_{discord.utils.utcnow().strftime('%Y%m%d_%H%M%S')}.txt"
+                )
+                
+                await log_channel.send(
+                    content=f"📄 **Histórico completo do ticket `{ticket_channel.name}`:**",
+                    file=arquivo
+                )
+                
+            except Exception as e:
+                print(f"[ERRO LOG TICKET] {e}")
+        
+        await interaction.response.send_message("🔒 Fechando ticket...", ephemeral=True)
         await interaction.channel.delete(reason=f"Ticket fechado por {interaction.user}")
 
 # ========================================
