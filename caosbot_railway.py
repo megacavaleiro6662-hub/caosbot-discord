@@ -937,27 +937,27 @@ async def radvall_command(ctx, usuario: discord.Member = None):
         return
     
     try:
-        current_warnings = user_warnings[user_id]
+        # Guardar quantas ADVs tinha
+        advs_anteriores = user_warnings.get(user_id, 0)
         
-        # Remover todos os cargos de advertência
-        cargo_adv1 = ctx.guild.get_role(ADV_CARGO_1_ID)
-        cargo_adv2 = ctx.guild.get_role(ADV_CARGO_2_ID)
-        cargo_adv3 = ctx.guild.get_role(ADV_CARGO_3_ID)
-        
+        # Remover cargos
         roles_removidos = []
         
         if cargo_adv1 and cargo_adv1 in usuario.roles:
-            await usuario.remove_roles(cargo_adv1)
+            await usuario.remove_roles(cargo_adv1, reason=f"Todas ADVs removidas por {ctx.author}")
             roles_removidos.append("ADV 1")
+        
         if cargo_adv2 and cargo_adv2 in usuario.roles:
-            await usuario.remove_roles(cargo_adv2)
+            await usuario.remove_roles(cargo_adv2, reason=f"Todas ADVs removidas por {ctx.author}")
             roles_removidos.append("ADV 2")
+        
         if cargo_adv3 and cargo_adv3 in usuario.roles:
-            await usuario.remove_roles(cargo_adv3)
+            await usuario.remove_roles(cargo_adv3, reason=f"Todas ADVs removidas por {ctx.author}")
             roles_removidos.append("ADV 3")
         
         # Resetar contador
         user_warnings[user_id] = 0
+        save_warnings_data()
         
         embed = discord.Embed(
             title="🧹 TODAS ADVERTÊNCIAS REMOVIDAS",
@@ -966,7 +966,7 @@ async def radvall_command(ctx, usuario: discord.Member = None):
         )
         embed.add_field(
             name="📋 Detalhes",
-            value=f"🧹 **Advertências anteriores:** {current_warnings}\n✨ **Cargos removidos:** {', '.join(roles_removidos) if roles_removidos else 'Nenhum'}\n🎉 Usuário com ficha limpa!",
+            value=f"🧹 **Advertências anteriores:** {advs_anteriores}\n✨ **Cargos removidos:** {', '.join(roles_removidos) if roles_removidos else 'Nenhum'}\n🎉 Usuário com ficha limpa!",
             inline=False
         )
         embed.add_field(
@@ -2217,6 +2217,39 @@ async def on_message(message):
     content = message.content
     
     # ========================================
+    # SISTEMA ANTI-MENÇÃO (MÁXIMO 1 MENÇÃO) - VERIFICAR PRIMEIRO
+    # ========================================
+    
+    # Verificar menções (máximo 1 por mensagem)
+    mention_count = len(message.mentions) + len(message.role_mentions)
+    if mention_count > 1:
+        try:
+            await message.delete()
+        except:
+            pass
+        
+        # Criar lista de menções
+        mencoes = []
+        for user in message.mentions:
+            mencoes.append(user.mention)
+        for role in message.role_mentions:
+            mencoes.append(role.mention)
+        
+        embed = discord.Embed(
+            title="⚠️ EXCESSO DE MENÇÕES",
+            description=f"**{message.author.display_name}**, você mencionou **{mention_count}** pessoas/cargos!",
+            color=0xff8c00
+        )
+        embed.add_field(
+            name="📋 Regra",
+            value=f"**Máximo:** 1 menção por mensagem\n**Você mencionou:** {', '.join(mencoes)}",
+            inline=False
+        )
+        embed.set_footer(text="Sistema de Moderação • Caos Hub")
+        await message.channel.send(embed=embed, delete_after=10)
+        return  # Para o processamento
+    
+    # ========================================
     # SISTEMA ANTI-SPAM
     # ========================================
     
@@ -2270,31 +2303,7 @@ async def on_message(message):
                 await auto_moderate_spam(message, "excesso de maiúsculas", f"Mensagem com {caps_percentage:.1f}% em maiúsculas")
                 return
     
-    # ========================================
-    # SISTEMA ANTI-MENTION (MÁXIMO 1 MENÇÃO POR MENSAGEM)
-    # ========================================
-    
-    # Verificar menções (máximo 1 por mensagem) - NÃO É SPAM, É REGRA ÚNICA
-    mention_count = len(message.mentions) + len(message.role_mentions)
-    if mention_count > 1:
-        try:
-            await message.delete()
-        except:
-            pass
-        
-        embed = discord.Embed(
-            title="⚠️ EXCESSO DE MENÇÕES",
-            description=f"**{message.author.display_name}**, você mencionou **{mention_count}** pessoas/cargos!",
-            color=0xff8c00
-        )
-        embed.add_field(
-            name="📋 Regra",
-            value="**Máximo:** 1 menção por mensagem\n**Você mencionou:** " + ", ".join([u.mention for u in message.mentions] + [r.mention for r in message.role_mentions]),
-            inline=False
-        )
-        embed.set_footer(text="Sistema de Moderação • Caos Hub")
-        await message.channel.send(embed=embed, delete_after=10)
-        return
+    # Sistema de menção já verificado no início do on_message
     
     # ========================================
     # SISTEMA ANTI-MENSAGEM LONGA (MÁXIMO 90 CARACTERES)
