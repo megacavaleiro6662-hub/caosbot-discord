@@ -2226,7 +2226,6 @@ async def embedhub_command(ctx):
             "🔹 **Executores Confiáveis** - Testados e aprovados\n"
             "🔹 **Suporte 24/7** - Equipe sempre disponível\n"
             "🔹 **Atualizações Constantes** - Sempre atualizado\n"
-            "🔹 **Comunidade Ativa** - Milhares de membros"
         ),
         inline=False
     )
@@ -2253,6 +2252,15 @@ async def embedhub_command(ctx):
             "✅ **E muito mais!**"
         ),
         inline=True
+    )
+    
+    embed.add_field(
+        name="🎮 JOGOS DISPONÍVEIS",
+        value=(
+            "🥊 **The Strongest Battlegrounds**\n"
+            "https://media3.giphy.com/media/v1.Y2lkPTc5MGI3NjExeTVhM244NnJqZWYyN3BheHp1YjMxZmV5cnAwa2xsbzEyNXlqMHR0NSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/d2PqO9s7M9CNO/giphy.gif"
+        ),
+        inline=False
     )
     
     embed.add_field(
