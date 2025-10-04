@@ -1473,8 +1473,88 @@ async def clear_error(ctx, error):
 # SISTEMAS DE PROTEÇÃO AUTOMÁTICA
 # ========================================
 
+async def apply_adv_punishment(message, user_id, violation_type, details):
+    """Aplica ADV e timeout de 1 minuto"""
+    try:
+        # Aplicar advertência automática
+        if user_id not in user_warnings:
+            user_warnings[user_id] = 0
+        
+        user_warnings[user_id] += 1
+        warning_count = user_warnings[user_id]
+        
+        # Determinar cargo baseado no nível de advertência
+        if warning_count == 1:
+            cargo = message.guild.get_role(ADV_CARGO_1_ID)
+            adv_level = "ADV 1"
+            color = 0xffff00
+            next_punishment = "ADV 2"
+        elif warning_count == 2:
+            cargo_antigo = message.guild.get_role(ADV_CARGO_1_ID)
+            if cargo_antigo and cargo_antigo in message.author.roles:
+                await message.author.remove_roles(cargo_antigo)
+            cargo = message.guild.get_role(ADV_CARGO_2_ID)
+            adv_level = "ADV 2"
+            color = 0xff8c00
+            next_punishment = "ADV 3 + BAN"
+        else:
+            cargo_adv1 = message.guild.get_role(ADV_CARGO_1_ID)
+            cargo_adv2 = message.guild.get_role(ADV_CARGO_2_ID)
+            if cargo_adv1 and cargo_adv1 in message.author.roles:
+                await message.author.remove_roles(cargo_adv1)
+            if cargo_adv2 and cargo_adv2 in message.author.roles:
+                await message.author.remove_roles(cargo_adv2)
+            cargo = message.guild.get_role(ADV_CARGO_3_ID)
+            adv_level = "ADV 3"
+            color = 0xff0000
+            next_punishment = "BANIMENTO"
+        
+        # Aplicar cargo
+        if cargo:
+            await message.author.add_roles(cargo)
+        
+        # APLICAR TIMEOUT DE 1 MINUTO
+        try:
+            timeout_duration = discord.utils.utcnow() + discord.timedelta(minutes=1)
+            await message.author.timeout(timeout_duration, reason=f"{adv_level} - Spam automático")
+        except Exception as timeout_error:
+            print(f"❌ Erro ao aplicar timeout: {timeout_error}")
+        
+        # Mensagem pública
+        embed = discord.Embed(
+            title=f"🚨 {adv_level.upper()} APLICADA AUTOMATICAMENTE",
+            description=f"**{message.author.display_name}** recebeu {adv_level} por spam repetido!",
+            color=color
+        )
+        embed.add_field(
+            name="📋 Detalhes da Punição",
+            value=f"**Violação:** {violation_type}\n**Detalhes:** {details}\n**Advertência:** {adv_level}\n**Timeout:** 1 minuto\n**Próxima punição:** {next_punishment}",
+            inline=False
+        )
+        embed.set_footer(text="Sistema Anti-Spam Automático • Caos Hub")
+        
+        await message.channel.send(embed=embed)
+        
+        # Se chegou no ADV 3, banir IMEDIATAMENTE
+        if warning_count >= 3:
+            await message.author.ban(reason="ADV 3 - Ban automático por spam repetido")
+            user_warnings[user_id] = 0
+            
+            ban_embed = discord.Embed(
+                title="🔨 USUÁRIO BANIDO AUTOMATICAMENTE",
+                description=f"**{message.author.display_name}** foi banido por atingir ADV 3!",
+                color=0x000000
+            )
+            await message.channel.send(embed=ban_embed)
+        
+        # Salvar dados
+        save_warnings_data()
+        
+    except Exception as e:
+        print(f"❌ Erro ao aplicar ADV: {e}")
+
 async def auto_moderate_progressive(message, violation_type, details=""):
-    """Sistema automático de moderação PROGRESSIVO - Conforme solicitado pelo usuário"""
+    """Sistema automático de moderação PROGRESSIVO - REFEITO DO ZERO"""
     user_id = message.author.id
     
     # Deletar mensagem
@@ -1483,7 +1563,22 @@ async def auto_moderate_progressive(message, violation_type, details=""):
     except:
         pass
     
-    # Incrementar avisos de spam
+    # Verificar se usuário JÁ TEM ADV (se tiver, NÃO incrementa avisos normais)
+    if user_id in user_warnings and user_warnings[user_id] > 0:
+        # Usuário JÁ TEM ADV - precisa spammar MUITO para levar outra
+        # Incrementa contador especial de spam PÓS-ADV
+        if user_id not in spam_warnings:
+            spam_warnings[user_id] = 0
+        spam_warnings[user_id] += 1
+        
+        # Só aplica nova ADV se spammar MUITO (5 mensagens)
+        if spam_warnings[user_id] >= 5:
+            # Aplicar próxima ADV
+            await apply_adv_punishment(message, user_id, violation_type, details)
+            spam_warnings[user_id] = 0  # Reset
+        return
+    
+    # Usuário NÃO TEM ADV - sistema normal de avisos
     spam_warnings[user_id] += 1
     current_warnings = spam_warnings[user_id]
     
@@ -1557,89 +1652,11 @@ async def auto_moderate_progressive(message, violation_type, details=""):
             pass
             
     elif current_warnings >= 3:
-        # TERCEIRA VIOLAÇÃO - APLICAR ADV
-        try:
-            # Aplicar advertência automática
-            if user_id not in user_warnings:
-                user_warnings[user_id] = 0
-            
-            user_warnings[user_id] += 1
-            warning_count = user_warnings[user_id]
-            
-            # Determinar cargo baseado no nível de advertência
-            if warning_count == 1:
-                # ADV 1
-                cargo = message.guild.get_role(ADV_CARGO_1_ID)
-                adv_level = "ADV 1"
-                color = 0xffff00
-                next_punishment = "ADV 2"
-            elif warning_count == 2:
-                # ADV 2 (remover ADV 1)
-                cargo_antigo = message.guild.get_role(ADV_CARGO_1_ID)
-                if cargo_antigo and cargo_antigo in message.author.roles:
-                    await message.author.remove_roles(cargo_antigo)
-                cargo = message.guild.get_role(ADV_CARGO_2_ID)
-                adv_level = "ADV 2"
-                color = 0xff8c00
-                next_punishment = "ADV 3 + BAN"
-            else:
-                # ADV 3 + BAN (remover cargos anteriores)
-                cargo_adv1 = message.guild.get_role(ADV_CARGO_1_ID)
-                cargo_adv2 = message.guild.get_role(ADV_CARGO_2_ID)
-                if cargo_adv1 and cargo_adv1 in message.author.roles:
-                    await message.author.remove_roles(cargo_adv1)
-                if cargo_adv2 and cargo_adv2 in message.author.roles:
-                    await message.author.remove_roles(cargo_adv2)
-                cargo = message.guild.get_role(ADV_CARGO_3_ID)
-                adv_level = "ADV 3"
-                color = 0xff0000
-                next_punishment = "BANIMENTO"
-            
-            # Aplicar cargo
-            if cargo:
-                await message.author.add_roles(cargo)
-            
-            # APLICAR TIMEOUT DE 1 MINUTO quando levar ADV
-            try:
-                timeout_duration = discord.utils.utcnow() + discord.timedelta(minutes=1)
-                await message.author.timeout(timeout_duration, reason=f"{adv_level} - Spam automático")
-            except Exception as timeout_error:
-                print(f"Erro ao aplicar timeout: {timeout_error}")
-            
-            embed = discord.Embed(
-                title=f"🚨 {adv_level.upper()} APLICADA AUTOMATICAMENTE",
-                description=f"**{message.author.display_name}** recebeu {adv_level} por spam repetido!",
-                color=color
-            )
-            embed.add_field(
-                name="📋 Detalhes da Punição",
-                value=f"**Violação:** {violation_type}\n**Detalhes:** {details}\n**Advertência:** {adv_level}\n**Timeout:** 1 minuto\n**Próxima punição:** {next_punishment}",
-                inline=False
-            )
-            embed.set_footer(text="Sistema Anti-Spam Automático • Caos Hub")
-            
-            await message.channel.send(embed=embed)
-            
-            # Se chegou no ADV 3, banir IMEDIATAMENTE
-            if warning_count >= 3:
-                await message.author.ban(reason="ADV 3 - Ban automático por spam repetido")
-                user_warnings[user_id] = 0  # Reset após ban
-                
-                ban_embed = discord.Embed(
-                    title="🔨 USUÁRIO BANIDO AUTOMATICAMENTE",
-                    description=f"**{message.author.display_name}** foi banido por atingir ADV 3!",
-                    color=0x000000
-                )
-                await message.channel.send(embed=ban_embed)
-            
-            # RESETAR avisos de spam após aplicar ADV (começa do zero)
-            spam_warnings[user_id] = 0
-            
-            # Salvar dados
-            save_warnings_data()
-            
-        except Exception as e:
-            print(f"Erro na moderação automática: {e}")
+        # TERCEIRA VIOLAÇÃO - APLICAR ADV usando a função
+        await apply_adv_punishment(message, user_id, violation_type, details)
+        
+        # RESETAR avisos de spam após aplicar ADV
+        spam_warnings[user_id] = 0
 
 # ========================================
 # SISTEMA DE AJUDA PERSONALIZADO
