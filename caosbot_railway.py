@@ -2208,23 +2208,13 @@ async def embedhub_command(ctx):
         description=(
             "# **O MELHOR HUB DE SCRIPTS DO BRASIL!**\n\n"
             "Aqui você encontra **TUDO** que precisa para dominar seus jogos favoritos!\n"
-            "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n"
-            "https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExMHpuMWV1eWprbm1vZGgzZnlseWJ6ZWxjbmsxbG5yczhta2FnNzQ1ayZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/Q8gqp0zwvSoMaDX1uS/giphy.gif\n\n"
-            "## 💰 FORMAS DE PAGAMENTO\n"
-            "https://media2.giphy.com/media/v1.Y2lkPTc5MGI3NjExNHBjamc0NmRsY291Y3lsdmZwbmthYnl1dzYxbXF6cXA3Mmw1eWtlZSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/baZrRkhJ2SOvSBwLHj/giphy.gif\n\n"
-            "## 🎮 ACEITAMOS ROBUX!\n"
-            "https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExZGM5MXQ4d3VhNzloNGRyNjV4aXlwcTkycWdncHZ1NWhzMG92bHFiNyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/IcjEr7eTWI7Pw3vE6w/giphy.gif\n\n"
-            "## 💻 SCRIPTS PREMIUM\n"
-            "https://media2.giphy.com/media/v1.Y2lkPTc5MGI3NjExZzdvNjRrdzFuOGE1bTB3a2Q2cWQwZHMwdmFhaDZzZnRtdGVieDIzYyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/9WC8WTZsFxkRi/giphy.gif\n\n"
-            "## ⚡ PODER MÁXIMO!\n"
-            "https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExNmswZGo5ZWYzdGM0dTRwZXVwdTY3NDhqbDAxNTh4OXFkN2c2MTNjcCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/CyeGh5u6xmhgY/giphy.gif\n\n"
-            "## 🚀 JUNTE-SE A NÓS!\n"
-            "https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExbWx3MjVpdGx1bG1ncjRyemhtcDc2NHJkYXY0NG1yNWZ3NWx0bzJobCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/mbar54jwxlnKs5nlOc/giphy.gif\n\n"
-            "## ⭐ SEJA VIP!\n"
-            "https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExMHZsbnUzd211OHV1bGpqZGNjMDhtdXV1NTVsaHM1bnc0bGt2bHVoaiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/trLxcp0TrMgd48yDA2/giphy.gif"
+            "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
         ),
         color=0xff6600
     )
+    
+    # GIF PRINCIPAL
+    embed.set_image(url="https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExMHpuMWV1eWprbm1vZGgzZnlseWJ6ZWxjbmsxbG5yczhta2FnNzQ1ayZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/Q8gqp0zwvSoMaDX1uS/giphy.gif")
     
     # THUMBNAIL
     embed.set_thumbnail(url="https://media3.giphy.com/media/v1.Y2lkPTc5MGI3NjExMmV0Zm1nbmJocDhweDNvbDRreGZhOG5rcmZvenN5Nmw1Z3N2aWxtayZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/10TZs8ho7qJeVy/giphy.gif")
@@ -2269,31 +2259,8 @@ async def embedhub_command(ctx):
         name="💳 FORMAS DE PAGAMENTO",
         value=(
             "💰 **PIX** - Instantâneo e seguro\n"
-            "💳 **Cartão de Crédito** - Parcelado\n"
-            "🎮 **Robux** - Aceito!\n"
-            "💵 **PayPal** - Internacional"
-        ),
-        inline=False
-    )
-    
-    embed.add_field(
-        name="⚠️ REGRAS IMPORTANTES",
-        value=(
-            "🔸 Não compartilhe seus scripts\n"
-            "🔸 Não faça spam nos tickets\n"
-            "🔸 Seja educado com a equipe\n"
-            "🔸 Leia os termos antes de comprar"
-        ),
-        inline=False
-    )
-    
-    embed.add_field(
-        name="🎁 BENEFÍCIOS VIP",
-        value=(
-            "⭐ **Acesso antecipado** a novos scripts\n"
-            "⭐ **Suporte prioritário** 24/7\n"
-            "⭐ **Descontos exclusivos** em compras\n"
-            "⭐ **Scripts exclusivos** só pra VIP"
+            "💵 **PayPal** - Internacional\n\n"
+            "🎮 **Robux** - Em breve!"
         ),
         inline=False
     )
