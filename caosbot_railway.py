@@ -14,13 +14,41 @@ from http.server import HTTPServer, BaseHTTPRequestHandler
 import re
 import aiohttp
 from datetime import datetime
-
 # Configuração do bot
 intents = discord.Intents.default()
 intents.message_content = True
 intents.guilds = True
 
 bot = commands.Bot(command_prefix='.', intents=intents)
+
+# ========================================
+# SISTEMA ANTI-HIBERNAÇÃO (100% GRATUITO)
+# ========================================
+
+@tasks.loop(minutes=10)  # Ping a cada 10 minutos
+async def keep_alive():
+    """Mantém o bot sempre ativo - impede hibernação do Render"""
+    try:
+        # Fazer requisição HTTP para manter ativo
+        async with aiohttp.ClientSession() as session:
+            # Ping para um serviço público gratuito
+            async with session.get('https://httpbin.org/get', timeout=30) as response:
+                if response.status == 200:
+                    current_time = datetime.now().strftime('%H:%M:%S')
+                    print(f'❤️ [{current_time}] Bot mantido ativo - Sistema anti-hibernação OK!')
+                else:
+                    print(f'⚠️ Ping falhou - Status: {response.status}')
+    except asyncio.TimeoutError:
+        print('⚠️ Timeout no ping - mas bot continua ativo')
+    except Exception as e:
+        print(f'❌ Erro no sistema anti-hibernação: {e}')
+        print('🔄 Bot continua funcionando normalmente')
+
+@keep_alive.before_loop
+async def before_keep_alive():
+    """Aguarda o bot estar pronto antes de iniciar o sistema"""
+    await bot.wait_until_ready()
+    print('✅ Bot pronto! Iniciando sistema anti-hibernação...')
 
 # Evento quando o bot fica online
 @bot.event
@@ -2670,31 +2698,4 @@ if __name__ == '__main__':
         print('🔄 Reiniciando em 30 segundos...')
         time.sleep(30)
 
-# ========================================
-# SISTEMA ANTI-HIBERNAÇÃO (100% GRATUITO)
-# ========================================
-
-@tasks.loop(minutes=10)  # Ping a cada 10 minutos
-async def keep_alive():
-    """Mantém o bot sempre ativo - impede hibernação do Render"""
-    try:
-        # Fazer requisição HTTP para manter ativo
-        async with aiohttp.ClientSession() as session:
-            # Ping para um serviço público gratuito
-            async with session.get('https://httpbin.org/get', timeout=30) as response:
-                if response.status == 200:
-                    current_time = datetime.now().strftime('%H:%M:%S')
-                    print(f'❤️ [{current_time}] Bot mantido ativo - Sistema anti-hibernação OK!')
-                else:
-                    print(f'⚠️ Ping falhou - Status: {response.status}')
-    except asyncio.TimeoutError:
-        print('⚠️ Timeout no ping - mas bot continua ativo')
-    except Exception as e:
-        print(f'❌ Erro no sistema anti-hibernação: {e}')
-        print('🔄 Bot continua funcionando normalmente')
-
-@keep_alive.before_loop
-async def before_keep_alive():
-    """Aguarda o bot estar pronto antes de iniciar o sistema"""
-    await bot.wait_until_ready()
-    print('✅ Bot pronto! Iniciando sistema anti-hibernação...')
+# Sistema anti-hibernação já definido no início do arquivo
