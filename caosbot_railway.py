@@ -1641,7 +1641,7 @@ async def auto_moderate_spam(message, violation_type, details=""):
     spam_warnings[user_id] += 1
     count = spam_warnings[user_id]
     
-    # PRIMEIRO AVISO - 5 mensagens
+    # PRIMEIRO AVISO - EXATAMENTE 5 mensagens
     if count == 5:
         embed = discord.Embed(
             title="⚠️ PRIMEIRO AVISO - SPAM DETECTADO",
@@ -1650,14 +1650,15 @@ async def auto_moderate_spam(message, violation_type, details=""):
         )
         embed.add_field(
             name="📋 Detalhes",
-            value=f"**Violação:** {violation_type}\n**Detalhes:** {details}\n**Próximo:** Segundo aviso (mais 4 mensagens)",
+            value=f"**Violação:** {violation_type}\n**Detalhes:** {details}\n**Próximo:** Segundo aviso (4 mensagens)",
             inline=False
         )
         embed.set_footer(text="Sistema Anti-Spam • Caos Hub")
         await message.channel.send(embed=embed)
+        spam_warnings[user_id] = 0  # RESETAR contador
         
-    # SEGUNDO AVISO - 9 mensagens (5 + 4)
-    elif count == 9:
+    # SEGUNDO AVISO - EXATAMENTE 4 mensagens
+    elif count == 4:
         embed = discord.Embed(
             title="🚨 SEGUNDO AVISO - ÚLTIMA CHANCE",
             description=f"**{message.author.display_name}**, PARE DE FAZER SPAM!",
@@ -1665,14 +1666,15 @@ async def auto_moderate_spam(message, violation_type, details=""):
         )
         embed.add_field(
             name="📋 Detalhes",
-            value=f"**Violação:** {violation_type}\n**Detalhes:** {details}\n**Próximo:** ADV 1 + Timeout (mais 3 mensagens)",
+            value=f"**Violação:** {violation_type}\n**Detalhes:** {details}\n**Próximo:** ADV 1 + Timeout (3 mensagens)",
             inline=False
         )
         embed.set_footer(text="Sistema Anti-Spam • Caos Hub")
         await message.channel.send(embed=embed)
+        spam_warnings[user_id] = 0  # RESETAR contador
         
-    # ADV 1 - 12 mensagens (5 + 4 + 3)
-    elif count >= 12:
+    # ADV - EXATAMENTE 3 mensagens
+    elif count == 3:
         # Verificar quantas ADVs o usuário já tem
         if user_id not in user_warnings:
             user_warnings[user_id] = 0
@@ -1737,27 +1739,52 @@ async def auto_moderate_spam(message, violation_type, details=""):
         if cargo:
             await message.author.add_roles(cargo)
         
-        # APLICAR TIMEOUT DE 1 MINUTO (usando datetime.timedelta)
+        # APLICAR TIMEOUT DE 1 MINUTO - IGUAL AO COMANDO .timeout
         from datetime import timedelta
+        timeout_aplicado = False
         try:
-            member = message.guild.get_member(message.author.id)
-            if member:
-                timeout_duration = discord.utils.utcnow() + timedelta(minutes=1)
-                await member.timeout(timeout_duration, reason=f"{adv_level} - Spam automático")
-        except:
+            timeout_duration = discord.utils.utcnow() + timedelta(minutes=1)
+            await message.author.timeout(timeout_duration, reason=f"{adv_level} - Spam automático")
+            timeout_aplicado = True
+        except discord.Forbidden:
+            pass
+        except discord.HTTPException:
+            pass
+        except Exception:
             pass
         
-        # Embed de ADV aplicada
+        # Embed de ADV aplicada COM TIMEOUT
         embed = discord.Embed(
             title=f"🚨 {adv_level} APLICADA",
             description=f"**{message.author.display_name}** recebeu {adv_level} por spam!",
             color=color
         )
         embed.add_field(
-            name="📋 Detalhes",
-            value=f"**Violação:** {violation_type}\n**Detalhes:** {details}\n**Timeout:** 1 minuto\n**Próxima punição:** {next_adv}",
+            name="📝 Motivo",
+            value=f"`{violation_type}`",
             inline=False
         )
+        embed.add_field(
+            name="👤 Usuário",
+            value=message.author.mention,
+            inline=True
+        )
+        embed.add_field(
+            name="⏰ Timeout",
+            value="1 minuto" if timeout_aplicado else "❌ Falhou",
+            inline=True
+        )
+        embed.add_field(
+            name="🚨 Próxima Punição",
+            value=next_adv,
+            inline=True
+        )
+        if timeout_aplicado:
+            embed.add_field(
+                name="📅 Expira em",
+                value=f"<t:{int((discord.utils.utcnow() + timedelta(minutes=1)).timestamp())}:F>",
+                inline=False
+            )
         embed.set_footer(text="Sistema Anti-Spam • Caos Hub")
         await message.channel.send(embed=embed)
         
