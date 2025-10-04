@@ -2404,7 +2404,7 @@ async def addrole_error(ctx, error):
 @bot.command(name='removerole')
 @is_sub_moderator_or_higher()
 async def remove_role_new(ctx, cargo: discord.Role = None, usuario: discord.Member = None):
-    """SISTEMA NOVO - Remove cargo e restaura nickname"""
+    """SISTEMA NOVO - Remove cargo e restaura nickname com hierarquia"""
     
     # Verificar argumentos
     if not cargo or not usuario:
@@ -2427,21 +2427,27 @@ async def remove_role_new(ctx, cargo: discord.Role = None, usuario: discord.Memb
         return
     
     try:
-        # 1. REMOVER o cargo
+        # Definir hierarquia dos cargos
+        HIERARCHY = {
+            1365633918593794079: 4,  # ADM
+            1365634226254254150: 3,  # STF
+            1365633102973763595: 2,  # MOD  
+            1365631940434333748: 1   # SBM
+        }
+        
+        # 1. REMOVER o cargo PRIMEIRO
         await usuario.remove_roles(cargo)
         
-        # 2. RESTAURAR nickname se necessário
+        # 2. AGUARDAR para garantir que o cargo foi removido
+        await asyncio.sleep(0.3)
+        
+        # 3. RECARREGAR o membro para pegar cargos atualizados
+        usuario = await ctx.guild.fetch_member(usuario.id)
+        
+        # 4. RESTAURAR nickname baseado na hierarquia
         nickname_msg = ""
         if cargo.id in CARGO_PREFIXES:
-            # Definir hierarquia dos cargos
-            HIERARCHY = {
-                1365633918593794079: 4,  # ADM
-                1365634226254254150: 3,  # STF
-                1365633102973763595: 2,  # MOD  
-                1365631940434333748: 1   # SBM
-            }
-            
-            # Obter nome limpo
+            # Obter nome limpo (sem QUALQUER prefixo)
             clean_name = usuario.display_name
             for prefix in CARGO_PREFIXES.values():
                 if clean_name.startswith(prefix + " "):
@@ -2459,23 +2465,23 @@ async def remove_role_new(ctx, cargo: discord.Role = None, usuario: discord.Memb
                         highest_role = role
             
             if highest_role:
-                # Aplicar prefixo do cargo restante
+                # Aplicar prefixo do cargo de maior hierarquia restante
                 new_nickname = f"{CARGO_PREFIXES[highest_role.id]} {clean_name}"
                 await usuario.edit(nick=new_nickname)
-                nickname_msg = f"\n🏷️ **Nickname:** `{new_nickname}`"
+                nickname_msg = f"🏷️ **Nickname atualizado:** `{new_nickname}`"
             else:
-                # Restaurar nome limpo
+                # NÃO TEM MAIS CARGOS COM PREFIXO - RESTAURAR NOME LIMPO
                 await usuario.edit(nick=clean_name)
                 nickname_msg = f"🏷️ **Nickname restaurado:** `{clean_name}`"
         
-        # 3. EMBED de sucesso (ÚNICA MENSAGEM)
+        # 5. EMBED de sucesso (ÚNICA MENSAGEM)
         embed = discord.Embed(
             title="✅ CARGO REMOVIDO",
             description=f"**{cargo.name}** foi removido de **{usuario.display_name}**!",
             color=0xff4444
         )
         
-        details = f"**Usuário:** {usuario.mention}\n**Cargo:** {cargo.mention}\n**Moderador:** {ctx.author.mention}"
+        details = f"**Usuário:** {usuario.mention}**Cargo:** {cargo.mention}**Moderador:** {ctx.author.mention}"
         details += nickname_msg
         
         embed.add_field(name="📋 Detalhes", value=details, inline=False)
@@ -2497,6 +2503,22 @@ async def removerole_error(ctx, error):
         embed = discord.Embed(
             title="❌ Permissão Negada",
             description="Você precisa ser **Sub Moderador** ou ter permissões de moderação para usar este comando!",
+            color=0xff0000
+        )
+        embed.set_footer(text="Sistema de Cargos • Caos Hub")
+        await ctx.reply(embed=embed)
+    elif isinstance(error, commands.RoleNotFound):
+        embed = discord.Embed(
+            title="❌ Cargo Não Encontrado",
+            description="Cargo não encontrado! Certifique-se de mencionar um cargo válido.",
+            color=0xff0000
+        )
+        embed.set_footer(text="Sistema de Cargos • Caos Hub")
+        await ctx.reply(embed=embed)
+    elif isinstance(error, commands.MemberNotFound):
+        embed = discord.Embed(
+            title="❌ Usuário Não Encontrado",
+            description="Usuário não encontrado! Certifique-se de mencionar um usuário válido.",
             color=0xff0000
         )
         embed.set_footer(text="Sistema de Cargos • Caos Hub")
