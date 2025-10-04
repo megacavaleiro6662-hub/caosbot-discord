@@ -1629,14 +1629,6 @@ async def auto_moderate_spam(message, violation_type, details=""):
     """Sistema anti-spam: 5 msgs = aviso 1, 4 msgs = aviso 2, 3 msgs = ADV + TIMEOUT"""
     user_id = message.author.id
     
-    # Verificar se usuário já foi banido (evitar processar mensagens antigas)
-    try:
-        member = message.guild.get_member(user_id)
-        if not member:
-            return  # Usuário não existe mais (foi banido)
-    except:
-        return
-    
     # Deletar mensagem
     try:
         await message.delete()
@@ -1649,10 +1641,8 @@ async def auto_moderate_spam(message, violation_type, details=""):
     spam_warnings[user_id] += 1
     count = spam_warnings[user_id]
     
-    print(f"🔢 CONTADOR DE AVISOS: {count}")
-    
-    # PRIMEIRO AVISO - 1ª VIOLAÇÃO
-    if count == 1:
+    # PRIMEIRO AVISO - EXATAMENTE 5 mensagens
+    if count == 5:
         embed = discord.Embed(
             title="⚠️ PRIMEIRO AVISO - SPAM DETECTADO",
             description=f"**{message.author.display_name}**, você foi detectado fazendo spam!",
@@ -1665,11 +1655,10 @@ async def auto_moderate_spam(message, violation_type, details=""):
         )
         embed.set_footer(text="Sistema Anti-Spam • Caos Hub")
         await message.channel.send(embed=embed)
-        print("✅ PRIMEIRO AVISO ENVIADO")
-        # NÃO RESETA - deixa acumular
+        spam_warnings[user_id] = 0  # RESETAR contador
         
-    # SEGUNDO AVISO - 2ª VIOLAÇÃO
-    elif count == 2:
+    # SEGUNDO AVISO - EXATAMENTE 4 mensagens
+    elif count == 4:
         embed = discord.Embed(
             title="🚨 SEGUNDO AVISO - ÚLTIMA CHANCE",
             description=f"**{message.author.display_name}**, PARE DE FAZER SPAM!",
@@ -1682,11 +1671,10 @@ async def auto_moderate_spam(message, violation_type, details=""):
         )
         embed.set_footer(text="Sistema Anti-Spam • Caos Hub")
         await message.channel.send(embed=embed)
-        print("✅ SEGUNDO AVISO ENVIADO")
-        # NÃO RESETA - deixa acumular
+        spam_warnings[user_id] = 0  # RESETAR contador
         
-    # ADV - 3ª VIOLAÇÃO OU MAIS
-    elif count >= 3:
+    # ADV - EXATAMENTE 3 mensagens
+    elif count == 3:
         # Verificar quantas ADVs o usuário já tem
         if user_id not in user_warnings:
             user_warnings[user_id] = 0
@@ -1742,15 +1730,8 @@ async def auto_moderate_spam(message, violation_type, details=""):
             await message.channel.send(embed=embed)
             
             await message.author.ban(reason="ADV 3 - Spam repetido")
-            
-            # Limpar TODOS os dados do usuário
             user_warnings[user_id] = 0
             spam_warnings[user_id] = 0
-            if user_id in message_history:
-                message_history[user_id].clear()
-            if user_id in user_message_times:
-                user_message_times[user_id].clear()
-            
             save_warnings_data()
             return
         
@@ -2211,32 +2192,29 @@ async def on_message(message):
     if message.author == bot.user:
         return
     
-    # Ignorar DMs
-    if not message.guild:
+    # Ignorar moderadores (usuários com permissão de gerenciar mensagens)
+    if message.author.guild_permissions.manage_messages:
+        await bot.process_commands(message)
         return
-    
-    # SISTEMA ATIVO PARA TODO MUNDO (removido filtro de moderador para testes)
     
     user_id = message.author.id
     current_time = time.time()
     content = message.content
     
-    # LOG DE DEBUG
-    print(f"🔍 Processando mensagem de {message.author.name}: '{content[:50]}...'")
-    
     # ========================================
     # SISTEMA ANTI-SPAM
     # ========================================
     
-    # ========================================
-    # VERIFICAÇÕES IMEDIATAS (ANTES DO HISTÓRICO)
-    # ========================================
-    
-    # REMOVI TODAS AS VERIFICAÇÕES EXTRAS - SÓ FLOOD AGORA
-    
     # Adicionar mensagem ao histórico
     message_history[user_id].append(content.lower())
     user_message_times[user_id].append(current_time)
+    
+    # Verificar spam (mensagens idênticas)
+    if len(message_history[user_id]) >= 3:
+        recent_messages = list(message_history[user_id])[-3:]
+        if len(set(recent_messages)) == 1:  # Todas as mensagens são iguais
+            await auto_moderate_spam(message, "spam de mensagens idênticas", f"Enviou 3 mensagens iguais: '{content[:50]}...'")
+            return
     
     # ========================================
     # SISTEMA ANTI-FLOOD PROGRESSIVO
@@ -2257,20 +2235,65 @@ async def on_message(message):
         recent_times = list(user_message_times[user_id])[-flood_limit:]
         time_diff = recent_times[-1] - recent_times[0]
         
-        print(f"📊 FLOOD CHECK: {flood_limit} msgs em {time_diff:.1f}s (limite: 10s)")
-        
-        if time_diff < 10:  # Mensagens em menos de 10 segundos
-            print(f"🚨 FLOOD DETECTADO! Chamando sistema anti-spam...")
-            try:
-                await auto_moderate_spam(message, "flood de mensagens", f"Enviou {flood_limit} mensagens em {time_diff:.1f} segundos")
-                print("✅ Sistema anti-spam executado com sucesso")
-            except Exception as e:
-                print(f"❌ ERRO no sistema anti-spam: {e}")
-                import traceback
-                traceback.print_exc()
-            # Adicionar delay para evitar processar mensagens antigas
-            await asyncio.sleep(0.5)
+        if time_diff < 8:  # Mensagens em menos de 8 segundos
+            await auto_moderate_spam(message, "flood de mensagens", f"Enviou {flood_limit} mensagens em {time_diff:.1f} segundos")
             return
+    
+    # ========================================
+    # SISTEMA ANTI-CAPS
+    # ========================================
+    
+    # Verificar excesso de maiúsculas
+    if len(content) > 10:  # Só verificar mensagens com mais de 10 caracteres
+        uppercase_count = sum(1 for c in content if c.isupper())
+        total_letters = sum(1 for c in content if c.isalpha())
+        
+        if total_letters > 0:
+            caps_percentage = (uppercase_count / total_letters) * 100
+            
+            if caps_percentage > 70 and total_letters > 15:  # Mais de 70% em caps e mais de 15 letras
+                await auto_moderate_spam(message, "excesso de maiúsculas", f"Mensagem com {caps_percentage:.1f}% em maiúsculas")
+                return
+    
+    # ========================================
+    # SISTEMA ANTI-MENTION SPAM
+    # ========================================
+    
+    # Verificar spam de menções
+    mention_count = len(message.mentions) + len(message.role_mentions)
+    if mention_count > 5:
+        await auto_moderate_spam(message, "spam de menções", f"Mencionou {mention_count} usuários/cargos")
+        return
+    
+    # ========================================
+    # SISTEMA ANTI-EMOJI SPAM
+    # ========================================
+    
+    # Contar emojis (custom e unicode)
+    emoji_count = len(message.content.split('😀')) + len(message.content.split('😁')) + len(message.content.split('😂')) + len(message.content.split('🤣')) + len(message.content.split('😃')) + len(message.content.split('😄')) + len(message.content.split('😅')) + len(message.content.split('😆')) + len(message.content.split('😉')) + len(message.content.split('😊')) + len(message.content.split('😋')) + len(message.content.split('😎')) + len(message.content.split('😍')) + len(message.content.split('😘')) + len(message.content.split('🥰')) + len(message.content.split('😗')) + len(message.content.split('😙')) + len(message.content.split('😚')) + len(message.content.split('🙂')) + len(message.content.split('🤗')) + len(message.content.split('🤩')) + len(message.content.split('🤔')) + len(message.content.split('🤨')) + len(message.content.split('😐')) + len(message.content.split('😑')) + len(message.content.split('😶')) + len(message.content.split('🙄')) + len(message.content.split('😏')) + len(message.content.split('😣')) + len(message.content.split('😥')) + len(message.content.split('😮')) + len(message.content.split('🤐')) + len(message.content.split('😯')) + len(message.content.split('😪')) + len(message.content.split('😫')) + len(message.content.split('🥱')) + len(message.content.split('😴')) + len(message.content.split('😌')) + len(message.content.split('😛')) + len(message.content.split('😜')) + len(message.content.split('😝')) + len(message.content.split('🤤')) + len(message.content.split('😒')) + len(message.content.split('😓')) + len(message.content.split('😔')) + len(message.content.split('😕')) + len(message.content.split('🙃')) + len(message.content.split('🤑')) + len(message.content.split('😲')) + len(message.content.split('🙁')) + len(message.content.split('😖')) + len(message.content.split('😞')) + len(message.content.split('😟')) + len(message.content.split('😤')) + len(message.content.split('😢')) + len(message.content.split('😭')) + len(message.content.split('😦')) + len(message.content.split('😧')) + len(message.content.split('😨')) + len(message.content.split('😩')) + len(message.content.split('🤯')) + len(message.content.split('😬')) + len(message.content.split('😰')) + len(message.content.split('😱')) + len(message.content.split('🥵')) + len(message.content.split('🥶')) + len(message.content.split('😳')) + len(message.content.split('🤪')) + len(message.content.split('😵')) + len(message.content.split('🥴')) + len(message.content.split('😠')) + len(message.content.split('😡')) + len(message.content.split('🤬')) + len(message.content.split('😷')) + len(message.content.split('🤒')) + len(message.content.split('🤕')) + len(message.content.split('🤢')) + len(message.content.split('🤮')) + len(message.content.split('🤧')) + len(message.content.split('😇')) + len(message.content.split('🥳')) + len(message.content.split('🥺')) + len(message.content.split('🤠')) + len(message.content.split('🤡')) + len(message.content.split('🤥')) + len(message.content.split('🤫')) + len(message.content.split('🤭')) + len(message.content.split('🧐')) + len(message.content.split('🤓'))
+    
+    # Método mais simples para contar emojis
+    import re
+    emoji_pattern = re.compile(r'[😀-🙏🌀-🗿🚀-🛿☀-⛿✀-➿]')
+    unicode_emojis = len(emoji_pattern.findall(content))
+    custom_emojis = content.count('<:') + content.count('<a:')
+    total_emojis = unicode_emojis + custom_emojis
+    
+    if total_emojis > 10:
+        await auto_moderate_spam(message, "spam de emojis", f"Enviou {total_emojis} emojis em uma mensagem")
+        return
+    
+    # ========================================
+    # SISTEMA ANTI-LINK SPAM
+    # ========================================
+    
+    # Verificar links suspeitos (muitos links)
+    link_patterns = ['http://', 'https://', 'www.', '.com', '.net', '.org', '.br', '.gg']
+    link_count = sum(content.lower().count(pattern) for pattern in link_patterns)
+    
+    if link_count > 3:
+        await auto_moderate_spam(message, "spam de links", f"Enviou {link_count} links em uma mensagem")
+        return
     
     # ========================================
     # RESPOSTAS AUTOMÁTICAS
