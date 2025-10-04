@@ -1489,7 +1489,7 @@ async def auto_moderate_progressive(message, violation_type, details=""):
     
     # Sistema: 5 msgs → aviso, 4 msgs → aviso, 3 msgs → ADV
     if current_warnings == 1:
-        # PRIMEIRO AVISO (5 mensagens) - Enviar DM
+        # PRIMEIRO AVISO (5 mensagens) - SEM castigo
         try:
             embed = discord.Embed(
                 title="⚠️ PRIMEIRO AVISO - SPAM DETECTADO",
@@ -1508,19 +1508,22 @@ async def auto_moderate_progressive(message, violation_type, details=""):
             )
             embed.set_footer(text="Sistema Anti-Spam • Caos Hub")
             
-            # Enviar DM (mensagem privada)
+            # Enviar DM
             try:
                 await message.author.send(embed=embed)
             except:
-                # Se não conseguir enviar DM, envia no canal e deleta rápido
-                msg = await message.channel.send(f"{message.author.mention}", embed=embed)
-                await asyncio.sleep(5)
-                await msg.delete()
+                pass
+            
+            # Enviar mensagem no canal (só a pessoa vê) - usando delete_after
+            try:
+                msg = await message.channel.send(f"{message.author.mention} ⚠️ **Primeiro aviso de spam!** Verifique sua DM.", delete_after=5)
+            except:
+                pass
         except:
             pass
         
     elif current_warnings == 2:
-        # SEGUNDO AVISO (4 mensagens) - Enviar DM
+        # SEGUNDO AVISO (4 mensagens) - SEM castigo
         try:
             embed = discord.Embed(
                 title="🚨 SEGUNDO AVISO - ÚLTIMA CHANCE",
@@ -1539,14 +1542,17 @@ async def auto_moderate_progressive(message, violation_type, details=""):
             )
             embed.set_footer(text="Sistema Anti-Spam • Caos Hub")
             
-            # Enviar DM (mensagem privada)
+            # Enviar DM
             try:
                 await message.author.send(embed=embed)
             except:
-                # Se não conseguir enviar DM, envia no canal e deleta rápido
-                msg = await message.channel.send(f"{message.author.mention}", embed=embed)
-                await asyncio.sleep(5)
-                await msg.delete()
+                pass
+            
+            # Enviar mensagem no canal (só a pessoa vê)
+            try:
+                msg = await message.channel.send(f"{message.author.mention} 🚨 **ÚLTIMO AVISO!** Próximo spam = ADV 1. Verifique sua DM.", delete_after=5)
+            except:
+                pass
         except:
             pass
             
@@ -1614,9 +1620,8 @@ async def auto_moderate_progressive(message, violation_type, details=""):
             
             await message.channel.send(embed=embed)
             
-            # Se chegou no ADV 3, banir
+            # Se chegou no ADV 3, banir IMEDIATAMENTE
             if warning_count >= 3:
-                await asyncio.sleep(2)  # Pausa antes do ban
                 await message.author.ban(reason="ADV 3 - Ban automático por spam repetido")
                 user_warnings[user_id] = 0  # Reset após ban
                 
@@ -1627,7 +1632,7 @@ async def auto_moderate_progressive(message, violation_type, details=""):
                 )
                 await message.channel.send(embed=ban_embed)
             
-            # Reset avisos após aplicar ADV
+            # RESETAR avisos de spam após aplicar ADV (começa do zero)
             spam_warnings[user_id] = 0
             
             # Salvar dados
