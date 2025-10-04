@@ -2200,8 +2200,9 @@ async def escolher_command(ctx, *, opcoes):
 @bot.command(name='embedhub')
 @commands.has_permissions(administrator=True)
 async def embedhub_command(ctx):
-    """Envia o embed FODA do Caos Hub com GIFs"""
+    """Envia o embed FODA do Caos Hub CHEIO DE GIFs"""
     
+    # EMBED 1 - PRINCIPAL COM FOGO
     embed = discord.Embed(
         title="🔥 BEM-VINDO AO CAOS HUB! 🔥",
         description=(
@@ -2212,11 +2213,11 @@ async def embedhub_command(ctx):
         color=0xff6600
     )
     
-    # GIF DE FOGO FODA NO TOPO
-    embed.set_image(url="https://media.giphy.com/media/l0HlCaPHSxW9EqjCw/giphy.gif")
+    # GIF 1 - FOGO ÉPICO
+    embed.set_image(url="https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExMHpuMWV1eWprbm1vZGgzZnlseWJ6ZWxjbmsxbG5yczhta2FnNzQ1ayZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/Q8gqp0zwvSoMaDX1uS/giphy.gif")
     
-    # THUMBNAIL - Logo de fogo
-    embed.set_thumbnail(url="https://media.giphy.com/media/xT9DPIlGnuHpr4yOEU/giphy.gif")
+    # GIF 2 - CHAMAS
+    embed.set_thumbnail(url="https://media3.giphy.com/media/v1.Y2lkPTc5MGI3NjExMmV0Zm1nbmJocDhweDNvbDRreGZhOG5rcmZvenN5Nmw1Z3N2aWxtayZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/10TZs8ho7qJeVy/giphy.gif")
     
     embed.add_field(
         name="🎯 O QUE OFERECEMOS",
@@ -2294,7 +2295,63 @@ async def embedhub_command(ctx):
     
     embed.timestamp = discord.utils.utcnow()
     
+    # ENVIAR EMBED PRINCIPAL
     await ctx.send(embed=embed)
+    
+    # EMBED 2 - GIF DE DINHEIRO/COMPRAS
+    embed2 = discord.Embed(
+        title="💰 FORMAS DE PAGAMENTO",
+        description="**Aceitamos diversas formas de pagamento!**",
+        color=0x00ff00
+    )
+    embed2.set_image(url="https://media2.giphy.com/media/v1.Y2lkPTc5MGI3NjExNHBjamc0NmRsY291Y3lsdmZwbmthYnl1dzYxbXF6cXA3Mmw1eWtlZSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/baZrRkhJ2SOvSBwLHj/giphy.gif")
+    await ctx.send(embed=embed2)
+    
+    # EMBED 3 - GIF DE ROBUX
+    embed3 = discord.Embed(
+        title="🎮 ACEITAMOS ROBUX!",
+        description="**Pague com Robux e receba na hora!**",
+        color=0xff0000
+    )
+    embed3.set_image(url="https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExZGM5MXQ4d3VhNzloNGRyNjV4aXlwcTkycWdncHZ1NWhzMG92bHFiNyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/IcjEr7eTWI7Pw3vE6w/giphy.gif")
+    await ctx.send(embed=embed3)
+    
+    # EMBED 4 - GIF DE SCRIPTS/CÓDIGO
+    embed4 = discord.Embed(
+        title="💻 SCRIPTS PREMIUM",
+        description="**Os melhores scripts do mercado!**",
+        color=0x00ffff
+    )
+    embed4.set_image(url="https://media2.giphy.com/media/v1.Y2lkPTc5MGI3NjExZzdvNjRrdzFuOGE1bTB3a2Q2cWQwZHMwdmFhaDZzZnRtdGVieDIzYyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/9WC8WTZsFxkRi/giphy.gif")
+    await ctx.send(embed=embed4)
+    
+    # EMBED 5 - GIF DE EXPLOSÃO/PODER
+    embed5 = discord.Embed(
+        title="⚡ PODER MÁXIMO!",
+        description="**Domine qualquer jogo com nossos scripts!**",
+        color=0xffff00
+    )
+    embed5.set_image(url="https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExNmswZGo5ZWYzdGM0dTRwZXVwdTY3NDhqbDAxNTh4OXFkN2c2MTNjcCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/CyeGh5u6xmhgY/giphy.gif")
+    await ctx.send(embed=embed5)
+    
+    # EMBED 6 - GIF DE FOGUETE/SUCESSO
+    embed6 = discord.Embed(
+        title="🚀 JUNTE-SE A NÓS!",
+        description="**Milhares de membros satisfeitos!**",
+        color=0xff00ff
+    )
+    embed6.set_image(url="https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExbWx3MjVpdGx1bG1ncjRyemhtcDc2NHJkYXY0NG1yNWZ3NWx0bzJobCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/mbar54jwxlnKs5nlOc/giphy.gif")
+    await ctx.send(embed=embed6)
+    
+    # EMBED 7 - GIF DE ESTRELAS/VIP
+    embed7 = discord.Embed(
+        title="⭐ SEJA VIP!",
+        description="**Benefícios exclusivos para membros VIP!**",
+        color=0xffd700
+    )
+    embed7.set_image(url="https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExMHZsbnUzd211OHV1bGpqZGNjMDhtdXV1NTVsaHM1bnc0bGt2bHVoaiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/trLxcp0TrMgd48yDA2/giphy.gif")
+    await ctx.send(embed=embed7)
+    
     try:
         await ctx.message.delete()
     except:
