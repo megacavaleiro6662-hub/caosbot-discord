@@ -1171,6 +1171,7 @@ async def mute_command(ctx, usuario: discord.Member = None, *, args=None):
 
 async def auto_unmute(usuario, mute_role, minutos):
     """Remove mute automaticamente após o tempo"""
+    import asyncio
     await asyncio.sleep(minutos * 60)
     try:
         if mute_role in usuario.roles:
@@ -1448,8 +1449,9 @@ async def timeout_command(ctx, usuario: discord.Member = None, *, args=None):
             motivo = "Sem motivo especificado"
     
     try:
-        # Calcular duração do timeout
-        timeout_duration = discord.utils.utcnow() + discord.timedelta(minutes=duracao_minutos)
+        # Calcular duração do timeout (CORRIGIDO - usar datetime.timedelta)
+        from datetime import timedelta
+        timeout_duration = discord.utils.utcnow() + timedelta(minutes=duracao_minutos)
         
         # Aplicar timeout
         await usuario.timeout(timeout_duration, reason=f"Timeout por {ctx.author.display_name} | Motivo: {motivo}")
@@ -1667,9 +1669,10 @@ async def apply_adv_punishment(message, user_id, violation_type, details):
         timeout_aplicado = False
         try:
             # Buscar o membro corretamente (garantir que é Member, não User)
+            from datetime import timedelta
             member = message.guild.get_member(message.author.id)
             if member:
-                timeout_duration = discord.utils.utcnow() + discord.timedelta(minutes=1)
+                timeout_duration = discord.utils.utcnow() + timedelta(minutes=1)
                 await member.timeout(timeout_duration, reason=f"{adv_level} - Spam automático")
                 timeout_aplicado = True
                 print(f"✅ Timeout de 1 minuto aplicado em {member.display_name}")
@@ -1732,8 +1735,8 @@ async def auto_moderate_progressive(message, violation_type, details=""):
     spam_warnings[user_id] += 1
     current_warnings = spam_warnings[user_id]
     
-    # Sistema: 5 msgs → aviso, 4 msgs → aviso, 3 msgs → ADV
-    if current_warnings == 1:
+    # Sistema CORRETO: 5 msgs = aviso 1, 4 msgs = aviso 2, 3 msgs = ADV
+    if current_warnings == 5:
         # PRIMEIRO AVISO (5 mensagens) - SEM castigo
         try:
             embed = discord.Embed(
@@ -1767,8 +1770,8 @@ async def auto_moderate_progressive(message, violation_type, details=""):
         except:
             pass
         
-    elif current_warnings == 2:
-        # SEGUNDO AVISO (4 mensagens) - SEM castigo
+    elif current_warnings == 9:
+        # SEGUNDO AVISO (9 mensagens = 4 msgs restantes) - SEM castigo
         try:
             embed = discord.Embed(
                 title="🚨 SEGUNDO AVISO - ÚLTIMA CHANCE",
@@ -1777,7 +1780,7 @@ async def auto_moderate_progressive(message, violation_type, details=""):
             )
             embed.add_field(
                 name="📋 Detalhes",
-                value=f"**Violação:** {violation_type}\n**Detalhes:** {details}\n**Canal:** {message.channel.mention}\n**Próximo:** ADV 1 + Timeout de 1 minuto (3 mensagens)",
+                value=f"**Violação:** {violation_type}\n**Detalhes:** {details}\n**Canal:** {message.channel.mention}\n**Próximo:** ADV 1 + Timeout de 1 minuto (mais 3 mensagens)",
                 inline=False
             )
             embed.add_field(
@@ -1801,8 +1804,8 @@ async def auto_moderate_progressive(message, violation_type, details=""):
         except:
             pass
             
-    elif current_warnings >= 3:
-        # TERCEIRA VIOLAÇÃO - APLICAR ADV usando a função
+    elif current_warnings >= 12:
+        # 12 mensagens ou mais = APLICAR ADV
         await apply_adv_punishment(message, user_id, violation_type, details)
         
         # RESETAR avisos de spam após aplicar ADV
