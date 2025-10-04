@@ -2225,38 +2225,30 @@ async def on_message(message):
     # ========================================
     
     # ========================================
-    # VERIFICAÇÕES ANTES DE ADICIONAR AO HISTÓRICO
+    # VERIFICAÇÕES IMEDIATAS (ANTES DO HISTÓRICO)
     # ========================================
     
-    # 1. VERIFICAR MENSAGEM MUITO LONGA (mais de 500 caracteres)
-    if len(content) > 500:
-        print(f"⚠️ MENSAGEM LONGA DETECTADA: {len(content)} caracteres")
+    # 1. MENSAGEM MUITO LONGA (mais de 100 caracteres) - CONTA COMO SPAM
+    if len(content) > 100:
+        print(f"🚨 MENSAGEM LONGA: {len(content)} caracteres - CONTANDO COMO SPAM")
         try:
             await message.delete()
         except:
             pass
-        await auto_moderate_spam(message, "mensagem muito longa", f"Enviou mensagem com {len(content)} caracteres (máx: 500)")
-        return
+        # NÃO RETORNA - deixa continuar para contar no sistema de flood
     
-    # 2. VERIFICAR SPAM DE @ (mais de 10 menções)
-    if content.count('@') > 10:
+    # 2. SPAM DE MENÇÕES (mais de 3 @) - CONTA COMO SPAM
+    if content.count('@') > 3:
+        print(f"🚨 SPAM DE @: {content.count('@')} menções - CONTANDO COMO SPAM")
         try:
             await message.delete()
         except:
             pass
-        await auto_moderate_spam(message, "spam de menções", f"Enviou {content.count('@')} menções em uma mensagem")
-        return
+        # NÃO RETORNA - deixa continuar para contar no sistema de flood
     
     # Adicionar mensagem ao histórico
     message_history[user_id].append(content.lower())
     user_message_times[user_id].append(current_time)
-    
-    # 3. VERIFICAR SPAM (mensagens idênticas) - 2 mensagens iguais já pega
-    if len(message_history[user_id]) >= 2:
-        recent_messages = list(message_history[user_id])[-2:]
-        if len(set(recent_messages)) == 1:  # Mensagens iguais
-            await auto_moderate_spam(message, "spam de mensagens idênticas", f"Enviou mensagens iguais: '{content[:50]}...'")
-            return
     
     # ========================================
     # SISTEMA ANTI-FLOOD PROGRESSIVO
@@ -2277,8 +2269,17 @@ async def on_message(message):
         recent_times = list(user_message_times[user_id])[-flood_limit:]
         time_diff = recent_times[-1] - recent_times[0]
         
-        if time_diff < 10:  # Mensagens em menos de 10 segundos (mais lento)
-            await auto_moderate_spam(message, "flood de mensagens", f"Enviou {flood_limit} mensagens em {time_diff:.1f} segundos")
+        print(f"📊 FLOOD CHECK: {flood_limit} msgs em {time_diff:.1f}s (limite: 10s)")
+        
+        if time_diff < 10:  # Mensagens em menos de 10 segundos
+            print(f"🚨 FLOOD DETECTADO! Chamando sistema anti-spam...")
+            try:
+                await auto_moderate_spam(message, "flood de mensagens", f"Enviou {flood_limit} mensagens em {time_diff:.1f} segundos")
+                print("✅ Sistema anti-spam executado com sucesso")
+            except Exception as e:
+                print(f"❌ ERRO no sistema anti-spam: {e}")
+                import traceback
+                traceback.print_exc()
             # Adicionar delay para evitar processar mensagens antigas
             await asyncio.sleep(0.5)
             return
@@ -2287,7 +2288,7 @@ async def on_message(message):
     # SISTEMA ANTI-CAPS
     # ========================================
     
-    # Verificar excesso de maiúsculas
+    # Verificar excesso de maiúsculas (CAPS LOCK)
     if len(content) > 10:  # Só verificar mensagens com mais de 10 caracteres
         uppercase_count = sum(1 for c in content if c.isupper())
         total_letters = sum(1 for c in content if c.isalpha())
@@ -2295,9 +2296,15 @@ async def on_message(message):
         if total_letters > 0:
             caps_percentage = (uppercase_count / total_letters) * 100
             
-            if caps_percentage > 70 and total_letters > 15:  # Mais de 70% em caps e mais de 15 letras
-                await auto_moderate_spam(message, "excesso de maiúsculas", f"Mensagem com {caps_percentage:.1f}% em maiúsculas")
-                return
+            # Mais de 60% em CAPS = spam
+            if caps_percentage > 60 and total_letters > 10:
+                print(f"🚨 CAPS LOCK: {caps_percentage:.1f}% em maiúsculas")
+                try:
+                    await message.delete()
+                except:
+                    pass
+                # Continua para contar no sistema de flood
+                # NÃO RETORNA - deixa contar como spam
     
     # ========================================
     # SISTEMA ANTI-MENTION SPAM
