@@ -2213,7 +2213,7 @@ async def on_message(message):
     if len(message_history[user_id]) >= 3:
         recent_messages = list(message_history[user_id])[-3:]
         if len(set(recent_messages)) == 1:  # Todas as mensagens são iguais
-            await auto_moderate_progressive(message, "spam de mensagens idênticas", f"Enviou 3 mensagens iguais: '{content[:50]}...'")
+            await auto_moderate_spam(message, "spam de mensagens idênticas", f"Enviou 3 mensagens iguais: '{content[:50]}...'")
             return
     
     # ========================================
@@ -2236,7 +2236,7 @@ async def on_message(message):
         time_diff = recent_times[-1] - recent_times[0]
         
         if time_diff < 8:  # Mensagens em menos de 8 segundos
-            await auto_moderate_progressive(message, "flood de mensagens", f"Enviou {flood_limit} mensagens em {time_diff:.1f} segundos")
+            await auto_moderate_spam(message, "flood de mensagens", f"Enviou {flood_limit} mensagens em {time_diff:.1f} segundos")
             return
     
     # ========================================
@@ -2252,7 +2252,7 @@ async def on_message(message):
             caps_percentage = (uppercase_count / total_letters) * 100
             
             if caps_percentage > 70 and total_letters > 15:  # Mais de 70% em caps e mais de 15 letras
-                await auto_moderate_progressive(message, "excesso de maiúsculas", f"Mensagem com {caps_percentage:.1f}% em maiúsculas")
+                await auto_moderate_spam(message, "excesso de maiúsculas", f"Mensagem com {caps_percentage:.1f}% em maiúsculas")
                 return
     
     # ========================================
@@ -2262,7 +2262,7 @@ async def on_message(message):
     # Verificar spam de menções
     mention_count = len(message.mentions) + len(message.role_mentions)
     if mention_count > 5:
-        await auto_moderate_progressive(message, "spam de menções", f"Mencionou {mention_count} usuários/cargos")
+        await auto_moderate_spam(message, "spam de menções", f"Mencionou {mention_count} usuários/cargos")
         return
     
     # ========================================
@@ -2280,7 +2280,7 @@ async def on_message(message):
     total_emojis = unicode_emojis + custom_emojis
     
     if total_emojis > 10:
-        await auto_moderate_progressive(message, "spam de emojis", f"Enviou {total_emojis} emojis em uma mensagem")
+        await auto_moderate_spam(message, "spam de emojis", f"Enviou {total_emojis} emojis em uma mensagem")
         return
     
     # ========================================
@@ -2292,7 +2292,7 @@ async def on_message(message):
     link_count = sum(content.lower().count(pattern) for pattern in link_patterns)
     
     if link_count > 3:
-        await auto_moderate_progressive(message, "spam de links", f"Enviou {link_count} links em uma mensagem")
+        await auto_moderate_spam(message, "spam de links", f"Enviou {link_count} links em uma mensagem")
         return
     
     # ========================================
