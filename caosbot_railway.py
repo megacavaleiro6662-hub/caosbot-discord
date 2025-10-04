@@ -1675,14 +1675,18 @@ async def auto_moderate_spam(message, violation_type, details=""):
         
     # ADV - 12 mensagens (5 + 4 + 3)
     elif count >= 12:
-        # Verificar quantas ADVs o usuário já tem
+        # Verificar quantas ADVs o usuário já tem (SEM incrementar ainda)
         if user_id not in user_warnings:
             user_warnings[user_id] = 0
         
+        # Verificar qual ADV vai receber BASEADO no que já tem
+        current_adv = user_warnings[user_id]
+        
+        # Incrementar APENAS quando aplicar ADV
         user_warnings[user_id] += 1
         adv_count = user_warnings[user_id]
         
-        # ADV 1
+        # ADV 1 (usuário não tinha ADV)
         if adv_count == 1:
             cargo = message.guild.get_role(ADV_CARGO_1_ID)
             adv_level = "ADV 1"
@@ -1788,7 +1792,7 @@ async def auto_moderate_spam(message, violation_type, details=""):
         embed.set_footer(text="Sistema Anti-Spam • Caos Hub")
         await message.channel.send(embed=embed)
         
-        # Resetar contador de spam
+        # RESETAR contador de spam (volta pro zero - precisa fazer 5→9→12 de novo)
         spam_warnings[user_id] = 0
         save_warnings_data()
 
@@ -2256,13 +2260,22 @@ async def on_message(message):
                 return
     
     # ========================================
-    # SISTEMA ANTI-MENTION SPAM
+    # SISTEMA ANTI-MENTION (MÁXIMO 1 MENÇÃO)
     # ========================================
     
-    # Verificar spam de menções
+    # Verificar menções (máximo 1 por mensagem)
     mention_count = len(message.mentions) + len(message.role_mentions)
-    if mention_count > 5:
-        await auto_moderate_spam(message, "spam de menções", f"Mencionou {mention_count} usuários/cargos")
+    if mention_count > 1:
+        await auto_moderate_spam(message, "excesso de menções", f"Mencionou {mention_count} usuários/cargos (máximo: 1)")
+        return
+    
+    # ========================================
+    # SISTEMA ANTI-MENSAGEM LONGA (MÁXIMO 90 CARACTERES)
+    # ========================================
+    
+    # Verificar tamanho da mensagem (máximo 90 caracteres)
+    if len(content) > 90:
+        await auto_moderate_spam(message, "mensagem muito longa", f"Mensagem com {len(content)} caracteres (máximo: 90)")
         return
     
     # ========================================
