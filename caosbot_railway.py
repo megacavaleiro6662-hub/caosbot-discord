@@ -1489,42 +1489,64 @@ async def auto_moderate_progressive(message, violation_type, details=""):
     
     # Sistema: 5 msgs → aviso, 4 msgs → aviso, 3 msgs → ADV
     if current_warnings == 1:
-        # PRIMEIRO AVISO (5 mensagens) - SEM timeout ainda
+        # PRIMEIRO AVISO (5 mensagens) - Enviar DM
         try:
             embed = discord.Embed(
                 title="⚠️ PRIMEIRO AVISO - SPAM DETECTADO",
-                description=f"Você pode levar advertência se continuar!",
+                description=f"Você foi detectado fazendo spam no servidor **{message.guild.name}**!",
                 color=0xffff00
             )
             embed.add_field(
                 name="📋 Detalhes",
-                value=f"**Violação:** {violation_type}\n**Detalhes:** {details}\n**Próximo:** Segundo aviso (4 mensagens)",
+                value=f"**Violação:** {violation_type}\n**Detalhes:** {details}\n**Canal:** {message.channel.mention}\n**Próximo:** Segundo aviso (4 mensagens)",
                 inline=False
             )
-            embed.set_footer(text="Sistema Anti-Spam • Caos Hub • Apenas você vê esta mensagem")
+            embed.add_field(
+                name="⚠️ Atenção",
+                value="Se continuar, você receberá **ADV 1** e **timeout de 1 minuto**!",
+                inline=False
+            )
+            embed.set_footer(text="Sistema Anti-Spam • Caos Hub")
             
-            # Enviar mensagem EFÊMERA (só o spammer vê)
-            await message.channel.send(f"{message.author.mention}", embed=embed, delete_after=10)
+            # Enviar DM (mensagem privada)
+            try:
+                await message.author.send(embed=embed)
+            except:
+                # Se não conseguir enviar DM, envia no canal e deleta rápido
+                msg = await message.channel.send(f"{message.author.mention}", embed=embed)
+                await asyncio.sleep(5)
+                await msg.delete()
         except:
             pass
         
     elif current_warnings == 2:
-        # SEGUNDO AVISO (4 mensagens) - SEM timeout ainda
+        # SEGUNDO AVISO (4 mensagens) - Enviar DM
         try:
             embed = discord.Embed(
                 title="🚨 SEGUNDO AVISO - ÚLTIMA CHANCE",
-                description=f"Próxima vez será ADV 1!",
+                description=f"**ATENÇÃO!** Você está prestes a receber uma advertência no servidor **{message.guild.name}**!",
                 color=0xff8c00
             )
             embed.add_field(
                 name="📋 Detalhes",
-                value=f"**Violação:** {violation_type}\n**Detalhes:** {details}\n**Próximo:** ADV 1 + Timeout (3 mensagens)",
+                value=f"**Violação:** {violation_type}\n**Detalhes:** {details}\n**Canal:** {message.channel.mention}\n**Próximo:** ADV 1 + Timeout de 1 minuto (3 mensagens)",
                 inline=False
             )
-            embed.set_footer(text="Sistema Anti-Spam • Caos Hub • Apenas você vê esta mensagem")
+            embed.add_field(
+                name="🚨 ÚLTIMA CHANCE",
+                value="Se enviar mais spam, você receberá **ADV 1** automaticamente e ficará **1 minuto em timeout**!",
+                inline=False
+            )
+            embed.set_footer(text="Sistema Anti-Spam • Caos Hub")
             
-            # Enviar mensagem EFÊMERA (só o spammer vê)
-            await message.channel.send(f"{message.author.mention}", embed=embed, delete_after=10)
+            # Enviar DM (mensagem privada)
+            try:
+                await message.author.send(embed=embed)
+            except:
+                # Se não conseguir enviar DM, envia no canal e deleta rápido
+                msg = await message.channel.send(f"{message.author.mention}", embed=embed)
+                await asyncio.sleep(5)
+                await msg.delete()
         except:
             pass
             
@@ -1572,8 +1594,11 @@ async def auto_moderate_progressive(message, violation_type, details=""):
                 await message.author.add_roles(cargo)
             
             # APLICAR TIMEOUT DE 1 MINUTO quando levar ADV
-            timeout_duration = discord.utils.utcnow() + discord.timedelta(minutes=1)
-            await message.author.timeout(timeout_duration, reason=f"{adv_level} - Spam automático")
+            try:
+                timeout_duration = discord.utils.utcnow() + discord.timedelta(minutes=1)
+                await message.author.timeout(timeout_duration, reason=f"{adv_level} - Spam automático")
+            except Exception as timeout_error:
+                print(f"Erro ao aplicar timeout: {timeout_error}")
             
             embed = discord.Embed(
                 title=f"🚨 {adv_level.upper()} APLICADA AUTOMATICAMENTE",
