@@ -1655,10 +1655,10 @@ async def auto_moderate_spam(message, violation_type, details=""):
         )
         embed.set_footer(text="Sistema Anti-Spam • Caos Hub")
         await message.channel.send(embed=embed)
-        spam_warnings[user_id] = 0  # RESETAR contador
+        # NÃO RESETAR - continua contando
         
-    # SEGUNDO AVISO - EXATAMENTE 4 mensagens
-    elif count == 4:
+    # SEGUNDO AVISO - 9 mensagens (5 + 4)
+    elif count == 9:
         embed = discord.Embed(
             title="🚨 SEGUNDO AVISO - ÚLTIMA CHANCE",
             description=f"**{message.author.display_name}**, PARE DE FAZER SPAM!",
@@ -1671,10 +1671,10 @@ async def auto_moderate_spam(message, violation_type, details=""):
         )
         embed.set_footer(text="Sistema Anti-Spam • Caos Hub")
         await message.channel.send(embed=embed)
-        spam_warnings[user_id] = 0  # RESETAR contador
+        # NÃO RESETAR - continua contando
         
-    # ADV - EXATAMENTE 3 mensagens
-    elif count == 3:
+    # ADV - 12 mensagens (5 + 4 + 3)
+    elif count >= 12:
         # Verificar quantas ADVs o usuário já tem
         if user_id not in user_warnings:
             user_warnings[user_id] = 0
