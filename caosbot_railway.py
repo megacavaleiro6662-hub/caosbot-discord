@@ -2217,14 +2217,14 @@ async def on_message(message):
     content = message.content
     
     # ========================================
-    # SISTEMA ANTI-MENÇÃO (MÁXIMO 2 MENÇÕES) - VERIFICAR PRIMEIRO
+    # SISTEMA ANTI-MENÇÃO (MÁXIMO 1 MENÇÃO) - VERIFICAR PRIMEIRO
     # ========================================
     
-    # Verificar menções (máximo 2 por mensagem, contando repetições)
+    # Verificar menções (permitido apenas 1, se tiver 2 ou mais já avisa)
     mention_count = len(message.raw_mentions) + len(message.raw_role_mentions)
     print(f"[DEBUG MENÇÃO] Usuário: {message.author} | Menções: {mention_count}")  # DEBUG
     
-    if mention_count > 2:  # agora permite até 2
+    if mention_count >= 2:  # agora dispara com 2 ou mais
         try:
             await message.delete()
         except:
@@ -2244,7 +2244,7 @@ async def on_message(message):
         )
         embed.add_field(
             name="📋 Regra",
-            value=f"**Máximo permitido:** 2 menções por mensagem\n**Você mencionou:** {', '.join(mencoes)}",
+            value=f"**Máximo permitido:** 1 menção por mensagem\n**Você mencionou:** {', '.join(mencoes)}",
             inline=False
         )
         embed.set_footer(text="Sistema de Moderação • Caos Hub")
