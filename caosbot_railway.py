@@ -1,4 +1,4 @@
-﻿# Bot Discord Caos - Python
+# Bot Discord Caos - Python
 # Arquivo principal do bot
 
 import discord
@@ -2207,28 +2207,55 @@ async def on_message(message):
     if message.author == bot.user:
         return
     
-    # Ignorar moderadores (usuários com permissão de gerenciar mensagens)
-    if message.author.guild_permissions.manage_messages:
-        await bot.process_commands(message)
+    # Ignorar DMs
+    if not message.guild:
         return
+    
+    # SISTEMA ATIVO PARA TODO MUNDO (removido filtro de moderador para testes)
     
     user_id = message.author.id
     current_time = time.time()
     content = message.content
     
+    # LOG DE DEBUG
+    print(f"🔍 Processando mensagem de {message.author.name}: '{content[:50]}...'")
+    
     # ========================================
     # SISTEMA ANTI-SPAM
     # ========================================
+    
+    # ========================================
+    # VERIFICAÇÕES ANTES DE ADICIONAR AO HISTÓRICO
+    # ========================================
+    
+    # 1. VERIFICAR MENSAGEM MUITO LONGA (mais de 500 caracteres)
+    if len(content) > 500:
+        print(f"⚠️ MENSAGEM LONGA DETECTADA: {len(content)} caracteres")
+        try:
+            await message.delete()
+        except:
+            pass
+        await auto_moderate_spam(message, "mensagem muito longa", f"Enviou mensagem com {len(content)} caracteres (máx: 500)")
+        return
+    
+    # 2. VERIFICAR SPAM DE @ (mais de 10 menções)
+    if content.count('@') > 10:
+        try:
+            await message.delete()
+        except:
+            pass
+        await auto_moderate_spam(message, "spam de menções", f"Enviou {content.count('@')} menções em uma mensagem")
+        return
     
     # Adicionar mensagem ao histórico
     message_history[user_id].append(content.lower())
     user_message_times[user_id].append(current_time)
     
-    # Verificar spam (mensagens idênticas)
-    if len(message_history[user_id]) >= 3:
-        recent_messages = list(message_history[user_id])[-3:]
-        if len(set(recent_messages)) == 1:  # Todas as mensagens são iguais
-            await auto_moderate_spam(message, "spam de mensagens idênticas", f"Enviou 3 mensagens iguais: '{content[:50]}...'")
+    # 3. VERIFICAR SPAM (mensagens idênticas) - 2 mensagens iguais já pega
+    if len(message_history[user_id]) >= 2:
+        recent_messages = list(message_history[user_id])[-2:]
+        if len(set(recent_messages)) == 1:  # Mensagens iguais
+            await auto_moderate_spam(message, "spam de mensagens idênticas", f"Enviou mensagens iguais: '{content[:50]}...'")
             return
     
     # ========================================
