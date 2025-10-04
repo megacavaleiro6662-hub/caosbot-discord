@@ -2847,97 +2847,97 @@ class TicketModal(discord.ui.Modal, title="🎫 Informações do Ticket"):
             if not target_category:
                 await interaction.response.send_message("❌ Categoria não encontrada! Verifique se o bot tem acesso.", ephemeral=True)
                 return
-        
-        # Criar canal de ticket
-        overwrites = {
-            interaction.guild.default_role: discord.PermissionOverwrite(read_messages=False),
-            interaction.user: discord.PermissionOverwrite(read_messages=True, send_messages=True),
-            interaction.guild.me: discord.PermissionOverwrite(read_messages=True, send_messages=True)
-        }
-        
-        # Adicionar permissões para staff
-        for role_id in self.config.get('staff_role_ids', []):
-            role = interaction.guild.get_role(role_id)
-            if role:
-                overwrites[role] = discord.PermissionOverwrite(read_messages=True, send_messages=True)
-        
-        # Contar quantos tickets já existem na categoria para numeração
-        ticket_number = 1
-        for channel in target_category.channels:
-            if channel.name.startswith("carrinho-"):
-                try:
-                    num = int(channel.name.split("-")[1])
-                    if num >= ticket_number:
-                        ticket_number = num + 1
-                except:
-                    pass
-        
-        # Criar canal com nome numerado
-        ticket_channel = await target_category.create_text_channel(
-            name=f"carrinho-{ticket_number}",
-            overwrites=overwrites
-        )
-        
-        # Embed BONITO com todas as informações
-        embed = discord.Embed(
-            title="🎫 NOVO TICKET ABERTO",
-            description=f"**{self.config.get('welcome_message')}**\n\n*Nossa equipe responderá o mais breve possível!*",
-            color=cor_embed,
-            timestamp=discord.utils.utcnow()
-        )
-        
-        # Informações do usuário
-        embed.set_author(
-            name=f"Ticket de {interaction.user.display_name}",
-            icon_url=interaction.user.display_avatar.url
-        )
-        
-        # Campos organizados
-        embed.add_field(
-            name="👤 Aberto por",
-            value=f"{interaction.user.mention}\n`ID: {interaction.user.id}`",
-            inline=True
-        )
-        
-        embed.add_field(
-            name="🏷️ Categoria",
-            value=categoria_valor,
-            inline=True
-        )
-        
-        embed.add_field(
-            name="⚡ Prioridade",
-            value=prioridade_valor,
-            inline=True
-        )
-        
-        embed.add_field(
-            name="📋 Assunto",
-            value=f"```{self.assunto.value}```",
-            inline=False
-        )
-        
-        embed.add_field(
-            name="📝 Descrição Detalhada",
-            value=self.descricao.value[:1000],
-            inline=False
-        )
-        
-        embed.add_field(
-            name="ℹ️ Informações Adicionais",
-            value=info_adicional_valor[:500],
-            inline=False
-        )
-        
-        embed.set_footer(
-            text="Sistema de Tickets • Caos Hub",
-            icon_url=interaction.guild.icon.url if interaction.guild.icon else None
-        )
-        
-        # View com botão para fechar
-        close_view = CloseTicketView()
-        await ticket_channel.send(f"{interaction.user.mention}", embed=embed, view=close_view)
-        
+            
+            # Criar canal de ticket
+            overwrites = {
+                interaction.guild.default_role: discord.PermissionOverwrite(read_messages=False),
+                interaction.user: discord.PermissionOverwrite(read_messages=True, send_messages=True),
+                interaction.guild.me: discord.PermissionOverwrite(read_messages=True, send_messages=True)
+            }
+            
+            # Adicionar permissões para staff
+            for role_id in self.config.get('staff_role_ids', []):
+                role = interaction.guild.get_role(role_id)
+                if role:
+                    overwrites[role] = discord.PermissionOverwrite(read_messages=True, send_messages=True)
+            
+            # Contar quantos tickets já existem na categoria para numeração
+            ticket_number = 1
+            for channel in target_category.channels:
+                if channel.name.startswith("carrinho-"):
+                    try:
+                        num = int(channel.name.split("-")[1])
+                        if num >= ticket_number:
+                            ticket_number = num + 1
+                    except:
+                        pass
+            
+            # Criar canal com nome numerado
+            ticket_channel = await target_category.create_text_channel(
+                name=f"carrinho-{ticket_number}",
+                overwrites=overwrites
+            )
+            
+            # Embed BONITO com todas as informações
+            embed = discord.Embed(
+                title="🎫 NOVO TICKET ABERTO",
+                description=f"**{self.config.get('welcome_message')}**\n\n*Nossa equipe responderá o mais breve possível!*",
+                color=cor_embed,
+                timestamp=discord.utils.utcnow()
+            )
+            
+            # Informações do usuário
+            embed.set_author(
+                name=f"Ticket de {interaction.user.display_name}",
+                icon_url=interaction.user.display_avatar.url
+            )
+            
+            # Campos organizados
+            embed.add_field(
+                name="👤 Aberto por",
+                value=f"{interaction.user.mention}\n`ID: {interaction.user.id}`",
+                inline=True
+            )
+            
+            embed.add_field(
+                name="🏷️ Categoria",
+                value=categoria_valor,
+                inline=True
+            )
+            
+            embed.add_field(
+                name="⚡ Prioridade",
+                value=prioridade_valor,
+                inline=True
+            )
+            
+            embed.add_field(
+                name="📋 Assunto",
+                value=f"```{self.assunto.value}```",
+                inline=False
+            )
+            
+            embed.add_field(
+                name="📝 Descrição Detalhada",
+                value=self.descricao.value[:1000],
+                inline=False
+            )
+            
+            embed.add_field(
+                name="ℹ️ Informações Adicionais",
+                value=info_adicional_valor[:500],
+                inline=False
+            )
+            
+            embed.set_footer(
+                text="Sistema de Tickets • Caos Hub",
+                icon_url=interaction.guild.icon.url if interaction.guild.icon else None
+            )
+            
+            # View com botão para fechar
+            close_view = CloseTicketView()
+            await ticket_channel.send(f"{interaction.user.mention}", embed=embed, view=close_view)
+            
             # Mensagem de confirmação
             await interaction.response.send_message(
                 f"✅ **Ticket criado com sucesso!**\n\n"
@@ -2956,7 +2956,7 @@ class TicketModal(discord.ui.Modal, title="🎫 Informações do Ticket"):
                 ephemeral=True
             )
         except Exception as e:
-            print(f"[ERRO TICKET] {e}")  # Log do erro
+            print(f"[ERRO TICKET] {e}")
             await interaction.response.send_message(
                 f"❌ **Erro ao criar ticket!**\n\n"
                 f"Detalhes: `{str(e)}`\n\n"
