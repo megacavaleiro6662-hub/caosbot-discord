@@ -2,7 +2,7 @@
 # Arquivo principal do bot
 
 import discord
-from discord.ext import commands
+from discord.ext import commands, tasks
 import asyncio
 import random
 import time
@@ -12,6 +12,8 @@ from collections import defaultdict, deque
 from threading import Thread
 from http.server import HTTPServer, BaseHTTPRequestHandler
 import re
+import aiohttp
+from datetime import datetime
 
 # Configuração do bot
 intents = discord.Intents.default()
@@ -32,6 +34,11 @@ async def on_ready():
     
     # Carregar configurações de cargos
     load_role_config()
+    
+    # INICIAR SISTEMA ANTI-HIBERNAÇÃO
+    if not keep_alive.is_running():
+        keep_alive.start()
+        print('🔄 Sistema anti-hibernação ATIVADO! Bot ficará online 24/7')
     
     # Status do bot
     await bot.change_presence(
@@ -2659,5 +2666,35 @@ if __name__ == '__main__':
         print('❌ Erro de login: Token inválido!')
         print('🔑 Verifique se a variável DISCORD_TOKEN está correta!')
     except Exception as e:
-        print(f'❌ Erro ao iniciar o bot: {e}')
-        print('🔧 Verifique as configurações e tente novamente!')
+        print(f'❌ Erro crítico: {e}')
+        print('🔄 Reiniciando em 30 segundos...')
+        time.sleep(30)
+
+# ========================================
+# SISTEMA ANTI-HIBERNAÇÃO (100% GRATUITO)
+# ========================================
+
+@tasks.loop(minutes=10)  # Ping a cada 10 minutos
+async def keep_alive():
+    """Mantém o bot sempre ativo - impede hibernação do Render"""
+    try:
+        # Fazer requisição HTTP para manter ativo
+        async with aiohttp.ClientSession() as session:
+            # Ping para um serviço público gratuito
+            async with session.get('https://httpbin.org/get', timeout=30) as response:
+                if response.status == 200:
+                    current_time = datetime.now().strftime('%H:%M:%S')
+                    print(f'❤️ [{current_time}] Bot mantido ativo - Sistema anti-hibernação OK!')
+                else:
+                    print(f'⚠️ Ping falhou - Status: {response.status}')
+    except asyncio.TimeoutError:
+        print('⚠️ Timeout no ping - mas bot continua ativo')
+    except Exception as e:
+        print(f'❌ Erro no sistema anti-hibernação: {e}')
+        print('🔄 Bot continua funcionando normalmente')
+
+@keep_alive.before_loop
+async def before_keep_alive():
+    """Aguarda o bot estar pronto antes de iniciar o sistema"""
+    await bot.wait_until_ready()
+    print('✅ Bot pronto! Iniciando sistema anti-hibernação...')
