@@ -2217,24 +2217,25 @@ async def on_message(message):
     content = message.content
     
     # ========================================
-    # SISTEMA ANTI-MENÇÃO (MÁXIMO 1 MENÇÃO) - VERIFICAR PRIMEIRO
+    # SISTEMA ANTI-MENÇÃO (MÁXIMO 2 MENÇÕES) - VERIFICAR PRIMEIRO
     # ========================================
     
-    # Verificar menções (máximo 1 por mensagem)
-    mention_count = len(message.mentions) + len(message.role_mentions)
+    # Verificar menções (máximo 2 por mensagem, contando repetições)
+    mention_count = len(message.raw_mentions) + len(message.raw_role_mentions)
     print(f"[DEBUG MENÇÃO] Usuário: {message.author} | Menções: {mention_count}")  # DEBUG
-    if mention_count > 1:
+    
+    if mention_count > 2:  # agora permite até 2
         try:
             await message.delete()
         except:
             pass
         
-        # Criar lista de menções
+        # Criar lista de menções (com repetições preservadas)
         mencoes = []
-        for user in message.mentions:
-            mencoes.append(user.mention)
-        for role in message.role_mentions:
-            mencoes.append(role.mention)
+        for uid in message.raw_mentions:
+            mencoes.append(f"<@{uid}>")
+        for rid in message.raw_role_mentions:
+            mencoes.append(f"<@&{rid}>")
         
         embed = discord.Embed(
             title="⚠️ EXCESSO DE MENÇÕES",
@@ -2243,7 +2244,7 @@ async def on_message(message):
         )
         embed.add_field(
             name="📋 Regra",
-            value=f"**Máximo:** 1 menção por mensagem\n**Você mencionou:** {', '.join(mencoes)}",
+            value=f"**Máximo permitido:** 2 menções por mensagem\n**Você mencionou:** {', '.join(mencoes)}",
             inline=False
         )
         embed.set_footer(text="Sistema de Moderação • Caos Hub")
