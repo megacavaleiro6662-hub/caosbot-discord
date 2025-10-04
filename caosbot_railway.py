@@ -2222,6 +2222,7 @@ async def on_message(message):
     
     # Verificar menções (máximo 1 por mensagem)
     mention_count = len(message.mentions) + len(message.role_mentions)
+    print(f"[DEBUG MENÇÃO] Usuário: {message.author} | Menções: {mention_count}")  # DEBUG
     if mention_count > 1:
         try:
             await message.delete()
