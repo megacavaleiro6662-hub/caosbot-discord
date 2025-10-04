@@ -1629,6 +1629,14 @@ async def auto_moderate_spam(message, violation_type, details=""):
     """Sistema anti-spam: 5 msgs = aviso 1, 4 msgs = aviso 2, 3 msgs = ADV + TIMEOUT"""
     user_id = message.author.id
     
+    # Verificar se usuário já foi banido (evitar processar mensagens antigas)
+    try:
+        member = message.guild.get_member(user_id)
+        if not member:
+            return  # Usuário não existe mais (foi banido)
+    except:
+        return
+    
     # Deletar mensagem
     try:
         await message.delete()
@@ -1730,8 +1738,15 @@ async def auto_moderate_spam(message, violation_type, details=""):
             await message.channel.send(embed=embed)
             
             await message.author.ban(reason="ADV 3 - Spam repetido")
+            
+            # Limpar TODOS os dados do usuário
             user_warnings[user_id] = 0
             spam_warnings[user_id] = 0
+            if user_id in message_history:
+                message_history[user_id].clear()
+            if user_id in user_message_times:
+                user_message_times[user_id].clear()
+            
             save_warnings_data()
             return
         
@@ -2235,8 +2250,10 @@ async def on_message(message):
         recent_times = list(user_message_times[user_id])[-flood_limit:]
         time_diff = recent_times[-1] - recent_times[0]
         
-        if time_diff < 8:  # Mensagens em menos de 8 segundos
+        if time_diff < 10:  # Mensagens em menos de 10 segundos (mais lento)
             await auto_moderate_spam(message, "flood de mensagens", f"Enviou {flood_limit} mensagens em {time_diff:.1f} segundos")
+            # Adicionar delay para evitar processar mensagens antigas
+            await asyncio.sleep(0.5)
             return
     
     # ========================================
