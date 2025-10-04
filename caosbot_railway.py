@@ -2650,6 +2650,306 @@ async def removerole_error(ctx, error):
         await ctx.reply(embed=embed)
 
 # ========================================
+# COMANDO CRIAR CATEGORIA - INTERATIVO E COMPLETO
+# ========================================
+
+def is_founder_or_subdono():
+    """Decorator para verificar se é Founder ou Sub Dono"""
+    async def predicate(ctx):
+        founder_id = 1365636960651051069
+        subdono_id = 1365636456386789437
+        
+        user_roles = [role.id for role in ctx.author.roles]
+        return founder_id in user_roles or subdono_id in user_roles or ctx.author.guild_permissions.administrator
+    
+    return commands.check(predicate)
+
+@bot.command(name='criarcategoria')
+@is_founder_or_subdono()
+async def criar_categoria_command(ctx):
+    """Cria uma categoria nova com configurações personalizadas - INTERATIVO"""
+    
+    def check(m):
+        return m.author == ctx.author and m.channel == ctx.channel
+    
+    try:
+        # ========================================
+        # PASSO 1: NOME DA CATEGORIA
+        # ========================================
+        embed = discord.Embed(
+            title="📁 CRIAR CATEGORIA - PASSO 1/5",
+            description="**Digite o nome da categoria:**\n\nExemplo: `Moderação`, `Staff`, `VIP`",
+            color=0x00aaff
+        )
+        embed.set_footer(text="Sistema de Categorias • Caos Hub | Digite 'cancelar' para cancelar")
+        await ctx.reply(embed=embed)
+        
+        msg = await bot.wait_for('message', check=check, timeout=60.0)
+        if msg.content.lower() == 'cancelar':
+            await ctx.send("❌ Criação cancelada!")
+            return
+        
+        nome_categoria = msg.content
+        
+        # ========================================
+        # PASSO 2: EMOJI (OPCIONAL)
+        # ========================================
+        embed = discord.Embed(
+            title="😀 CRIAR CATEGORIA - PASSO 2/5",
+            description=f"**Quer adicionar um emoji antes do nome?**\n\nCategoria atual: `{nome_categoria}`\n\n**Digite o emoji ou 'pular' para pular:**\n\nExemplo: `🛡️`, `👑`, `🔥`",
+            color=0x00aaff
+        )
+        embed.set_footer(text="Sistema de Categorias • Caos Hub")
+        await ctx.send(embed=embed)
+        
+        msg = await bot.wait_for('message', check=check, timeout=60.0)
+        if msg.content.lower() not in ['pular', 'cancelar']:
+            nome_categoria = f"{msg.content} {nome_categoria}"
+        elif msg.content.lower() == 'cancelar':
+            await ctx.send("❌ Criação cancelada!")
+            return
+        
+        # ========================================
+        # PASSO 3: CARGOS QUE PODEM VER
+        # ========================================
+        embed = discord.Embed(
+            title="🔐 CRIAR CATEGORIA - PASSO 3/5",
+            description=f"**Quais cargos podem VER esta categoria?**\n\nCategoria: `{nome_categoria}`\n\n**Opções:**\n`1` - Apenas Staff (ADM, STF, MOD, SBM)\n`2` - Apenas Administradores\n`3` - Todos os membros\n`4` - Personalizado (você escolhe os cargos)",
+            color=0x00aaff
+        )
+        embed.set_footer(text="Sistema de Categorias • Caos Hub")
+        await ctx.send(embed=embed)
+        
+        msg = await bot.wait_for('message', check=check, timeout=60.0)
+        if msg.content.lower() == 'cancelar':
+            await ctx.send("❌ Criação cancelada!")
+            return
+        
+        opcao_permissao = msg.content
+        
+        cargos_permitidos = []
+        
+        if opcao_permissao == '1':
+            # Staff completo
+            cargos_permitidos = [
+                1365633918593794079,  # ADM
+                1365634226254254150,  # STF
+                1365633102973763595,  # MOD
+                1365631940434333748   # SBM
+            ]
+        elif opcao_permissao == '2':
+            # Apenas ADM
+            cargos_permitidos = [1365633918593794079]
+        elif opcao_permissao == '3':
+            # Todos (não adiciona restrição)
+            cargos_permitidos = None
+        elif opcao_permissao == '4':
+            # Personalizado
+            embed = discord.Embed(
+                title="🎯 CARGOS PERSONALIZADOS",
+                description="**Mencione os cargos que podem ver** (separados por espaço):\n\nExemplo: `@Moderador @VIP @Staff`",
+                color=0x00aaff
+            )
+            await ctx.send(embed=embed)
+            
+            msg = await bot.wait_for('message', check=check, timeout=60.0)
+            if msg.content.lower() == 'cancelar':
+                await ctx.send("❌ Criação cancelada!")
+                return
+            
+            cargos_permitidos = [role.id for role in msg.role_mentions]
+        
+        # ========================================
+        # PASSO 4: CANAIS DENTRO DA CATEGORIA
+        # ========================================
+        embed = discord.Embed(
+            title="💬 CRIAR CATEGORIA - PASSO 4/5",
+            description=f"**Quantos canais de TEXTO criar dentro?**\n\nCategoria: `{nome_categoria}`\n\n**Digite um número de 0 a 10:**\n\nExemplo: `3` (cria 3 canais)",
+            color=0x00aaff
+        )
+        embed.set_footer(text="Sistema de Categorias • Caos Hub")
+        await ctx.send(embed=embed)
+        
+        msg = await bot.wait_for('message', check=check, timeout=60.0)
+        if msg.content.lower() == 'cancelar':
+            await ctx.send("❌ Criação cancelada!")
+            return
+        
+        num_canais_texto = int(msg.content) if msg.content.isdigit() else 0
+        
+        nomes_canais_texto = []
+        if num_canais_texto > 0:
+            embed = discord.Embed(
+                title="📝 NOMES DOS CANAIS DE TEXTO",
+                description=f"**Digite os nomes dos {num_canais_texto} canais** (um por linha):\n\nExemplo:\n`chat-geral`\n`avisos`\n`logs`",
+                color=0x00aaff
+            )
+            await ctx.send(embed=embed)
+            
+            for i in range(num_canais_texto):
+                msg = await bot.wait_for('message', check=check, timeout=60.0)
+                if msg.content.lower() == 'cancelar':
+                    await ctx.send("❌ Criação cancelada!")
+                    return
+                nomes_canais_texto.append(msg.content)
+        
+        # ========================================
+        # PASSO 5: CANAIS DE VOZ
+        # ========================================
+        embed = discord.Embed(
+            title="🔊 CRIAR CATEGORIA - PASSO 5/5",
+            description=f"**Quantos canais de VOZ criar dentro?**\n\nCategoria: `{nome_categoria}`\n\n**Digite um número de 0 a 10:**\n\nExemplo: `2` (cria 2 canais de voz)",
+            color=0x00aaff
+        )
+        embed.set_footer(text="Sistema de Categorias • Caos Hub")
+        await ctx.send(embed=embed)
+        
+        msg = await bot.wait_for('message', check=check, timeout=60.0)
+        if msg.content.lower() == 'cancelar':
+            await ctx.send("❌ Criação cancelada!")
+            return
+        
+        num_canais_voz = int(msg.content) if msg.content.isdigit() else 0
+        
+        nomes_canais_voz = []
+        if num_canais_voz > 0:
+            embed = discord.Embed(
+                title="🎤 NOMES DOS CANAIS DE VOZ",
+                description=f"**Digite os nomes dos {num_canais_voz} canais de voz** (um por linha):\n\nExemplo:\n`Sala 1`\n`Reunião`\n`AFK`",
+                color=0x00aaff
+            )
+            await ctx.send(embed=embed)
+            
+            for i in range(num_canais_voz):
+                msg = await bot.wait_for('message', check=check, timeout=60.0)
+                if msg.content.lower() == 'cancelar':
+                    await ctx.send("❌ Criação cancelada!")
+                    return
+                nomes_canais_voz.append(msg.content)
+        
+        # ========================================
+        # CONFIRMAÇÃO FINAL
+        # ========================================
+        permissoes_texto = ""
+        if cargos_permitidos is None:
+            permissoes_texto = "Todos os membros"
+        elif opcao_permissao == '1':
+            permissoes_texto = "Staff completo (ADM, STF, MOD, SBM)"
+        elif opcao_permissao == '2':
+            permissoes_texto = "Apenas Administradores"
+        else:
+            permissoes_texto = f"{len(cargos_permitidos)} cargo(s) personalizado(s)"
+        
+        embed = discord.Embed(
+            title="✅ CONFIRMAÇÃO FINAL",
+            description="**Revise as informações:**",
+            color=0x00ff00
+        )
+        embed.add_field(name="📁 Nome da Categoria", value=f"`{nome_categoria}`", inline=False)
+        embed.add_field(name="🔐 Permissões", value=permissoes_texto, inline=False)
+        embed.add_field(name="💬 Canais de Texto", value=f"{num_canais_texto} canal(is)", inline=True)
+        embed.add_field(name="🔊 Canais de Voz", value=f"{num_canais_voz} canal(is)", inline=True)
+        
+        if nomes_canais_texto:
+            embed.add_field(name="📝 Canais de Texto", value="\\n".join([f"• {nome}" for nome in nomes_canais_texto]), inline=False)
+        if nomes_canais_voz:
+            embed.add_field(name="🎤 Canais de Voz", value="\\n".join([f"• {nome}" for nome in nomes_canais_voz]), inline=False)
+        
+        embed.add_field(name="⚠️ Confirmação", value="Digite `sim` para criar ou `cancelar` para cancelar", inline=False)
+        embed.set_footer(text="Sistema de Categorias • Caos Hub")
+        await ctx.send(embed=embed)
+        
+        msg = await bot.wait_for('message', check=check, timeout=60.0)
+        if msg.content.lower() != 'sim':
+            await ctx.send("❌ Criação cancelada!")
+            return
+        
+        # ========================================
+        # CRIAR CATEGORIA E CANAIS
+        # ========================================
+        
+        embed_criando = discord.Embed(
+            title="⏳ CRIANDO CATEGORIA...",
+            description="Aguarde enquanto crio a categoria e os canais...",
+            color=0xffaa00
+        )
+        msg_status = await ctx.send(embed=embed_criando)
+        
+        # Criar categoria
+        categoria = await ctx.guild.create_category(nome_categoria)
+        
+        # Configurar permissões
+        if cargos_permitidos is not None:
+            # Bloquear @everyone
+            await categoria.set_permissions(ctx.guild.default_role, view_channel=False)
+            
+            # Permitir cargos específicos
+            for cargo_id in cargos_permitidos:
+                cargo = ctx.guild.get_role(cargo_id)
+                if cargo:
+                    await categoria.set_permissions(cargo, view_channel=True, send_messages=True, connect=True)
+        
+        # Criar canais de texto
+        canais_criados_texto = []
+        for nome in nomes_canais_texto:
+            canal = await categoria.create_text_channel(nome)
+            canais_criados_texto.append(canal.mention)
+        
+        # Criar canais de voz
+        canais_criados_voz = []
+        for nome in nomes_canais_voz:
+            canal = await categoria.create_voice_channel(nome)
+            canais_criados_voz.append(canal.name)
+        
+        # ========================================
+        # MENSAGEM DE SUCESSO
+        # ========================================
+        
+        embed_sucesso = discord.Embed(
+            title="🎉 CATEGORIA CRIADA COM SUCESSO!",
+            description=f"A categoria **{nome_categoria}** foi criada perfeitamente!",
+            color=0x00ff00
+        )
+        
+        embed_sucesso.add_field(name="📁 Categoria", value=f"`{nome_categoria}`", inline=False)
+        
+        if canais_criados_texto:
+            embed_sucesso.add_field(name="💬 Canais de Texto Criados", value="\\n".join(canais_criados_texto), inline=False)
+        
+        if canais_criados_voz:
+            embed_sucesso.add_field(name="🔊 Canais de Voz Criados", value="\\n".join([f"• {nome}" for nome in canais_criados_voz]), inline=False)
+        
+        embed_sucesso.add_field(name="🔐 Permissões", value=permissoes_texto, inline=False)
+        embed_sucesso.add_field(name="👤 Criado por", value=ctx.author.mention, inline=True)
+        
+        embed_sucesso.set_footer(text="Sistema de Categorias • Caos Hub")
+        embed_sucesso.set_thumbnail(url=ctx.guild.icon.url if ctx.guild.icon else None)
+        
+        await msg_status.edit(embed=embed_sucesso)
+        
+    except asyncio.TimeoutError:
+        await ctx.send("⏰ Tempo esgotado! Criação cancelada.")
+    except Exception as e:
+        embed_erro = discord.Embed(
+            title="❌ ERRO",
+            description=f"Ocorreu um erro ao criar a categoria: {e}",
+            color=0xff0000
+        )
+        await ctx.send(embed=embed_erro)
+
+@criar_categoria_command.error
+async def criar_categoria_error(ctx, error):
+    if isinstance(error, commands.CheckFailure):
+        embed = discord.Embed(
+            title="❌ Permissão Negada",
+            description="Apenas **Founder** e **Sub Dono** podem usar este comando!",
+            color=0xff0000
+        )
+        embed.set_footer(text="Sistema de Categorias • Caos Hub")
+        await ctx.reply(embed=embed)
+
+
+# ========================================
 # COMANDO SCANSERVER - ESCANEAR SERVIDOR COMPLETO
 # ========================================
 
