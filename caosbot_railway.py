@@ -2412,9 +2412,10 @@ async def ticket_command(ctx, acao=None, *args):
         embed.add_field(
             name="📋 Comandos Disponíveis",
             value=(
+                "`.ticket config` - ⭐ **Configuração interativa** (RECOMENDADO)\n"
                 "`.ticket setup` - Cria mensagem de abertura\n"
-                "`.ticket categoria [ID]` - Define categoria\n"
-                "`.ticket staff [IDs]` - Define cargos staff (separados por vírgula)\n"
+                "`.ticket categoria [ID]` - Define categoria manualmente\n"
+                "`.ticket staff [IDs]` - Define cargos staff manualmente\n"
                 "`.ticket mensagem [texto]` - Define mensagem de boas-vindas\n"
                 "`.ticket ativar` - Ativa o sistema\n"
                 "`.ticket desativar` - Desativa o sistema\n"
@@ -2542,6 +2543,34 @@ async def ticket_command(ctx, acao=None, *args):
         
         await ctx.reply(embed=embed)
     
+    elif acao == 'config':
+        # Painel interativo de configuração
+        config_view = TicketConfigView(ctx.guild, guild_id)
+        
+        embed = discord.Embed(
+            title="⚙️ CONFIGURAÇÃO INTERATIVA",
+            description="Use os menus abaixo para configurar o sistema de tickets:",
+            color=0x00aaff
+        )
+        embed.add_field(
+            name="📋 Passo 1",
+            value="Selecione a **Categoria** onde os tickets serão criados",
+            inline=False
+        )
+        embed.add_field(
+            name="👮 Passo 2",
+            value="Selecione os **Cargos Staff** que poderão ver os tickets",
+            inline=False
+        )
+        embed.add_field(
+            name="✅ Passo 3",
+            value="Clique em **Salvar Configurações**",
+            inline=False
+        )
+        embed.set_footer(text="Sistema de Tickets • Caos Hub")
+        
+        await ctx.reply(embed=embed, view=config_view)
+    
     else:
         await ctx.reply("❌ Ação inválida! Use `.ticket` para ver os comandos.")
 
@@ -2549,6 +2578,125 @@ async def ticket_command(ctx, acao=None, *args):
 async def ticket_error(ctx, error):
     if isinstance(error, commands.MissingPermissions):
         await ctx.reply("❌ Você precisa ser **ADMINISTRADOR** para usar este comando!")
+
+# View de configuração interativa
+class TicketConfigView(discord.ui.View):
+    def __init__(self, guild, guild_id):
+        super().__init__(timeout=300)
+        self.guild = guild
+        self.guild_id = guild_id
+        self.selected_category = None
+        self.selected_roles = []
+        
+        # Criar dropdown de categorias
+        category_options = []
+        for category in guild.categories:
+            category_options.append(
+                discord.SelectOption(
+                    label=category.name[:100],
+                    description=f"ID: {category.id}",
+                    value=str(category.id)
+                )
+            )
+        
+        if category_options:
+            self.category_select = discord.ui.Select(
+                placeholder="📁 Selecione a Categoria",
+                options=category_options[:25],  # Discord limita a 25
+                row=0
+            )
+            self.category_select.callback = self.category_callback
+            self.add_item(self.category_select)
+        
+        # Criar dropdown de cargos (excluindo @everyone e cargos de bot)
+        role_options = []
+        for role in guild.roles:
+            if role.name != "@everyone" and not role.managed:  # Exclui cargos de bot
+                role_options.append(
+                    discord.SelectOption(
+                        label=role.name[:100],
+                        description=f"ID: {role.id}",
+                        value=str(role.id),
+                        emoji="👮" if "mod" in role.name.lower() or "staff" in role.name.lower() else "👤"
+                    )
+                )
+        
+        if role_options:
+            self.role_select = discord.ui.Select(
+                placeholder="👮 Selecione os Cargos Staff (múltipla escolha)",
+                options=role_options[:25],  # Discord limita a 25
+                max_values=min(len(role_options[:25]), 25),
+                row=1
+            )
+            self.role_select.callback = self.role_callback
+            self.add_item(self.role_select)
+    
+    async def category_callback(self, interaction: discord.Interaction):
+        self.selected_category = int(self.category_select.values[0])
+        category = self.guild.get_channel(self.selected_category)
+        await interaction.response.send_message(
+            f"✅ Categoria selecionada: **{category.name}**",
+            ephemeral=True
+        )
+    
+    async def role_callback(self, interaction: discord.Interaction):
+        self.selected_roles = [int(rid) for rid in self.role_select.values]
+        roles = [self.guild.get_role(rid).name for rid in self.selected_roles]
+        await interaction.response.send_message(
+            f"✅ {len(self.selected_roles)} cargo(s) selecionado(s): {', '.join(roles[:5])}{'...' if len(roles) > 5 else ''}",
+            ephemeral=True
+        )
+    
+    @discord.ui.button(label="Salvar Configurações", style=discord.ButtonStyle.green, emoji="💾", row=2)
+    async def save_button(self, interaction: discord.Interaction, button: discord.ui.Button):
+        if not self.selected_category:
+            await interaction.response.send_message("❌ Selecione uma categoria primeiro!", ephemeral=True)
+            return
+        
+        if not self.selected_roles:
+            await interaction.response.send_message("❌ Selecione pelo menos um cargo staff!", ephemeral=True)
+            return
+        
+        # Salvar configurações
+        if self.guild_id not in ticket_config:
+            ticket_config[self.guild_id] = {}
+        
+        ticket_config[self.guild_id]['category_id'] = self.selected_category
+        ticket_config[self.guild_id]['staff_role_ids'] = self.selected_roles
+        ticket_config[self.guild_id]['enabled'] = True
+        
+        if 'welcome_message' not in ticket_config[self.guild_id]:
+            ticket_config[self.guild_id]['welcome_message'] = 'Olá! Obrigado por abrir um ticket. Nossa equipe responderá em breve.'
+        
+        save_ticket_config()
+        
+        category = self.guild.get_channel(self.selected_category)
+        roles = [self.guild.get_role(rid).mention for rid in self.selected_roles]
+        
+        embed = discord.Embed(
+            title="✅ CONFIGURAÇÕES SALVAS!",
+            description="Sistema de tickets configurado com sucesso!",
+            color=0x00ff00
+        )
+        embed.add_field(
+            name="📁 Categoria",
+            value=category.mention,
+            inline=False
+        )
+        embed.add_field(
+            name="👮 Cargos Staff",
+            value=", ".join(roles),
+            inline=False
+        )
+        embed.add_field(
+            name="🎫 Próximo Passo",
+            value="Use `.ticket setup` para criar a mensagem de abertura!",
+            inline=False
+        )
+        embed.set_footer(text="Sistema de Tickets • Caos Hub")
+        
+        await interaction.response.send_message(embed=embed)
+        self.stop()
 
 # Painel de seleção de categoria
 class TicketCategoryView(discord.ui.View):
@@ -2691,14 +2839,20 @@ class TicketModal(discord.ui.Modal, title="🎫 Informações do Ticket"):
             if role:
                 overwrites[role] = discord.PermissionOverwrite(read_messages=True, send_messages=True)
         
-        # Nome do canal baseado no assunto
-        assunto_limpo = self.assunto.value.lower().replace(' ', '-')[:20]
-        # Remover caracteres especiais
-        import re
-        assunto_limpo = re.sub(r'[^a-z0-9-]', '', assunto_limpo)
+        # Contar quantos tickets já existem na categoria para numeração
+        ticket_number = 1
+        for channel in self.category.channels:
+            if channel.name.startswith("carrinho-"):
+                try:
+                    num = int(channel.name.split("-")[1])
+                    if num >= ticket_number:
+                        ticket_number = num + 1
+                except:
+                    pass
         
+        # Criar canal com nome numerado
         ticket_channel = await self.category.create_text_channel(
-            name=f"ticket-{assunto_limpo}-{interaction.user.id}",
+            name=f"carrinho-{ticket_number}",
             overwrites=overwrites
         )
         
