@@ -2901,7 +2901,16 @@ class TicketModal(discord.ui.Modal, title="🎫 Informações do Ticket"):
         )
         self.add_item(self.descricao)
         
-        # Campo 3: Informações Adicionais (OPCIONAL)
+        # Campo 3: Idioma (OBRIGATÓRIO)
+        self.idioma = discord.ui.TextInput(
+            label="🌐 Seu Idioma",
+            placeholder="Ex: Português, English, Español, etc.",
+            required=True,
+            max_length=50
+        )
+        self.add_item(self.idioma)
+        
+        # Campo 4: Informações Adicionais (OPCIONAL)
         self.info_adicional = discord.ui.TextInput(
             label="ℹ️ Informações Adicionais (Opcional)",
             placeholder="Links, prints, IDs de usuários, etc.",
@@ -2971,7 +2980,7 @@ class TicketModal(discord.ui.Modal, title="🎫 Informações do Ticket"):
             
             # Criar canal com nome numerado
             ticket_channel = await target_category.create_text_channel(
-                name=f"carrinho-{ticket_number}",
+                name=f"⌊🛒⌉-carrinho-{ticket_number}",
                 overwrites=overwrites
             )
             
@@ -3005,6 +3014,12 @@ class TicketModal(discord.ui.Modal, title="🎫 Informações do Ticket"):
             embed.add_field(
                 name="⚡ Prioridade",
                 value=prioridade_valor,
+                inline=True
+            )
+            
+            embed.add_field(
+                name="🌐 Idioma",
+                value=f"**{self.idioma.value}**",
                 inline=True
             )
             
