@@ -2372,6 +2372,411 @@ async def on_message(message):
     await bot.process_commands(message)
 
 # ========================================
+# SISTEMA DE TICKETS
+# ========================================
+
+# Configurações de ticket (salvas em arquivo JSON)
+ticket_config = {}
+
+def load_ticket_config():
+    """Carrega configurações de ticket"""
+    global ticket_config
+    try:
+        with open('ticket_config.json', 'r') as f:
+            ticket_config = json.load(f)
+    except:
+        ticket_config = {}
+
+def save_ticket_config():
+    """Salva configurações de ticket"""
+    with open('ticket_config.json', 'w') as f:
+        json.dump(ticket_config, f, indent=4)
+
+# Carregar configurações ao iniciar
+load_ticket_config()
+
+@bot.command(name='ticket')
+@commands.has_permissions(administrator=True)
+async def ticket_command(ctx, acao=None, *args):
+    """Sistema de tickets - Uso: .ticket [ação]"""
+    
+    guild_id = str(ctx.guild.id)
+    
+    if acao is None:
+        # Mostrar ajuda
+        embed = discord.Embed(
+            title="🎫 SISTEMA DE TICKETS",
+            description="Configure o sistema de tickets do servidor",
+            color=0x00ff88
+        )
+        embed.add_field(
+            name="📋 Comandos Disponíveis",
+            value=(
+                "`.ticket setup` - Cria mensagem de abertura\n"
+                "`.ticket categoria [ID]` - Define categoria\n"
+                "`.ticket staff [IDs]` - Define cargos staff (separados por vírgula)\n"
+                "`.ticket mensagem [texto]` - Define mensagem de boas-vindas\n"
+                "`.ticket ativar` - Ativa o sistema\n"
+                "`.ticket desativar` - Desativa o sistema\n"
+                "`.ticket status` - Ver configuração atual"
+            ),
+            inline=False
+        )
+        embed.set_footer(text="Sistema de Tickets • Caos Hub")
+        await ctx.reply(embed=embed)
+        return
+    
+    # Inicializar config do servidor se não existir
+    if guild_id not in ticket_config:
+        ticket_config[guild_id] = {
+            'enabled': False,
+            'category_id': None,
+            'staff_role_ids': [],
+            'welcome_message': 'Olá! Obrigado por abrir um ticket. Nossa equipe responderá em breve.'
+        }
+    
+    config = ticket_config[guild_id]
+    
+    # Ações
+    if acao == 'setup':
+        # Criar mensagem com botão para abrir ticket
+        embed = discord.Embed(
+            title="🎫 ABRIR TICKET",
+            description="Clique no botão abaixo para abrir um ticket e falar com a equipe!",
+            color=0x00ff88
+        )
+        embed.set_footer(text="Sistema de Tickets • Caos Hub")
+        
+        view = TicketView()
+        await ctx.send(embed=embed, view=view)
+        await ctx.reply("✅ Mensagem de ticket criada!")
+        
+    elif acao == 'categoria':
+        if not args:
+            await ctx.reply("❌ Uso: `.ticket categoria [ID]`")
+            return
+        
+        category_id = args[0]
+        try:
+            category = ctx.guild.get_channel(int(category_id))
+            if category and isinstance(category, discord.CategoryChannel):
+                config['category_id'] = int(category_id)
+                save_ticket_config()
+                await ctx.reply(f"✅ Categoria definida: **{category.name}**")
+            else:
+                await ctx.reply("❌ Categoria não encontrada!")
+        except:
+            await ctx.reply("❌ ID inválido!")
+            
+    elif acao == 'staff':
+        if not args:
+            await ctx.reply("❌ Uso: `.ticket staff [IDs separados por vírgula]`")
+            return
+        
+        role_ids = ' '.join(args).replace(' ', '').split(',')
+        valid_roles = []
+        
+        for role_id in role_ids:
+            try:
+                role = ctx.guild.get_role(int(role_id))
+                if role:
+                    valid_roles.append(int(role_id))
+            except:
+                pass
+        
+        if valid_roles:
+            config['staff_role_ids'] = valid_roles
+            save_ticket_config()
+            await ctx.reply(f"✅ {len(valid_roles)} cargo(s) staff definido(s)!")
+        else:
+            await ctx.reply("❌ Nenhum cargo válido encontrado!")
+            
+    elif acao == 'mensagem':
+        if not args:
+            await ctx.reply("❌ Uso: `.ticket mensagem [texto]`")
+            return
+        
+        message = ' '.join(args)
+        config['welcome_message'] = message
+        save_ticket_config()
+        await ctx.reply("✅ Mensagem de boas-vindas definida!")
+        
+    elif acao == 'ativar':
+        if not config.get('category_id'):
+            await ctx.reply("❌ Configure a categoria primeiro! (`.ticket categoria [ID]`)")
+            return
+        
+        config['enabled'] = True
+        save_ticket_config()
+        await ctx.reply("✅ Sistema de tickets **ATIVADO**!")
+        
+    elif acao == 'desativar':
+        config['enabled'] = False
+        save_ticket_config()
+        await ctx.reply("✅ Sistema de tickets **DESATIVADO**!")
+        
+    elif acao == 'status':
+        # Mostrar configuração atual
+        embed = discord.Embed(
+            title="📊 STATUS DO SISTEMA DE TICKETS",
+            color=0x00ff88 if config.get('enabled') else 0xff0000
+        )
+        
+        status = "✅ ATIVADO" if config.get('enabled') else "❌ DESATIVADO"
+        embed.add_field(name="Status", value=status, inline=False)
+        
+        if config.get('category_id'):
+            category = ctx.guild.get_channel(config['category_id'])
+            embed.add_field(name="Categoria", value=category.name if category else "Não encontrada", inline=False)
+        else:
+            embed.add_field(name="Categoria", value="Não configurada", inline=False)
+        
+        if config.get('staff_role_ids'):
+            roles = [ctx.guild.get_role(rid).mention for rid in config['staff_role_ids'] if ctx.guild.get_role(rid)]
+            embed.add_field(name="Cargos Staff", value=', '.join(roles) if roles else "Nenhum", inline=False)
+        else:
+            embed.add_field(name="Cargos Staff", value="Não configurados", inline=False)
+        
+        embed.add_field(name="Mensagem", value=config.get('welcome_message', 'Padrão'), inline=False)
+        embed.set_footer(text="Sistema de Tickets • Caos Hub")
+        
+        await ctx.reply(embed=embed)
+    
+    else:
+        await ctx.reply("❌ Ação inválida! Use `.ticket` para ver os comandos.")
+
+@ticket_command.error
+async def ticket_error(ctx, error):
+    if isinstance(error, commands.MissingPermissions):
+        await ctx.reply("❌ Você precisa ser **ADMINISTRADOR** para usar este comando!")
+
+# Modal para coletar informações do ticket
+class TicketModal(discord.ui.Modal, title="🎫 Abrir Ticket - Informações"):
+    def __init__(self, config, category):
+        super().__init__()
+        self.config = config
+        self.category = category
+        
+        # Campo 1: Assunto (OBRIGATÓRIO)
+        self.assunto = discord.ui.TextInput(
+            label="📋 Assunto do Ticket",
+            placeholder="Ex: Dúvida, Suporte, Denúncia, Parceria, etc.",
+            required=True,
+            max_length=100,
+            min_length=3
+        )
+        self.add_item(self.assunto)
+        
+        # Campo 2: Categoria (OPCIONAL)
+        self.categoria = discord.ui.TextInput(
+            label="🏷️ Categoria",
+            placeholder="Ex: Técnico, Financeiro, Moderação, Geral (deixe vazio = Geral)",
+            required=False,
+            max_length=50
+        )
+        self.add_item(self.categoria)
+        
+        # Campo 3: Prioridade (OPCIONAL)
+        self.prioridade = discord.ui.TextInput(
+            label="⚡ Prioridade",
+            placeholder="Baixa, Média, Alta, Urgente (deixe vazio = Média)",
+            required=False,
+            max_length=20
+        )
+        self.add_item(self.prioridade)
+        
+        # Campo 4: Descrição (OBRIGATÓRIO)
+        self.descricao = discord.ui.TextInput(
+            label="📝 Descrição Detalhada",
+            placeholder="Descreva seu problema, dúvida ou solicitação com o máximo de detalhes possível...",
+            style=discord.TextStyle.paragraph,
+            required=True,
+            max_length=1000,
+            min_length=10
+        )
+        self.add_item(self.descricao)
+        
+        # Campo 5: Informações Adicionais (OPCIONAL)
+        self.info_adicional = discord.ui.TextInput(
+            label="ℹ️ Informações Adicionais (Opcional)",
+            placeholder="Links, prints, IDs de usuários, etc. (deixe vazio se não tiver)",
+            style=discord.TextStyle.paragraph,
+            required=False,
+            max_length=500
+        )
+        self.add_item(self.info_adicional)
+    
+    async def on_submit(self, interaction: discord.Interaction):
+        # Processar campos opcionais com valores padrão
+        categoria_valor = self.categoria.value.strip() if self.categoria.value else "📁 Geral"
+        prioridade_valor = self.prioridade.value.strip() if self.prioridade.value else "Média"
+        info_adicional_valor = self.info_adicional.value.strip() if self.info_adicional.value else "Nenhuma informação adicional fornecida"
+        
+        # Definir cor baseado na prioridade
+        prioridade_lower = prioridade_valor.lower()
+        if 'urgente' in prioridade_lower or 'alta' in prioridade_lower:
+            cor_embed = 0xff0000  # Vermelho
+            emoji_prioridade = "🔴"
+        elif 'baixa' in prioridade_lower:
+            cor_embed = 0x00ff00  # Verde
+            emoji_prioridade = "🟢"
+        else:
+            cor_embed = 0xffaa00  # Laranja (Média)
+            emoji_prioridade = "🟡"
+        
+        # Criar canal de ticket
+        overwrites = {
+            interaction.guild.default_role: discord.PermissionOverwrite(read_messages=False),
+            interaction.user: discord.PermissionOverwrite(read_messages=True, send_messages=True),
+            interaction.guild.me: discord.PermissionOverwrite(read_messages=True, send_messages=True)
+        }
+        
+        # Adicionar permissões para staff
+        for role_id in self.config.get('staff_role_ids', []):
+            role = interaction.guild.get_role(role_id)
+            if role:
+                overwrites[role] = discord.PermissionOverwrite(read_messages=True, send_messages=True)
+        
+        # Nome do canal baseado no assunto
+        assunto_limpo = self.assunto.value.lower().replace(' ', '-')[:20]
+        # Remover caracteres especiais
+        import re
+        assunto_limpo = re.sub(r'[^a-z0-9-]', '', assunto_limpo)
+        
+        ticket_channel = await self.category.create_text_channel(
+            name=f"ticket-{assunto_limpo}-{interaction.user.id}",
+            overwrites=overwrites
+        )
+        
+        # Embed BONITO com todas as informações
+        embed = discord.Embed(
+            title="🎫 NOVO TICKET ABERTO",
+            description=f"**{self.config.get('welcome_message')}**\n\n*Nossa equipe responderá o mais breve possível!*",
+            color=cor_embed,
+            timestamp=discord.utils.utcnow()
+        )
+        
+        # Informações do usuário
+        embed.set_author(
+            name=f"Ticket de {interaction.user.display_name}",
+            icon_url=interaction.user.display_avatar.url
+        )
+        
+        # Campos organizados
+        embed.add_field(
+            name="👤 Aberto por",
+            value=f"{interaction.user.mention}\n`ID: {interaction.user.id}`",
+            inline=True
+        )
+        
+        embed.add_field(
+            name="🏷️ Categoria",
+            value=categoria_valor,
+            inline=True
+        )
+        
+        embed.add_field(
+            name=f"{emoji_prioridade} Prioridade",
+            value=prioridade_valor,
+            inline=True
+        )
+        
+        embed.add_field(
+            name="📋 Assunto",
+            value=f"```{self.assunto.value}```",
+            inline=False
+        )
+        
+        embed.add_field(
+            name="📝 Descrição Detalhada",
+            value=self.descricao.value[:1000],
+            inline=False
+        )
+        
+        embed.add_field(
+            name="ℹ️ Informações Adicionais",
+            value=info_adicional_valor[:500],
+            inline=False
+        )
+        
+        embed.set_footer(
+            text="Sistema de Tickets • Caos Hub",
+            icon_url=interaction.guild.icon.url if interaction.guild.icon else None
+        )
+        
+        # View com botão para fechar
+        close_view = CloseTicketView()
+        await ticket_channel.send(f"{interaction.user.mention}", embed=embed, view=close_view)
+        
+        # Mensagem de confirmação
+        await interaction.response.send_message(
+            f"✅ **Ticket criado com sucesso!**\n\n"
+            f"📌 Canal: {ticket_channel.mention}\n"
+            f"🏷️ Categoria: **{categoria_valor}**\n"
+            f"{emoji_prioridade} Prioridade: **{prioridade_valor}**\n\n"
+            f"*Nossa equipe foi notificada e responderá em breve!*",
+            ephemeral=True
+        )
+
+# View com botão para abrir ticket
+class TicketView(discord.ui.View):
+    def __init__(self):
+        super().__init__(timeout=None)
+    
+    @discord.ui.button(label="Abrir Ticket", style=discord.ButtonStyle.green, emoji="🎫", custom_id="open_ticket")
+    async def open_ticket(self, interaction: discord.Interaction, button: discord.ui.Button):
+        guild_id = str(interaction.guild.id)
+        
+        # Verificar se o sistema está ativado
+        if guild_id not in ticket_config or not ticket_config[guild_id].get('enabled'):
+            await interaction.response.send_message("❌ Sistema de tickets desativado!", ephemeral=True)
+            return
+        
+        config = ticket_config[guild_id]
+        category_id = config.get('category_id')
+        
+        if not category_id:
+            await interaction.response.send_message("❌ Sistema não configurado!", ephemeral=True)
+            return
+        
+        category = interaction.guild.get_channel(category_id)
+        if not category:
+            await interaction.response.send_message("❌ Categoria não encontrada!", ephemeral=True)
+            return
+        
+        # Verificar se o usuário já tem um ticket aberto
+        for channel in category.channels:
+            if channel.name.endswith(f"-{interaction.user.id}"):
+                await interaction.response.send_message(f"❌ Você já tem um ticket aberto: {channel.mention}", ephemeral=True)
+                return
+        
+        # Abrir modal para coletar informações
+        modal = TicketModal(config, category)
+        await interaction.response.send_modal(modal)
+
+# View com botão para fechar ticket
+class CloseTicketView(discord.ui.View):
+    def __init__(self):
+        super().__init__(timeout=None)
+    
+    @discord.ui.button(label="Fechar Ticket", style=discord.ButtonStyle.red, emoji="🔒", custom_id="close_ticket")
+    async def close_ticket(self, interaction: discord.Interaction, button: discord.ui.Button):
+        # Verificar se é staff ou o dono do ticket
+        guild_id = str(interaction.guild.id)
+        config = ticket_config.get(guild_id, {})
+        
+        is_staff = any(role.id in config.get('staff_role_ids', []) for role in interaction.user.roles)
+        is_owner = str(interaction.user.id) in interaction.channel.name
+        
+        if not (is_staff or is_owner or interaction.user.guild_permissions.administrator):
+            await interaction.response.send_message("❌ Você não tem permissão para fechar este ticket!", ephemeral=True)
+            return
+        
+        await interaction.response.send_message("🔒 Fechando ticket em 5 segundos...", ephemeral=False)
+        await asyncio.sleep(5)
+        await interaction.channel.delete(reason=f"Ticket fechado por {interaction.user}")
+
+# ========================================
 # SISTEMA AUTOMÁTICO DE NICKNAMES
 # ========================================
 
