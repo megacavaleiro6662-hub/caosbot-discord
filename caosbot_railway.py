@@ -1489,50 +1489,42 @@ async def auto_moderate_progressive(message, violation_type, details=""):
     
     # Sistema: 5 msgs → aviso, 4 msgs → aviso, 3 msgs → ADV
     if current_warnings == 1:
-        # PRIMEIRO AVISO (5 mensagens) + 1 minuto timeout
+        # PRIMEIRO AVISO (5 mensagens) - SEM timeout ainda
         try:
-            timeout_duration = discord.utils.utcnow() + discord.timedelta(minutes=1)
-            await message.author.timeout(timeout_duration, reason=f"Primeiro aviso: {violation_type}")
-            
             embed = discord.Embed(
                 title="⚠️ PRIMEIRO AVISO - SPAM DETECTADO",
-                description=f"**{message.author.display_name}**, você pode levar advertência se continuar!",
+                description=f"Você pode levar advertência se continuar!",
                 color=0xffff00
             )
             embed.add_field(
                 name="📋 Detalhes",
-                value=f"**Violação:** {violation_type}\n**Detalhes:** {details}\n**Castigo:** 1 minuto de timeout\n**Próximo:** Segundo aviso (4 mensagens)",
+                value=f"**Violação:** {violation_type}\n**Detalhes:** {details}\n**Próximo:** Segundo aviso (4 mensagens)",
                 inline=False
             )
-            embed.set_footer(text="Sistema Anti-Spam • Caos Hub")
+            embed.set_footer(text="Sistema Anti-Spam • Caos Hub • Apenas você vê esta mensagem")
             
-            msg = await message.channel.send(embed=embed)
-            await asyncio.sleep(8)
-            await msg.delete()
+            # Enviar mensagem EFÊMERA (só o spammer vê)
+            await message.channel.send(f"{message.author.mention}", embed=embed, delete_after=10)
         except:
             pass
         
     elif current_warnings == 2:
-        # SEGUNDO AVISO (4 mensagens) + 1 minuto timeout
+        # SEGUNDO AVISO (4 mensagens) - SEM timeout ainda
         try:
-            timeout_duration = discord.utils.utcnow() + discord.timedelta(minutes=1)
-            await message.author.timeout(timeout_duration, reason=f"Segundo aviso: {violation_type}")
-            
             embed = discord.Embed(
                 title="🚨 SEGUNDO AVISO - ÚLTIMA CHANCE",
-                description=f"**{message.author.display_name}**, próxima vez será ADV 1!",
+                description=f"Próxima vez será ADV 1!",
                 color=0xff8c00
             )
             embed.add_field(
                 name="📋 Detalhes",
-                value=f"**Violação:** {violation_type}\n**Detalhes:** {details}\n**Castigo:** 1 minuto de timeout\n**Próximo:** ADV 1 (3 mensagens)",
+                value=f"**Violação:** {violation_type}\n**Detalhes:** {details}\n**Próximo:** ADV 1 + Timeout (3 mensagens)",
                 inline=False
             )
-            embed.set_footer(text="Sistema Anti-Spam • Caos Hub")
+            embed.set_footer(text="Sistema Anti-Spam • Caos Hub • Apenas você vê esta mensagem")
             
-            msg = await message.channel.send(embed=embed)
-            await asyncio.sleep(8)
-            await msg.delete()
+            # Enviar mensagem EFÊMERA (só o spammer vê)
+            await message.channel.send(f"{message.author.mention}", embed=embed, delete_after=10)
         except:
             pass
             
@@ -1579,6 +1571,10 @@ async def auto_moderate_progressive(message, violation_type, details=""):
             if cargo:
                 await message.author.add_roles(cargo)
             
+            # APLICAR TIMEOUT DE 1 MINUTO quando levar ADV
+            timeout_duration = discord.utils.utcnow() + discord.timedelta(minutes=1)
+            await message.author.timeout(timeout_duration, reason=f"{adv_level} - Spam automático")
+            
             embed = discord.Embed(
                 title=f"🚨 {adv_level.upper()} APLICADA AUTOMATICAMENTE",
                 description=f"**{message.author.display_name}** recebeu {adv_level} por spam repetido!",
@@ -1586,7 +1582,7 @@ async def auto_moderate_progressive(message, violation_type, details=""):
             )
             embed.add_field(
                 name="📋 Detalhes da Punição",
-                value=f"**Violação:** {violation_type}\n**Detalhes:** {details}\n**Advertência:** {adv_level}\n**Próxima punição:** {next_punishment}",
+                value=f"**Violação:** {violation_type}\n**Detalhes:** {details}\n**Advertência:** {adv_level}\n**Timeout:** 1 minuto\n**Próxima punição:** {next_punishment}",
                 inline=False
             )
             embed.set_footer(text="Sistema Anti-Spam Automático • Caos Hub")
