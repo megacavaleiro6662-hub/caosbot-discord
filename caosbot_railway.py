@@ -1,4 +1,4 @@
-# Bot Discord Caos - Python
+﻿# Bot Discord Caos - Python
 # Arquivo principal do bot
 
 import discord
