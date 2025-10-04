@@ -2197,6 +2197,114 @@ async def escolher_command(ctx, *, opcoes):
     embed.set_footer(text="Comandos de Diversão • Caos Hub")
     await ctx.reply(embed=embed)
 
+@bot.command(name='embedhub')
+@commands.has_permissions(administrator=True)
+async def embedhub_command(ctx):
+    """Envia o embed FODA do Caos Hub com GIFs"""
+    
+    embed = discord.Embed(
+        title="🔥 BEM-VINDO AO CAOS HUB! 🔥",
+        description=(
+            "**O melhor hub de scripts e executores para Roblox!**\n\n"
+            "Aqui você encontra tudo que precisa para dominar seus jogos favoritos!\n"
+            "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        ),
+        color=0xff6600
+    )
+    
+    # GIF DE FOGO FODA NO TOPO
+    embed.set_image(url="https://media.giphy.com/media/l0HlCaPHSxW9EqjCw/giphy.gif")
+    
+    # THUMBNAIL - Logo de fogo
+    embed.set_thumbnail(url="https://media.giphy.com/media/xT9DPIlGnuHpr4yOEU/giphy.gif")
+    
+    embed.add_field(
+        name="🎯 O QUE OFERECEMOS",
+        value=(
+            "🔹 **Scripts Premium** - Os melhores do mercado\n"
+            "🔹 **Executores Confiáveis** - Testados e aprovados\n"
+            "🔹 **Suporte 24/7** - Equipe sempre disponível\n"
+            "🔹 **Atualizações Constantes** - Sempre atualizado\n"
+            "🔹 **Comunidade Ativa** - Milhares de membros"
+        ),
+        inline=False
+    )
+    
+    embed.add_field(
+        name="🛒 COMO COMPRAR",
+        value=(
+            "**1.** Abra um ticket clicando no botão\n"
+            "**2.** Escolha a categoria **Compras**\n"
+            "**3.** Nossa equipe responderá rapidamente\n"
+            "**4.** Realize o pagamento e receba!"
+        ),
+        inline=True
+    )
+    
+    embed.add_field(
+        name="⚙️ EXECUTORES ACEITOS",
+        value=(
+            "✅ **Synapse X**\n"
+            "✅ **Script-Ware**\n"
+            "✅ **KRNL**\n"
+            "✅ **Fluxus**\n"
+            "✅ **Arceus X**\n"
+            "✅ **E muito mais!**"
+        ),
+        inline=True
+    )
+    
+    embed.add_field(
+        name="💳 FORMAS DE PAGAMENTO",
+        value=(
+            "💰 **PIX** - Instantâneo e seguro\n"
+            "💳 **Cartão de Crédito** - Parcelado\n"
+            "🎮 **Robux** - Aceito!\n"
+            "💵 **PayPal** - Internacional"
+        ),
+        inline=False
+    )
+    
+    embed.add_field(
+        name="⚠️ REGRAS IMPORTANTES",
+        value=(
+            "🔸 Não compartilhe seus scripts\n"
+            "🔸 Não faça spam nos tickets\n"
+            "🔸 Seja educado com a equipe\n"
+            "🔸 Leia os termos antes de comprar"
+        ),
+        inline=False
+    )
+    
+    embed.add_field(
+        name="🎁 BENEFÍCIOS VIP",
+        value=(
+            "⭐ **Acesso antecipado** a novos scripts\n"
+            "⭐ **Suporte prioritário** 24/7\n"
+            "⭐ **Descontos exclusivos** em compras\n"
+            "⭐ **Scripts exclusivos** só pra VIP"
+        ),
+        inline=False
+    )
+    
+    embed.set_footer(
+        text="🔥 CAOS Hub © 2025 • Todos os direitos reservados • Melhor Hub de Scripts!",
+        icon_url=ctx.guild.icon.url if ctx.guild.icon else None
+    )
+    
+    embed.timestamp = discord.utils.utcnow()
+    
+    await ctx.send(embed=embed)
+    try:
+        await ctx.message.delete()
+    except:
+        pass
+
+@embedhub_command.error
+async def embedhub_error(ctx, error):
+    if isinstance(error, commands.MissingPermissions):
+        await ctx.reply("❌ Você precisa ser **ADMINISTRADOR** para usar este comando!")
+
 # ========================================
 # RESPOSTAS AUTOMÁTICAS E PROTEÇÕES
 # ========================================
