@@ -1045,13 +1045,26 @@ async def debug_adv_command(ctx):
 
 @bot.command(name='mute')
 @is_sub_moderator_or_higher()
-async def mute_command(ctx, usuario: discord.Member = None, *, motivo="Sem motivo especificado"):
+async def mute_command(ctx, usuario: discord.Member = None, *, args=None):
+    """Muta usuário com tempo opcional - Uso: .mute @usuário motivo tempo"""
+    
     if usuario is None:
         embed = discord.Embed(
             title="❌ Erro no Comando",
-            description="Você precisa mencionar um usuário!\n\n**Uso:** `.mute @usuário [motivo]`",
+            description="Você precisa mencionar um usuário!",
             color=0xff0000
         )
+        embed.add_field(
+            name="📝 Uso Correto",
+            value="`.mute @usuário [motivo] [tempo]`",
+            inline=False
+        )
+        embed.add_field(
+            name="📝 Exemplos",
+            value="`.mute @João spam` (indefinido)\n`.mute @João flood 1h` (1 hora)\n`.mute @João toxic 30m` (30 minutos)\n`.mute @João raid 2d` (2 dias)",
+            inline=False
+        )
+        embed.set_footer(text="Sistema de Moderação • Caos Hub")
         await ctx.reply(embed=embed)
         return
     
@@ -1062,6 +1075,47 @@ async def mute_command(ctx, usuario: discord.Member = None, *, motivo="Sem motiv
     if usuario.top_role >= ctx.author.top_role:
         await ctx.reply("❌ Você não pode mutar este usuário!")
         return
+    
+    # Processar argumentos (motivo e tempo)
+    motivo = "Sem motivo especificado"
+    duracao_texto = "Indefinido"
+    duracao_minutos = None
+    
+    if args:
+        import re
+        # Procurar padrão de tempo (1h, 30m, 2d, etc)
+        tempo_match = re.search(r'(\d+)([smhd])', args.lower())
+        
+        if tempo_match:
+            numero = int(tempo_match.group(1))
+            unidade = tempo_match.group(2)
+            
+            # Converter para minutos
+            if unidade == 's':  # segundos
+                duracao_minutos = numero // 60 if numero >= 60 else 1
+                duracao_texto = f"{numero} segundos"
+            elif unidade == 'm':  # minutos
+                duracao_minutos = numero
+                duracao_texto = f"{numero} minutos"
+            elif unidade == 'h':  # horas
+                duracao_minutos = numero * 60
+                duracao_texto = f"{numero} horas"
+            elif unidade == 'd':  # dias
+                duracao_minutos = numero * 1440
+                duracao_texto = f"{numero} dias"
+            
+            # Limitar a 28 dias (limite do Discord)
+            if duracao_minutos > 40320:
+                duracao_minutos = 40320
+                duracao_texto = "28 dias (máximo)"
+            
+            # Remover tempo do motivo
+            motivo = args.replace(tempo_match.group(0), '').strip()
+        else:
+            motivo = args
+        
+        if not motivo:
+            motivo = "Sem motivo especificado"
     
     try:
         # Obter ou criar cargo de mute
@@ -1076,11 +1130,15 @@ async def mute_command(ctx, usuario: discord.Member = None, *, motivo="Sem motiv
             return
         
         # Aplicar mute
-        await usuario.add_roles(mute_role, reason=f"Mutado por {ctx.author} | Motivo: {motivo}")
+        await usuario.add_roles(mute_role, reason=f"Mutado por {ctx.author} | Motivo: {motivo} | Duração: {duracao_texto}")
+        
+        # Se tem duração, agendar unmute
+        if duracao_minutos:
+            asyncio.create_task(auto_unmute(usuario, mute_role, duracao_minutos))
         
         embed = discord.Embed(
             title="🔇 USUÁRIO MUTADO",
-            description=f"**{usuario.display_name}** foi mutado indefinidamente!",
+            description=f"**{usuario.display_name}** foi mutado com sucesso!",
             color=0x808080
         )
         embed.add_field(
@@ -1100,16 +1158,25 @@ async def mute_command(ctx, usuario: discord.Member = None, *, motivo="Sem motiv
         )
         embed.add_field(
             name="⏰ Duração",
-            value="Indefinido",
+            value=duracao_texto,
             inline=True
         )
         embed.set_footer(text="Sistema de Moderação • Caos Hub")
         await ctx.reply(embed=embed)
         
     except discord.Forbidden:
-        pass  # Não mostrar erro se a ação foi executada
+        pass
     except Exception as e:
         await ctx.reply(f"❌ Erro ao mutar usuário: {e}")
+
+async def auto_unmute(usuario, mute_role, minutos):
+    """Remove mute automaticamente após o tempo"""
+    await asyncio.sleep(minutos * 60)
+    try:
+        if mute_role in usuario.roles:
+            await usuario.remove_roles(mute_role, reason="Tempo de mute expirado")
+    except:
+        pass
 
 @mute_command.error
 async def mute_error(ctx, error):
@@ -1469,6 +1536,42 @@ async def clear_error(ctx, error):
     if isinstance(error, commands.CheckFailure):
         await ctx.reply("❌ Você precisa ser **Sub Moderador** ou ter permissões de moderação para usar este comando!")
 
+@bot.command(name='restart')
+@commands.has_permissions(administrator=True)
+async def restart_command(ctx):
+    """Reinicia o bot para resolver problemas de duplicação"""
+    embed = discord.Embed(
+        title="🔄 REINICIANDO BOT",
+        description="O bot será reiniciado em 3 segundos...",
+        color=0xffaa00
+    )
+    embed.add_field(
+        name="⚠️ Atenção",
+        value="Isso vai resolver problemas de:\n• Mensagens duplicadas\n• Comandos travados\n• Cache corrompido",
+        inline=False
+    )
+    embed.set_footer(text="Sistema de Manutenção • Caos Hub")
+    await ctx.reply(embed=embed)
+    
+    await asyncio.sleep(3)
+    
+    # Salvar dados antes de reiniciar
+    save_warnings_data()
+    save_role_config()
+    
+    # Reiniciar o bot
+    await bot.close()
+    
+    # No Render, o bot reinicia automaticamente após fechar
+    import sys
+    import os
+    os.execv(sys.executable, ['python'] + sys.argv)
+
+@restart_command.error
+async def restart_error(ctx, error):
+    if isinstance(error, commands.MissingPermissions):
+        await ctx.reply("❌ Você precisa ser **ADMINISTRADOR** para reiniciar o bot!")
+
 # ========================================
 # SISTEMAS DE PROTEÇÃO AUTOMÁTICA
 # ========================================
@@ -1513,22 +1616,30 @@ async def apply_adv_punishment(message, user_id, violation_type, details):
         if cargo:
             await message.author.add_roles(cargo)
         
-        # APLICAR TIMEOUT DE 1 MINUTO
+        # APLICAR TIMEOUT DE 1 MINUTO junto com ADV
+        timeout_aplicado = False
         try:
             timeout_duration = discord.utils.utcnow() + discord.timedelta(minutes=1)
             await message.author.timeout(timeout_duration, reason=f"{adv_level} - Spam automático")
+            timeout_aplicado = True
+            print(f"✅ Timeout de 1 minuto aplicado em {message.author.display_name}")
+        except discord.Forbidden:
+            print(f"❌ Sem permissão para aplicar timeout em {message.author.display_name}")
         except Exception as timeout_error:
             print(f"❌ Erro ao aplicar timeout: {timeout_error}")
         
-        # Mensagem pública
+        # Mensagem pública com embed
         embed = discord.Embed(
             title=f"🚨 {adv_level.upper()} APLICADA AUTOMATICAMENTE",
             description=f"**{message.author.display_name}** recebeu {adv_level} por spam repetido!",
             color=color
         )
+        # Montar detalhes com status do timeout
+        timeout_status = "✅ 1 minuto aplicado" if timeout_aplicado else "❌ Falhou (verifique permissões)"
+        
         embed.add_field(
             name="📋 Detalhes da Punição",
-            value=f"**Violação:** {violation_type}\n**Detalhes:** {details}\n**Advertência:** {adv_level}\n**Timeout:** 1 minuto\n**Próxima punição:** {next_punishment}",
+            value=f"**Violação:** {violation_type}\n**Detalhes:** {details}\n**Advertência:** {adv_level}\n**Timeout:** {timeout_status}\n**Próxima punição:** {next_punishment}",
             inline=False
         )
         embed.set_footer(text="Sistema Anti-Spam Automático • Caos Hub")
@@ -1554,7 +1665,7 @@ async def apply_adv_punishment(message, user_id, violation_type, details):
         print(f"❌ Erro ao aplicar ADV: {e}")
 
 async def auto_moderate_progressive(message, violation_type, details=""):
-    """Sistema automático de moderação PROGRESSIVO - REFEITO DO ZERO"""
+    """Sistema automático de moderação PROGRESSIVO - VERSÃO FINAL CORRIGIDA"""
     user_id = message.author.id
     
     # Deletar mensagem
@@ -1563,22 +1674,9 @@ async def auto_moderate_progressive(message, violation_type, details=""):
     except:
         pass
     
-    # Verificar se usuário JÁ TEM ADV (se tiver, NÃO incrementa avisos normais)
-    if user_id in user_warnings and user_warnings[user_id] > 0:
-        # Usuário JÁ TEM ADV - precisa spammar MUITO para levar outra
-        # Incrementa contador especial de spam PÓS-ADV
-        if user_id not in spam_warnings:
-            spam_warnings[user_id] = 0
-        spam_warnings[user_id] += 1
-        
-        # Só aplica nova ADV se spammar MUITO (5 mensagens)
-        if spam_warnings[user_id] >= 5:
-            # Aplicar próxima ADV
-            await apply_adv_punishment(message, user_id, violation_type, details)
-            spam_warnings[user_id] = 0  # Reset
-        return
-    
-    # Usuário NÃO TEM ADV - sistema normal de avisos
+    # Incrementar avisos de spam (SEMPRE incrementa)
+    if user_id not in spam_warnings:
+        spam_warnings[user_id] = 0
     spam_warnings[user_id] += 1
     current_warnings = spam_warnings[user_id]
     
