@@ -2256,10 +2256,7 @@ async def embedhub_command(ctx):
     
     embed.add_field(
         name="🎮 JOGOS DISPONÍVEIS",
-        value=(
-            "🥊 **The Strongest Battlegrounds**\n"
-            "https://media3.giphy.com/media/v1.Y2lkPTc5MGI3NjExeTVhM244NnJqZWYyN3BheHp1YjMxZmV5cnAwa2xsbzEyNXlqMHR0NSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/d2PqO9s7M9CNO/giphy.gif"
-        ),
+        value="🥊 **The Strongest Battlegrounds**",
         inline=False
     )
     
@@ -2930,18 +2927,18 @@ class TicketModal(discord.ui.Modal, title="🎫 Informações do Ticket"):
                 cor_embed = 0xffaa00  # Laranja (Média)
                 emoji_prioridade = prioridade_valor.split()[0]  # Pega o emoji
             
-            # Definir categoria baseado no tipo de ticket
-            # Compras, Parceria, Financeiro → Caos Hub
-            # Outros → Suporte
-            if "Compras" in categoria_valor or "Parceria" in categoria_valor or "Financeiro" in categoria_valor:
-                category_id = 1424026743748169860  # Caos Hub
-            else:
-                category_id = 1417548428984188929  # Suporte
+            # Usar a categoria STUFF para todos os tickets
+            category_id = 1365692340651556896  # Categoria STUFF
             
             target_category = interaction.guild.get_channel(category_id)
             
             if not target_category:
                 await interaction.response.send_message("❌ Categoria não encontrada! Verifique se o bot tem acesso.", ephemeral=True)
+                return
+            
+            # Verificar se é realmente uma categoria
+            if not isinstance(target_category, discord.CategoryChannel):
+                await interaction.response.send_message("❌ O ID fornecido não é uma categoria!", ephemeral=True)
                 return
             
             # Criar canal de ticket
