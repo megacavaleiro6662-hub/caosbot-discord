@@ -909,8 +909,19 @@ async def radvall_command(ctx, usuario: discord.Member = None):
     
     user_id = usuario.id
     
-    # Verificar se o usuário tem advertências
-    if user_id not in user_warnings or user_warnings[user_id] == 0:
+    # DETECÇÃO INTELIGENTE - Verificar cargos reais do usuário
+    cargo_adv1 = ctx.guild.get_role(ADV_CARGO_1_ID)
+    cargo_adv2 = ctx.guild.get_role(ADV_CARGO_2_ID)
+    cargo_adv3 = ctx.guild.get_role(ADV_CARGO_3_ID)
+    
+    tem_adv = False
+    if (cargo_adv1 and cargo_adv1 in usuario.roles) or \
+       (cargo_adv2 and cargo_adv2 in usuario.roles) or \
+       (cargo_adv3 and cargo_adv3 in usuario.roles):
+        tem_adv = True
+    
+    # Verificar se o usuário tem advertências (cargos OU contador)
+    if not tem_adv and (user_id not in user_warnings or user_warnings[user_id] == 0):
         embed = discord.Embed(
             title="ℹ️ Sem Advertências",
             description=f"**{usuario.display_name}** não possui advertências para remover.",
@@ -2260,13 +2271,29 @@ async def on_message(message):
                 return
     
     # ========================================
-    # SISTEMA ANTI-MENTION (MÁXIMO 1 MENÇÃO)
+    # SISTEMA ANTI-MENTION (MÁXIMO 1 MENÇÃO POR MENSAGEM)
     # ========================================
     
-    # Verificar menções (máximo 1 por mensagem)
+    # Verificar menções (máximo 1 por mensagem) - NÃO É SPAM, É REGRA ÚNICA
     mention_count = len(message.mentions) + len(message.role_mentions)
     if mention_count > 1:
-        await auto_moderate_spam(message, "excesso de menções", f"Mencionou {mention_count} usuários/cargos (máximo: 1)")
+        try:
+            await message.delete()
+        except:
+            pass
+        
+        embed = discord.Embed(
+            title="⚠️ EXCESSO DE MENÇÕES",
+            description=f"**{message.author.display_name}**, você mencionou **{mention_count}** pessoas/cargos!",
+            color=0xff8c00
+        )
+        embed.add_field(
+            name="📋 Regra",
+            value="**Máximo:** 1 menção por mensagem\n**Você mencionou:** " + ", ".join([u.mention for u in message.mentions] + [r.mention for r in message.role_mentions]),
+            inline=False
+        )
+        embed.set_footer(text="Sistema de Moderação • Caos Hub")
+        await message.channel.send(embed=embed, delete_after=10)
         return
     
     # ========================================
