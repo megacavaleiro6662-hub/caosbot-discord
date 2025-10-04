@@ -1,4 +1,4 @@
-# Bot Discord Caos - Python
+﻿# Bot Discord Caos - Python
 # Arquivo principal do bot
 
 import discord
@@ -2272,55 +2272,20 @@ async def update_nicks_command_DISABLED(ctx):
 
 @bot.command(name='addrole')
 @is_sub_moderator_or_higher()
-async def addrole_command(ctx, cargo: discord.Role = None, usuario: discord.Member = None):
-    """Adiciona cargo ao usuário e aplica prefixo automaticamente"""
+async def add_role_new(ctx, cargo: discord.Role = None, usuario: discord.Member = None):
+    """SISTEMA NOVO - Adiciona cargo com hierarquia automática e prefixo"""
     
-    if cargo is None or usuario is None:
+    # Verificar argumentos
+    if not cargo or not usuario:
         embed = discord.Embed(
-            title="❌ Erro no Comando",
-            description="Você precisa mencionar um cargo e um usuário!",
+            title="❌ Uso Incorreto",
+            description="Use: `.addrole @cargo @usuário`",
             color=0xff0000
         )
-        embed.add_field(
-            name="📝 Uso Correto",
-            value="`.addrole @cargo @usuário`",
-            inline=False
-        )
-        embed.add_field(
-            name="📝 Exemplos",
-            value="`.addrole @Moderador @João`\n`.addrole @VIP @Maria`\n`.addrole @Staff @Pedro`",
-            inline=False
-        )
-        embed.set_footer(text="Sistema de Cargos • Caos Hub")
-        await ctx.reply(embed=embed)
-        return
-    
-    # DESABILITAR verificação de cargo duplicado - deixar hierarquia resolver
-    # user_already_has_role = any(role.id == cargo.id for role in usuario.roles)
-    # if user_already_has_role:
-    #     return
-    
-    # Verificar permissões de hierarquia
-    if cargo.position >= ctx.author.top_role.position and not ctx.author.guild_permissions.administrator:
-        embed = discord.Embed(
-            title="❌ Permissão Negada",
-            description="Você não pode adicionar um cargo igual ou superior ao seu!",
-            color=0xff0000
-        )
-        embed.add_field(
-            name="📊 Hierarquia",
-            value=f"**Seu cargo mais alto:** {ctx.author.top_role.mention}\n**Cargo solicitado:** {cargo.mention}",
-            inline=False
-        )
-        embed.set_footer(text="Sistema de Cargos • Caos Hub")
         await ctx.reply(embed=embed)
         return
     
     try:
-        
-        # SISTEMA DE HIERARQUIA AUTOMÁTICA - REMOVER ANTES DE ADICIONAR
-        hierarchy_changes = ""
-        
         # Definir hierarquia dos cargos (maior = mais importante)
         HIERARCHY = {
             1365633918593794079: 4,  # ADM - mais alto
@@ -2329,99 +2294,88 @@ async def addrole_command(ctx, cargo: discord.Role = None, usuario: discord.Memb
             1365631940434333748: 1   # SBM - mais baixo
         }
         
-        # REMOVER cargos conflitantes ANTES de adicionar o novo
+        # 1. REMOVER cargos conflitantes PRIMEIRO
         removed_roles = []
-        
-        # SEMPRE remover outros cargos da hierarquia quando adicionar um novo
         if cargo.id in HIERARCHY:
-            for role in list(usuario.roles):  # Criar cópia da lista
+            for role in list(usuario.roles):
                 if role.id in HIERARCHY and role.id != cargo.id:
-                    try:
-                        await usuario.remove_roles(role, reason=f"Hierarquia: {cargo.name} substitui {role.name}")
-                        removed_roles.append(role.name)
-                        print(f"✅ Cargo {role.name} removido de {usuario.display_name}")
-                    except Exception as e:
-                        print(f"❌ Erro ao remover cargo {role.name}: {e}")
+                    await usuario.remove_roles(role)
+                    removed_roles.append(role.name)
+        
+        # 2. ADICIONAR o novo cargo
+        await usuario.add_roles(cargo)
+        
+        # 3. ATUALIZAR nickname se cargo tem prefixo
+        nickname_msg = ""
+        if cargo.id in CARGO_PREFIXES:
+            # Obter nome limpo (sem prefixos)
+            clean_name = usuario.display_name
+            for prefix in CARGO_PREFIXES.values():
+                if clean_name.startswith(prefix + " "):
+                    clean_name = clean_name[len(prefix + " "):]
+                    break
+            
+            # Aplicar novo prefixo
+            new_nickname = f"{CARGO_PREFIXES[cargo.id]} {clean_name}"
+            
+            # Limitar tamanho
+            if len(new_nickname) > 32:
+                max_length = 32 - len(CARGO_PREFIXES[cargo.id]) - 1
+                clean_name = clean_name[:max_length]
+                new_nickname = f"{CARGO_PREFIXES[cargo.id]} {clean_name}"
+            
+            await usuario.edit(nick=new_nickname)
+            nickname_msg = f"\n🏷️ **Nickname:** `{new_nickname}`"
+        
+        # 4. EMBED de sucesso (ÚNICA MENSAGEM)
+        embed = discord.Embed(
+            title="✅ CARGO ADICIONADO",
+            description=f"**{cargo.name}** foi adicionado a **{usuario.display_name}**!",
+            color=0x00ff00
+        )
+        
+        details = f"**Usuário:** {usuario.mention}\n**Cargo:** {cargo.mention}\n**Moderador:** {ctx.author.mention}"
         
         if removed_roles:
-            hierarchy_changes = f"\n🔄 **Cargos removidos:** {', '.join(removed_roles)}"
+            details += f"\n🔄 **Removidos:** {', '.join(removed_roles)}"
         
-        # ADICIONAR o cargo APÓS remover conflitos
-        await usuario.add_roles(cargo, reason=f"Cargo adicionado por {ctx.author.display_name}")
+        details += nickname_msg
         
-        # FORÇAR mudança de nickname se cargo tem prefixo
-        prefix_applied = ""
-        if cargo.id in CARGO_PREFIXES:
-            try:
-                # Obter nickname original (sem prefixos)
-                original_nick = usuario.display_name
-                # Remover prefixos existentes
-                for prefix in CARGO_PREFIXES.values():
-                    if original_nick.startswith(prefix + " "):
-                        original_nick = original_nick[len(prefix + " "):]
-                
-                # Aplicar novo prefixo
-                new_nickname = f"{CARGO_PREFIXES[cargo.id]} {original_nick}"
-                
-                # Limitar tamanho (Discord limite: 32 caracteres)
-                if len(new_nickname) > 32:
-                    max_name_length = 32 - len(CARGO_PREFIXES[cargo.id]) - 1
-                    truncated_name = original_nick[:max_name_length]
-                    new_nickname = f"{CARGO_PREFIXES[cargo.id]} {truncated_name}"
-                
-                # FORÇAR mudança do nickname
-                await usuario.edit(nick=new_nickname, reason=f"Prefixo aplicado: {CARGO_PREFIXES[cargo.id]}")
-                prefix_applied = f"\n🏷️ **Nickname alterado para:** `{new_nickname}`"
-                
-            except discord.Forbidden:
-                prefix_applied = f"\n⚠️ **Erro:** Sem permissão para alterar nickname"
-            except Exception as e:
-                prefix_applied = f"\n⚠️ **Erro no nickname:** {e}"
-        
-        # Embed de sucesso - VERSÃO SIMPLIFICADA
-        embed = discord.Embed(
-            title="✅ CARGO ADICIONADO COM SUCESSO",
-            description=f"**{usuario.display_name}** agora possui o cargo **{cargo.name}**!",
-            color=0x00ff88
-        )
-        embed.add_field(
-            name="📋 Detalhes da Ação",
-            value=f"**Usuário:** {usuario.mention}\n**Cargo adicionado:** {cargo.mention}\n**Moderador:** {ctx.author.mention}{hierarchy_changes}{prefix_applied}",
-            inline=False
-        )
-        
-        embed.set_thumbnail(url=usuario.display_avatar.url)
+        embed.add_field(name="📋 Detalhes", value=details, inline=False)
         embed.set_footer(text="Sistema de Cargos • Caos Hub")
+        
         await ctx.reply(embed=embed)
         
-    except discord.Forbidden:
-        embed = discord.Embed(
-            title="❌ Erro de Permissão",
-            description="Não tenho permissão para adicionar este cargo!",
-            color=0xff0000
-        )
-        embed.add_field(
-            name="🔧 Possíveis Soluções",
-            value="• Verifique se meu cargo está acima do cargo que você quer adicionar\n• Verifique se tenho a permissão 'Gerenciar Cargos'",
-            inline=False
-        )
-        embed.set_footer(text="Sistema de Cargos • Caos Hub")
-        await ctx.reply(embed=embed)
     except Exception as e:
         embed = discord.Embed(
-            title="❌ Erro Inesperado",
-            description=f"Ocorreu um erro ao adicionar o cargo: {e}",
+            title="❌ ERRO",
+            description=f"Erro ao adicionar cargo: {e}",
             color=0xff0000
         )
-        embed.set_footer(text="Sistema de Cargos • Caos Hub")
         await ctx.reply(embed=embed)
 
-@addrole_command.error
+@add_role_new.error
 async def addrole_error(ctx, error):
     if isinstance(error, commands.CheckFailure):
         embed = discord.Embed(
             title="❌ Permissão Negada",
             description="Você precisa ser **Sub Moderador** ou ter permissões de moderação para usar este comando!",
+            color=0xff0000
+        )
+        embed.set_footer(text="Sistema de Cargos • Caos Hub")
+        await ctx.reply(embed=embed)
+    elif isinstance(error, commands.RoleNotFound):
+        embed = discord.Embed(
+            title="❌ Cargo Não Encontrado",
+            description="Cargo não encontrado! Certifique-se de mencionar um cargo válido.",
+            color=0xff0000
+        )
+        embed.set_footer(text="Sistema de Cargos • Caos Hub")
+        await ctx.reply(embed=embed)
+    elif isinstance(error, commands.MemberNotFound):
+        embed = discord.Embed(
+            title="❌ Usuário Não Encontrado",
+            description="Usuário não encontrado! Certifique-se de mencionar um usuário válido.",
             color=0xff0000
         )
         embed.set_footer(text="Sistema de Cargos • Caos Hub")
@@ -2699,3 +2653,4 @@ if __name__ == '__main__':
         time.sleep(30)
 
 # Sistema anti-hibernação já definido no início do arquivo
+
