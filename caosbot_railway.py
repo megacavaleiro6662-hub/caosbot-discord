@@ -27,19 +27,19 @@ LAVALINK_URL = os.getenv("LAVALINK_URL", "http://127.0.0.1:2333")
 LAVALINK_PASSWORD = os.getenv("LAVALINK_PASSWORD", "caosmusic2024")
 
 async def connect_lavalink(bot, identifier=None):
-    """Conecta ao Lavalink via HTTPS (Render)"""
-    uri = os.getenv("LAVALINK_URL", "https://lavalink-server-5r3ll.onrender.com")
-    password = os.getenv("LAVALINK_PASSWORD", "caosmusic2024")
+    """Conecta ao Lavalink público (compatível com Render Free)"""
+    # Usar Lavalink público gratuito (sem bloqueio WebSocket)
+    uri = os.getenv("LAVALINK_URL", "https://lavalink.oops.wtf")
+    password = os.getenv("LAVALINK_PASSWORD", "www.freelavalink.ga")
 
-    max_attempts = int(os.getenv("LAVALINK_RETRIES", 20))
-    delay = int(os.getenv("LAVALINK_TIMEOUT", 3))
+    max_attempts = int(os.getenv("LAVALINK_RETRIES", 10))
+    delay = int(os.getenv("LAVALINK_TIMEOUT", 2))
 
     bot_name = bot.user.name if hasattr(bot, 'user') and bot.user else 'BOT'
-    print(f"[{bot_name}] 🔌 Conectando ao Lavalink em {uri}")
+    print(f"[{bot_name}] 🔌 Conectando ao Lavalink público em {uri}")
 
     for attempt in range(1, max_attempts + 1):
         try:
-            # Tentar conectar diretamente sem checar /version primeiro
             node = wavelink.Node(
                 uri=uri,
                 password=password,
