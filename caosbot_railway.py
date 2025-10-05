@@ -14,48 +14,58 @@ from http.server import HTTPServer, BaseHTTPRequestHandler
 import re
 import aiohttp
 from datetime import datetime
-import wavelink
 from discord.ui import Button, View
 import math
 import threading
 from flask import Flask
+import yt_dlp
 
 # ========================================
-# CONFIGURAÇÃO LAVALINK COM RETRY
+# CONFIGURAÇÃO YT-DLP (SEM LAVALINK)
 # ========================================
-LAVALINK_URL = os.getenv("LAVALINK_URL", "http://127.0.0.1:2333")
-LAVALINK_PASSWORD = os.getenv("LAVALINK_PASSWORD", "caosmusic2024")
+YTDL_OPTIONS = {
+    'format': 'bestaudio/best',
+    'extractaudio': True,
+    'audioformat': 'mp3',
+    'outtmpl': '%(extractor)s-%(id)s-%(title)s.%(ext)s',
+    'restrictfilenames': True,
+    'noplaylist': True,
+    'nocheckcertificate': True,
+    'ignoreerrors': False,
+    'logtostderr': False,
+    'quiet': True,
+    'no_warnings': True,
+    'default_search': 'ytsearch',
+    'source_address': '0.0.0.0',
+}
 
-async def connect_lavalink(bot, identifier=None):
-    """Conecta ao Lavalink público (compatível com Render Free)"""
-    # Último servidor Lavalink confiável
-    uri = os.getenv("LAVALINK_URL", "lava.link:80")
-    password = os.getenv("LAVALINK_PASSWORD", "anything")
+FFMPEG_OPTIONS = {
+    'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5',
+    'options': '-vn'
+}
 
-    max_attempts = int(os.getenv("LAVALINK_RETRIES", 10))
-    delay = int(os.getenv("LAVALINK_TIMEOUT", 2))
+ytdl = yt_dlp.YoutubeDL(YTDL_OPTIONS)
 
-    bot_name = bot.user.name if hasattr(bot, 'user') and bot.user else 'BOT'
-    print(f"[{bot_name}] 🔌 Conectando ao Lavalink público em {uri}")
+class YTDLSource(discord.PCMVolumeTransformer):
+    """Source de áudio usando yt-dlp"""
+    def __init__(self, source, *, data, volume=0.5):
+        super().__init__(source, volume)
+        self.data = data
+        self.title = data.get('title')
+        self.url = data.get('url')
+        self.thumbnail = data.get('thumbnail')
+        self.duration = data.get('duration')
 
-    for attempt in range(1, max_attempts + 1):
-        try:
-            node = wavelink.Node(
-                uri=uri,
-                password=password,
-                identifier=identifier or f"{bot_name}-node"
-            )
-            await wavelink.Pool.connect(client=bot, nodes=[node])
-            print(f"[Lavalink] ✅ {bot_name} conectado com sucesso!")
-            return True
-        except Exception as e:
-            if attempt == max_attempts:
-                print(f"[Lavalink] ❌ {bot_name} falhou após {max_attempts} tentativas: {e}")
-            else:
-                print(f"[Lavalink] ⚠️ {bot_name} tentativa {attempt}/{max_attempts}: {str(e)[:80]}")
-            await asyncio.sleep(delay)
+    @classmethod
+    async def from_url(cls, url, *, loop=None, stream=True):
+        loop = loop or asyncio.get_event_loop()
+        data = await loop.run_in_executor(None, lambda: ytdl.extract_info(url, download=not stream))
 
-    return False
+        if 'entries' in data:
+            data = data['entries'][0]
+
+        filename = data['url'] if stream else ytdl.prepare_filename(data)
+        return cls(discord.FFmpegPCMAudio(filename, **FFMPEG_OPTIONS), data=data)
 
 # ========================================
 # SERVIDOR HTTP PARA RENDER (DETECTAR PORTA)
@@ -117,9 +127,6 @@ async def on_ready():
     print(f'📊 Conectado em {len(bot.guilds)} servidor(es)')
     print(f'🤖 Bot ID: {bot.user.id}')
     
-    # Conectar ao Lavalink com retry
-    await connect_lavalink(bot)
-    
     # Carregar dados das advertências
     load_warnings_data()
     
@@ -139,54 +146,6 @@ async def on_ready():
         activity=discord.Game(name=".play para música | O Hub dos sonhos 💭"),
         status=discord.Status.online
     )
-
-# ========================================
-# EVENTO WAVELINK - TOCAR PRÓXIMA MÚSICA
-# ========================================
-
-@bot.event
-async def on_wavelink_track_end(payload: wavelink.TrackEndEventPayload):
-    """Chamado quando uma música termina"""
-    player = payload.player
-    if not player:
-        return
-    
-    queue_obj = get_queue(player.guild.id)
-    
-    # Loop da música
-    if queue_obj.loop_mode == 'song' and queue_obj.current:
-        await player.play(queue_obj.current)
-        await player.set_volume(queue_obj.volume)
-        print(f'🔂 Loop: {queue_obj.current.title}')
-        return
-    
-    # Loop da fila
-    if queue_obj.loop_mode == 'queue' and queue_obj.current:
-        queue_obj.queue.append(queue_obj.current)
-    
-    # Próxima música
-    if queue_obj.queue:
-        next_track = queue_obj.queue.popleft()
-        queue_obj.current = next_track
-        queue_obj.skip_votes.clear()
-        await player.play(next_track)
-        await player.set_volume(queue_obj.volume)
-        print(f'🎵 Tocando próxima: {next_track.title}')
-        
-        # Atualizar painel
-        if queue_obj.control_message:
-            view = MusicControlPanel(None, queue_obj)
-            embed = await view.create_embed()
-            try:
-                await queue_obj.control_message.edit(embed=embed, view=view)
-            except:
-                pass
-    else:
-        queue_obj.current = None
-
-# ========================================
-# EVENTOS DE BOAS-VINDAS/SAÍDA/BAN
-# ========================================
 
 @bot.event
 async def on_member_join(member):
