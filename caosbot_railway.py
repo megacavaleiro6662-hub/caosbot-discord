@@ -27,39 +27,34 @@ LAVALINK_URL = os.getenv("LAVALINK_URL", "http://127.0.0.1:2333")
 LAVALINK_PASSWORD = os.getenv("LAVALINK_PASSWORD", "caosmusic2024")
 
 async def connect_lavalink(bot, identifier=None):
-    """Conecta ao Lavalink via HTTPS (Render) sem especificar porta"""
+    """Conecta ao Lavalink via HTTPS (Render)"""
     uri = os.getenv("LAVALINK_URL", "https://lavalink-server-5r3ll.onrender.com")
     password = os.getenv("LAVALINK_PASSWORD", "caosmusic2024")
-    secure = True  # Sempre HTTPS no Render
 
-    max_attempts = int(os.getenv("LAVALINK_RETRIES", 15))
-    delay = int(os.getenv("LAVALINK_TIMEOUT", 5))
+    max_attempts = int(os.getenv("LAVALINK_RETRIES", 20))
+    delay = int(os.getenv("LAVALINK_TIMEOUT", 3))
 
     bot_name = bot.user.name if hasattr(bot, 'user') and bot.user else 'BOT'
-    print(f"[{bot_name}] 🔌 Tentando conectar ao Lavalink em {uri} (HTTPS)")
+    print(f"[{bot_name}] 🔌 Conectando ao Lavalink em {uri}")
 
     for attempt in range(1, max_attempts + 1):
         try:
-            async with aiohttp.ClientSession() as session:
-                async with session.get(f"{uri}/version", timeout=aiohttp.ClientTimeout(total=5)) as resp:
-                    if resp.status == 200:
-                        print(f"[Lavalink] ✅ ({attempt}/{max_attempts}) - Servidor acessível!")
-                        node = wavelink.Node(
-                            uri=uri,
-                            password=password,
-                            secure=secure,
-                            identifier=identifier or f"{bot_name}-node"
-                        )
-                        await wavelink.Pool.connect(client=bot, nodes=[node])
-                        print(f"[Lavalink] ✅ Node conectado com sucesso em {uri}")
-                        return True
-                    else:
-                        print(f"[Lavalink] ⚠️ Resposta inesperada ({resp.status}) tentativa {attempt}")
+            # Tentar conectar diretamente sem checar /version primeiro
+            node = wavelink.Node(
+                uri=uri,
+                password=password,
+                identifier=identifier or f"{bot_name}-node"
+            )
+            await wavelink.Pool.connect(client=bot, nodes=[node])
+            print(f"[Lavalink] ✅ {bot_name} conectado com sucesso!")
+            return True
         except Exception as e:
-            print(f"[Lavalink] ⚠️ Tentativa {attempt}/{max_attempts} falhou: {e}")
+            if attempt == max_attempts:
+                print(f"[Lavalink] ❌ {bot_name} falhou após {max_attempts} tentativas: {e}")
+            else:
+                print(f"[Lavalink] ⚠️ {bot_name} tentativa {attempt}/{max_attempts}: {str(e)[:80]}")
             await asyncio.sleep(delay)
 
-    print("[Lavalink] ❌ Não foi possível conectar após múltiplas tentativas.")
     return False
 
 # ========================================
