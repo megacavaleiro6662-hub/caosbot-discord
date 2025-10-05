@@ -28,7 +28,7 @@ LAVALINK_PASSWORD = os.getenv("LAVALINK_PASSWORD", "caosmusic2024")
 
 async def connect_lavalink(bot, identifier=None):
     """Conecta ao Lavalink via HTTPS (Render) sem especificar porta"""
-    uri = os.getenv("LAVALINK_URL", "https://lavalink-server-5x38.onrender.com")
+    uri = os.getenv("LAVALINK_URL", "https://lavalink-server-5r3ll.onrender.com")
     password = os.getenv("LAVALINK_PASSWORD", "caosmusic2024")
     secure = True  # Sempre HTTPS no Render
 
