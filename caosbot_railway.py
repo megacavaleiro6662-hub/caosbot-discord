@@ -28,9 +28,9 @@ LAVALINK_PASSWORD = os.getenv("LAVALINK_PASSWORD", "caosmusic2024")
 
 async def connect_lavalink(bot, identifier=None):
     """Conecta ao Lavalink público (compatível com Render Free)"""
-    # Usar Lavalink público gratuito confiável
-    uri = os.getenv("LAVALINK_URL", "https://lavalink-v3.moebot.pro")
-    password = os.getenv("LAVALINK_PASSWORD", "moecheckmeisgay")
+    # Usar Lavalink público gratuito - Lavalink.cloud (24/7 uptime)
+    uri = os.getenv("LAVALINK_URL", "https://lavalink.devamop.in")
+    password = os.getenv("LAVALINK_PASSWORD", "DevamOP")
 
     max_attempts = int(os.getenv("LAVALINK_RETRIES", 10))
     delay = int(os.getenv("LAVALINK_TIMEOUT", 2))
