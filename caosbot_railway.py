@@ -4939,10 +4939,8 @@ async def start_all_bots():
             print('❌ ERRO: DISCORD_TOKEN não encontrado!')
             exit(1)
         
-        # Aguardar Lavalink estar disponível
-        lavalink_ok = await wait_for_lavalink()
-        if not lavalink_ok:
-            print('⚠️ Continuando sem Lavalink (música não funcionará)')
+        # Lavalink será conectado individualmente por cada bot de música
+        print('🎵 Bots de música conectarão ao Lavalink ao iniciar...')
         
         # Criar tasks para todos os bots
         tasks = []
