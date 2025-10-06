@@ -135,17 +135,26 @@ async def on_ready():
 
 @bot.event
 async def on_member_join(member):
-    """Evento quando alguém entra no servidor"""
+    """Evento quando alguém entra no servidor - CONTROLADO PELO DASHBOARD"""
     try:
-        # Autorole
-        if welcome_config['autorole_enabled']:
+        print(f"📥 Novo membro detectado: {member.name}")
+        print(f"   Estado atual - Welcome: {welcome_config.get('welcome_enabled')}, Autorole: {welcome_config.get('autorole_enabled')}")
+        
+        # AUTOROLE - Verificação INTELIGENTE
+        if welcome_config.get('autorole_enabled', False):
+            print(f"   ✅ Autorole ATIVADO - Dando cargo...")
             role = member.guild.get_role(AUTOROLE_ID)
             if role:
                 await member.add_roles(role)
-                print(f"✅ Cargo {role.name} adicionado a {member.name}")
+                print(f"   ✅ Cargo {role.name} adicionado a {member.name}")
+            else:
+                print(f"   ⚠️ Cargo de autorole não encontrado!")
+        else:
+            print(f"   ❌ Autorole DESATIVADO - Pulando...")
         
-        # Boas-vindas
-        if welcome_config['welcome_enabled']:
+        # BOAS-VINDAS - Verificação INTELIGENTE
+        if welcome_config.get('welcome_enabled', False):
+            print(f"   ✅ Boas-vindas ATIVADO - Enviando mensagem...")
             channel = member.guild.get_channel(WELCOME_CHANNEL_ID)
             if channel:
                 embed = discord.Embed(
@@ -159,24 +168,34 @@ async def on_member_join(member):
                 embed.set_footer(text=f"ID: {member.id} • Sistema de Boas-vindas")
                 
                 await channel.send(embed=embed)
-                print(f"👋 Boas-vindas enviadas para {member.name}")
+                print(f"   ✅ Boas-vindas enviadas para {member.name}")
+            else:
+                print(f"   ⚠️ Canal de boas-vindas não encontrado!")
+        else:
+            print(f"   ❌ Boas-vindas DESATIVADO - Pulando...")
                 
     except Exception as e:
         print(f"❌ Erro no evento de entrada: {e}")
 
 @bot.event
 async def on_member_remove(member):
-    """Evento quando alguém sai do servidor"""
+    """Evento quando alguém sai do servidor - CONTROLADO PELO DASHBOARD"""
     try:
-        if welcome_config['goodbye_enabled']:
+        print(f"📤 Membro saiu: {member.name}")
+        print(f"   Estado atual - Goodbye: {welcome_config.get('goodbye_enabled')}")
+        
+        if welcome_config.get('goodbye_enabled', False):
+            print(f"   ✅ Goodbye ATIVADO - Verificando se foi banimento...")
+            
             # Verificar se o usuário foi banido (não mostrar mensagem de saída se foi ban)
             try:
                 await member.guild.fetch_ban(member)
                 # Se chegou aqui, o usuário foi banido - NÃO mostrar mensagem de saída
-                print(f"🔨 {member.name} foi banido - pulando mensagem de saída")
+                print(f"   🔨 {member.name} foi BANIDO - Pulando mensagem de saída")
                 return
             except:
                 # Usuário não foi banido, mostrar mensagem de saída normal
+                print(f"   ➡️ {member.name} SAIU (não foi ban) - Enviando mensagem...")
                 pass
             
             channel = member.guild.get_channel(GOODBYE_CHANNEL_ID)
@@ -192,7 +211,11 @@ async def on_member_remove(member):
                 embed.set_footer(text=f"ID: {member.id} • Sistema de Saída")
                 
                 await channel.send(embed=embed)
-                print(f"👋 Mensagem de saída enviada para {member.name}")
+                print(f"   ✅ Mensagem de saída enviada para {member.name}")
+            else:
+                print(f"   ⚠️ Canal de saída não encontrado!")
+        else:
+            print(f"   ❌ Goodbye DESATIVADO - Pulando...")
                 
     except Exception as e:
         print(f"❌ Erro no evento de saída: {e}")
