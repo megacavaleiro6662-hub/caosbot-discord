@@ -81,13 +81,15 @@ async def before_keep_alive():
 # ========================================
 # SISTEMA DE AUTO-RELOAD DE CONFIGURAÇÕES
 # ========================================
-@tasks.loop(seconds=30)  # Recarrega configs a cada 30 segundos
+@tasks.loop(seconds=3)  # Recarrega configs a cada 3 segundos (quase instantâneo!)
 async def reload_configs():
     """Recarrega configurações do dashboard automaticamente"""
     try:
         load_welcome_config()
         load_role_config()
-        print(f'🔄 Configurações recarregadas! Welcome: {welcome_config["welcome_enabled"]}, Tickets: {welcome_config["tickets_enabled"]}')
+        # Só mostra log a cada 10 reloads para não poluir (30 segundos)
+        if reload_configs.current_loop % 10 == 0:
+            print(f'🔄 Configurações sincronizadas! Welcome: {welcome_config["welcome_enabled"]}, Tickets: {welcome_config["tickets_enabled"]}')
     except Exception as e:
         print(f'❌ Erro ao recarregar configurações: {e}')
 
@@ -120,7 +122,7 @@ async def on_ready():
     # INICIAR SISTEMA DE AUTO-RELOAD
     if not reload_configs.is_running():
         reload_configs.start()
-        print('🔄 Sistema de auto-reload ATIVADO! Configs serão atualizadas a cada 30s')
+        print('⚡ Sistema de auto-reload ATIVADO! Configs sincronizam a cada 3s (quase instantâneo!)')
     
     await bot.change_presence(
         activity=discord.Game(name=".play para música | O Hub dos sonhos"),
