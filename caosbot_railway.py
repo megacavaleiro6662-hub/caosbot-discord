@@ -78,6 +78,24 @@ async def before_keep_alive():
     print('✅ Bot pronto! Sistema anti-hibernação ATIVADO!')
     print('🌐 Configure o UptimeRobot para pingar a URL do Render a cada 5 minutos')
 
+# ========================================
+# SISTEMA DE AUTO-RELOAD DE CONFIGURAÇÕES
+# ========================================
+@tasks.loop(seconds=30)  # Recarrega configs a cada 30 segundos
+async def reload_configs():
+    """Recarrega configurações do dashboard automaticamente"""
+    try:
+        load_welcome_config()
+        load_role_config()
+        print(f'🔄 Configurações recarregadas! Welcome: {welcome_config["welcome_enabled"]}, Tickets: {welcome_config["tickets_enabled"]}')
+    except Exception as e:
+        print(f'❌ Erro ao recarregar configurações: {e}')
+
+@reload_configs.before_loop
+async def before_reload_configs():
+    """Aguarda o bot estar pronto antes de iniciar"""
+    await bot.wait_until_ready()
+
 # Evento quando o bot fica online
 @bot.event
 async def on_ready():
@@ -98,6 +116,11 @@ async def on_ready():
     if not keep_alive.is_running():
         keep_alive.start()
         print('🔄 Sistema anti-hibernação ATIVADO! Bot ficará online 24/7')
+    
+    # INICIAR SISTEMA DE AUTO-RELOAD
+    if not reload_configs.is_running():
+        reload_configs.start()
+        print('🔄 Sistema de auto-reload ATIVADO! Configs serão atualizadas a cada 30s')
     
     await bot.change_presence(
         activity=discord.Game(name=".play para música | O Hub dos sonhos"),
