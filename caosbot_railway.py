@@ -143,12 +143,12 @@ async def on_member_join(member):
         print(f"{'='*50}")
         print(f"🔍 DEBUG - Configurações atuais:")
         print(f"   welcome_config completo: {welcome_config}")
-        print(f"   welcome_enabled: {welcome_config.get('welcome_enabled')}")
-        print(f"   autorole_enabled: {welcome_config.get('autorole_enabled')}")
+        print(f"   welcome_enabled: {is_on('welcome_enabled')}")
+        print(f"   autorole_enabled: {is_on('autorole_enabled')}")
         print(f"   Tipo de welcome_enabled: {type(welcome_config.get('welcome_enabled'))}")
         
         # AUTOROLE - Verificação INTELIGENTE
-        if welcome_config.get('autorole_enabled', False):
+        if is_on('autorole_enabled'):
             print(f"   ✅ Autorole ATIVADO - Dando cargo...")
             role = member.guild.get_role(AUTOROLE_ID)
             if role:
@@ -162,9 +162,9 @@ async def on_member_join(member):
         # BOAS-VINDAS - Verificação INTELIGENTE
         print(f"\n🎯 VERIFICANDO TOGGLE DE BOAS-VINDAS...")
         print(f"   Valor de welcome_enabled: {welcome_config.get('welcome_enabled')}")
-        print(f"   Condição: {welcome_config.get('welcome_enabled', False)}")
+        print(f"   Condição normalizada: {is_on('welcome_enabled')}")
         
-        if welcome_config.get('welcome_enabled', False):
+        if is_on('welcome_enabled'):
             print(f"   ✅ TOGGLE ATIVADO - Enviando mensagem de boas-vindas!")
             channel = member.guild.get_channel(WELCOME_CHANNEL_ID)
             if channel:
@@ -196,9 +196,9 @@ async def on_member_remove(member):
     """Evento quando alguém sai do servidor - CONTROLADO PELO DASHBOARD"""
     try:
         print(f"📤 Membro saiu: {member.name}")
-        print(f"   Estado atual - Goodbye: {welcome_config.get('goodbye_enabled')}")
+        print(f"   Estado atual - Goodbye: {is_on('goodbye_enabled')}")
         
-        if welcome_config.get('goodbye_enabled', False):
+        if is_on('goodbye_enabled'):
             print(f"   ✅ Goodbye ATIVADO - Verificando se foi banimento...")
             
             # Verificar se o usuário foi banido (não mostrar mensagem de saída se foi ban)
@@ -952,6 +952,38 @@ welcome_config = {
     'status_message_id': None
 }
 
+# ===============================
+# Helpers de normalização de toggles
+# ===============================
+def to_bool(value):
+    """Converte qualquer valor comum em boolean consistente."""
+    try:
+        if isinstance(value, bool):
+            return value
+        if value is None:
+            return False
+        if isinstance(value, (int, float)):
+            return value != 0
+        if isinstance(value, str):
+            v = value.strip().lower()
+            return v in ("1", "true", "on", "yes", "y", "enabled")
+    except Exception:
+        pass
+    return False
+
+def normalize_config(cfg: dict) -> dict:
+    """Garante que as chaves de toggle sejam sempre booleanas."""
+    for key in ("welcome_enabled", "goodbye_enabled", "autorole_enabled", "tickets_enabled"):
+        if key in cfg:
+            cfg[key] = to_bool(cfg.get(key))
+        else:
+            cfg[key] = False
+    return cfg
+
+def is_on(key: str) -> bool:
+    """Retorna o valor booleano normalizado do toggle atual em memória."""
+    return to_bool(welcome_config.get(key))
+
 def save_welcome_config():
     """Salva configurações do sistema de boas-vindas"""
     try:
@@ -977,12 +1009,12 @@ def load_welcome_config():
                 new_config = response.json()
                 # Validar se tem as chaves necessárias
                 if 'welcome_enabled' in new_config:
-                    welcome_config.update(new_config)
+                    welcome_config.update(normalize_config(new_config))
                     print(f"✅ Configs carregadas do DASHBOARD COM SUCESSO!")
-                    print(f"   Welcome: {welcome_config.get('welcome_enabled')}")
-                    print(f"   Goodbye: {welcome_config.get('goodbye_enabled')}")
-                    print(f"   Autorole: {welcome_config.get('autorole_enabled')}")
-                    print(f"   Tickets: {welcome_config.get('tickets_enabled')}")
+                    print(f"   Welcome: {is_on('welcome_enabled')}")
+                    print(f"   Goodbye: {is_on('goodbye_enabled')}")
+                    print(f"   Autorole: {is_on('autorole_enabled')}")
+                    print(f"   Tickets: {is_on('tickets_enabled')}")
                     save_welcome_config()  # Salvar no arquivo local também
                     return
                 else:
@@ -1002,13 +1034,13 @@ def load_welcome_config():
         if os.path.exists(WELCOME_CONFIG_FILE):
             with open(WELCOME_CONFIG_FILE, 'r', encoding='utf-8') as f:
                 loaded_config = json.load(f)
-                welcome_config.update(loaded_config)
+                welcome_config.update(normalize_config(loaded_config))
             print(f"✅ Configurações carregadas do arquivo local")
-            print(f"   Welcome: {welcome_config.get('welcome_enabled')}")
-            print(f"   Goodbye: {welcome_config.get('goodbye_enabled')}")
+            print(f"   Welcome: {is_on('welcome_enabled')}")
+            print(f"   Goodbye: {is_on('goodbye_enabled')}")
         else:
             print("⚠️ AVISO: Arquivo local não encontrado! Usando configs DESATIVADAS por segurança")
-            print(f"   Welcome: {welcome_config.get('welcome_enabled')}")
+            print(f"   Welcome: {is_on('welcome_enabled')}")
     except Exception as e:
         print(f"❌ Erro crítico ao carregar configurações: {e}")
         print("   Mantendo tudo DESATIVADO por segurança")
