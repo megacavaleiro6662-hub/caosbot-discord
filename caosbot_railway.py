@@ -14,56 +14,16 @@ from http.server import HTTPServer, BaseHTTPRequestHandler
 import re
 import aiohttp
 from datetime import datetime
-import wavelink
 from discord.ui import Button, View
 import math
 import threading
 from flask import Flask
 
 # ========================================
-# CONFIGURAÇÃO LAVALINK COM RETRY
+# SISTEMA DE MÚSICA REMOVIDO
 # ========================================
-LAVALINK_URL = os.getenv("LAVALINK_URL", "http://127.0.0.1:2333")
-LAVALINK_PASSWORD = os.getenv("LAVALINK_PASSWORD", "caosmusic2024")
-
-async def connect_lavalink(bot, identifier=None):
-    """Conecta ao Lavalink - tenta múltiplos servidores públicos até achar um funcionando"""
-    
-    # Lista de servidores Lavalink públicos (fallback automático)
-    lavalink_servers = [
-        {"uri": "lava.link:80", "password": "anything", "secure": False},
-        {"uri": "lavalink.clxud.cc:443", "password": "youshallnotpass", "secure": True},
-        {"uri": "lavalink.jirayu.net:13592", "password": "youshallnotpass", "secure": False},
-        {"uri": "lava-v3.ajieblogs.eu.org:443", "password": "https://dsc.gg/ajidevserver", "secure": True},
-        {"uri": "lavalink.asterisklabs.net:443", "password": "asterisklab", "secure": True},
-    ]
-    
-    bot_name = bot.user.name if hasattr(bot, 'user') and bot.user else 'BOT'
-    print(f"[{bot_name}] 🔌 Tentando conectar em {len(lavalink_servers)} servidores Lavalink...")
-    
-    # Tentar cada servidor
-    for idx, server in enumerate(lavalink_servers, 1):
-        print(f"[{bot_name}] 📡 Servidor {idx}/{len(lavalink_servers)}: {server['uri']}")
-        
-        for attempt in range(1, 4):  # 3 tentativas por servidor
-            try:
-                node = wavelink.Node(
-                    uri=server['uri'],
-                    password=server['password'],
-                    secure=server.get('secure', False),
-                    identifier=identifier or f"{bot_name}-node"
-                )
-                await wavelink.Pool.connect(client=bot, nodes=[node])
-                print(f"[Lavalink] ✅ {bot_name} conectado em {server['uri']}!")
-                return True
-            except Exception as e:
-                if attempt == 3:
-                    print(f"[Lavalink] ❌ {server['uri']} falhou: {str(e)[:60]}")
-                await asyncio.sleep(1)
-    
-    print(f"[Lavalink] ⚠️ {bot_name} não conseguiu conectar em nenhum servidor")
-    print(f"[Lavalink] ℹ️  Comandos de música não funcionarão até reconectar")
-    return False
+# Bot focado em moderação, tickets e administração.
+# Sistema de música foi removido para maior estabilidade e foco em vendas.
 
 # ========================================
 # SERVIDOR HTTP PARA RENDER (DETECTAR PORTA)
@@ -969,12 +929,12 @@ BAN_GIF = "https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExbDE4YnhmZms4b29va2J
 # Arquivo de configuração
 WELCOME_CONFIG_FILE = "welcome_config.json"
 
-# Estado do sistema
+# Estado do sistema (ATIVADO automaticamente)
 welcome_config = {
-    'welcome_enabled': False,
-    'goodbye_enabled': False,
-    'autorole_enabled': False,
-    'tickets_enabled': False,
+    'welcome_enabled': True,  # ✅ Boas-vindas SEMPRE ATIVAS
+    'goodbye_enabled': True,  # ✅ Mensagem de saída SEMPRE ATIVA
+    'autorole_enabled': True,  # ✅ Auto-cargo SEMPRE ATIVO
+    'tickets_enabled': True,  # ✅ Sistema de tickets SEMPRE ATIVO
     'status_message_id': None
 }
 
@@ -4612,13 +4572,7 @@ Lavalink roda localmente no mesmo container (localhost:2333).
 COLOR_SUCCESS = 0xff8c00  # Laranja
 COLOR_ERROR = 0xff4d4d    # Vermelho
 
-# Tokens dos 4 bots de música
-MUSIC_TOKENS = {
-    'CAOS Music 1': os.getenv('MUSIC_TOKEN_1'),
-    'CAOS Music 2': os.getenv('MUSIC_TOKEN_2'),
-    'CAOS Music 3': os.getenv('MUSIC_TOKEN_3'),
-    'CAOS Music 4': os.getenv('MUSIC_TOKEN_4'),
-}
+# Sistema de música removido - foco em moderação e vendas
 
 # Pool global de bots (para rastreamento)
 music_bots_pool = {}
@@ -4658,20 +4612,20 @@ def mark_bot_free(name):
         guild_id = bot_pool[name]['guild_id']
         bot_pool[name]['busy'] = False
         bot_pool[name]['guild_id'] = None
-        print(f'[POOL] 🔓 {name} liberado (estava em {guild_id})')
+        print(f'[Pool] 🔓 {name} liberado (estava em {guild_id})')
 
 # ========================================
-# SISTEMA DE MÚSICA - APENAS NOS BOTS CAOS MUSIC
+# FUNÇÕES AUXILIARES
 # ========================================
-# O bot principal NÃO tem comandos de música.
-# Use os bots CAOS Music 1-4 com prefixo 'mc.' para música.
+
+def placeholder_function():
+    pass
 
 # ========================================
 # INICIALIZAÇÃO DO BOT
 # ========================================
 # NOTA: Comandos de música removidos do bot principal.
 # Use apenas os bots CAOS Music 1-4 com prefixo 'mc.' para música.
-
 def create_music_bot(bot_name, token):
     """Factory para criar bot de música ISOLADO (evita closure bug)"""
     intents = discord.Intents.default()
