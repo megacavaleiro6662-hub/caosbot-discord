@@ -5056,50 +5056,26 @@ async def start_music_bot(name, token):
         import traceback
         traceback.print_exc()
 
-async def start_all_bots():
-    """Inicia o bot principal - SEM MÚSICA"""
-    try:
-        print('=' * 60)
-        print(' INICIANDO CAOS BOT - MODERAÇÃO E VENDAS')
-        print('=' * 60)
-        
-        # Verificar token principal
-        if not TOKEN:
-            print(' ERRO: DISCORD_TOKEN não encontrado!')
-            exit(1)
-        
-        print(' Iniciando bot principal (CAOS Hub)...')
-        
-        @bot.event
-        async def on_ready():
-            print(f' [{bot.user}] está online!')
-            print(f'  [{bot.user}] conectado em {len(bot.guilds)} servidor(es)')
-            
-            # Status personalizado
-            activity = discord.Game("  O Hub dos sonhos...")
-            await bot.change_presence(activity=activity)
-            
-            # Carregar dados
-            load_warnings_data()
-            load_role_config()
-            load_welcome_config()
-            
-            # Sistema anti-hibernação
-            if not keep_alive.is_running():
-                keep_alive.start()
-        
-        await bot.start(TOKEN)
-        
-    except KeyboardInterrupt:
-        print('\n Encerrando sistema...')
-    except Exception as e:
-        print(f' Erro crítico: {e}')
-        traceback.print_exc()
-        time.sleep(30)
-
 if __name__ == '__main__':
-    # Rodar todos os bots
-    asyncio.run(start_all_bots())
+    print('=' * 60)
+    print('🔥 INICIANDO CAOS BOT - MODERAÇÃO E VENDAS')
+    print('=' * 60)
+    
+    # Verificar token principal
+    if not TOKEN:
+        print('❌ ERRO: DISCORD_TOKEN não encontrado!')
+        exit(1)
+    
+    print('🚀 Iniciando bot principal (CAOS Hub)...')
+    
+    try:
+        bot.run(TOKEN)
+    except KeyboardInterrupt:
+        print('\n⚠️ Encerrando sistema...')
+    except Exception as e:
+        print(f'❌ Erro crítico: {e}')
+        import traceback
+        traceback.print_exc()
 
 # Sistema anti-hibernação já definido no início do arquivo
 
