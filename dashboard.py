@@ -25,9 +25,9 @@ app.secret_key = os.getenv("DASHBOARD_SECRET", "caos_hub_secret_key_2025")
 # ========================================
 
 CLIENT_ID = os.getenv("DISCORD_CLIENT_ID", "1417623469184516096")
-CLIENT_SECRET = os.getenv("DISCORD_CLIENT_SECRET", "COLOQUE_SEU_CLIENT_SECRET_AQUI")
+CLIENT_SECRET = os.getenv("DISCORD_CLIENT_SECRET", "1yVL1ezvnlCabgljygymvzq6Hl7OfC6b")  # Pode sobrescrever com env
 REDIRECT_URI = os.getenv("REDIRECT_URI", "http://localhost:5000/callback")
-BOT_TOKEN = os.getenv("DISCORD_TOKEN", "")
+BOT_TOKEN = os.getenv("DISCORD_TOKEN", "")  # Token do bot para API
 
 DISCORD_API_URL = "https://discord.com/api/v10"
 OAUTH2_URL = f"{DISCORD_API_URL}/oauth2/authorize"
