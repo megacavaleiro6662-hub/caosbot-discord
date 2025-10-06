@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configurar Tickets - CAOS Hub</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-content">
+            <h1>🔥 CAOS HUB</h1>
+            <div class="nav-user">
+                <img src="https://cdn.discordapp.com/avatars/{{ user.id }}/{{ user.avatar }}.png" alt="Avatar" class="avatar-small">
+                <span>{{ user.username }}</span>
+                <a href="{{ url_for('logout') }}" class="btn btn-small">Sair</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="dashboard-container">
+        <div class="sidebar">
+            <h3>📋 Menu</h3>
+            <ul>
+                <li><a href="{{ url_for('dashboard') }}">📊 Painel Geral</a></li>
+                <li><a href="{{ url_for('tickets_page') }}" class="active">🎫 Tickets</a></li>
+            </ul>
+        </div>
+
+        <div class="main-content">
+            <div class="header-section">
+                <h2>🎫 Configuração de Tickets</h2>
+                <p>Configure o sistema de suporte por tickets</p>
+            </div>
+
+            <div id="notification-container"></div>
+
+            <form id="ticket-form">
+                <!-- Sistema Ativado -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3>⚡ Sistema de Tickets</h3>
+                        <label class="toggle">
+                            <input type="checkbox" id="tickets-enabled" name="enabled" {% if ticket_config.enabled %}checked{% endif %}>
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                    <div class="card-body">
+                        <p class="help-text">Ative ou desative o sistema de tickets completamente</p>
+                    </div>
+                </div>
+
+                <!-- Categoria dos Tickets -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3>📂 Categoria dos Tickets</h3>
+                    </div>
+                    <div class="card-body">
+                        <label for="category-select" class="form-label">Selecione a categoria onde os tickets serão criados:</label>
+                        <select id="category-select" name="category_id" class="form-select" required>
+                            <option value="">-- Selecione uma Categoria --</option>
+                            {% for category in categories %}
+                                <option value="{{ category.id }}" {% if ticket_config.category_id and ticket_config.category_id|string == category.id %}selected{% endif %}>
+                                    📁 {{ category.name }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                        <p class="help-text">⚠️ Os tickets serão criados dentro desta categoria</p>
+                    </div>
+                </div>
+
+                <!-- Cargos da Staff -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3>👮 Cargos da Staff</h3>
+                    </div>
+                    <div class="card-body">
+                        <label for="staff-roles" class="form-label">Selecione os cargos que terão acesso aos tickets:</label>
+                        <div class="multiselect-container" id="staff-roles-container">
+                            {% for role in staff_roles %}
+                                <label class="checkbox-label">
+                                    <input type="checkbox" 
+                                           class="staff-role-checkbox" 
+                                           name="staff_role_ids" 
+                                           value="{{ role.id }}"
+                                           {% if ticket_config.staff_role_ids and role.id|string in ticket_config.staff_role_ids|map('string')|list %}checked{% endif %}>
+                                    <span class="checkbox-custom"></span>
+                                    <span class="role-badge" style="background-color: #{{ '%06x' % role.color }};">
+                                        @{{ role.name }}
+                                    </span>
+                                </label>
+                            {% endfor %}
+                        </div>
+                        <p class="help-text">✅ Selecione múltiplos cargos que poderão ver e responder tickets</p>
+                    </div>
+                </div>
+
+                <!-- Mensagem de Boas-vindas -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3>💬 Mensagem de Boas-vindas</h3>
+                    </div>
+                    <div class="card-body">
+                        <label for="welcome-message" class="form-label">Mensagem que aparecerá quando um ticket for aberto:</label>
+                        <textarea id="welcome-message" 
+                                  name="welcome_message" 
+                                  class="form-textarea" 
+                                  rows="4" 
+                                  placeholder="Digite a mensagem de boas-vindas..."
+                                  required>{{ ticket_config.welcome_message if ticket_config.welcome_message else 'Olá! Obrigado por abrir um ticket. Nossa equipe responderá em breve.' }}</textarea>
+                        <p class="help-text">📝 Esta mensagem será enviada automaticamente no início do ticket</p>
+                    </div>
+                </div>
+
+                <!-- Botões de Ação -->
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-success">💾 Salvar Configurações</button>
+                    <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">❌ Cancelar</a>
+                </div>
+            </form>
+
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('ticket-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            // Coletar dados do formulário
+            const enabled = document.getElementById('tickets-enabled').checked;
+            const categoryId = document.getElementById('category-select').value;
+            const welcomeMessage = document.getElementById('welcome-message').value;
+            
+            // Coletar cargos selecionados
+            const staffRoleCheckboxes = document.querySelectorAll('.staff-role-checkbox:checked');
+            const staffRoleIds = Array.from(staffRoleCheckboxes).map(cb => cb.value);
+
+            // Validações
+            if (!categoryId) {
+                showNotification('❌ Selecione uma categoria!', 'error');
+                return;
+            }
+
+            if (staffRoleIds.length === 0) {
+                showNotification('❌ Selecione pelo menos um cargo de staff!', 'error');
+                return;
+            }
+
+            if (!welcomeMessage.trim()) {
+                showNotification('❌ Digite uma mensagem de boas-vindas!', 'error');
+                return;
+            }
+
+            // Preparar dados
+            const data = {
+                enabled: enabled,
+                category_id: categoryId,
+                staff_role_ids: staffRoleIds,
+                welcome_message: welcomeMessage
+            };
+
+            try {
+                const response = await fetch('/api/tickets/save', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    showNotification(result.message, 'success');
+                    
+                    // Redirecionar após 2 segundos
+                    setTimeout(() => {
+                        window.location.href = '{{ url_for("dashboard") }}';
+                    }, 2000);
+                } else {
+                    showNotification(result.message, 'error');
+                }
+            } catch (error) {
+                showNotification('❌ Erro ao salvar configurações', 'error');
+                console.error('Erro:', error);
+            }
+        });
+
+        function showNotification(message, type) {
+            const container = document.getElementById('notification-container');
+            const notification = document.createElement('div');
+            notification.className = `alert alert-${type} notification-slide`;
+            notification.textContent = message;
+            
+            container.appendChild(notification);
+
+            // Remover após 5 segundos
+            setTimeout(() => {
+                notification.remove();
+            }, 5000);
+        }
+    </script>
+</body>
+</html>
