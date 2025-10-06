@@ -13,6 +13,7 @@ from threading import Thread
 from http.server import HTTPServer, BaseHTTPRequestHandler
 import re
 import aiohttp
+import requests
 from datetime import datetime
 from discord.ui import Button, View
 import math
@@ -969,7 +970,6 @@ def load_welcome_config():
         print(f"🔄 Tentando conectar ao dashboard: {dashboard_url}/api/config/status")
         
         try:
-            import requests
             response = requests.get(f'{dashboard_url}/api/config/status', timeout=10)
             print(f"📡 Response status: {response.status_code}")
             
