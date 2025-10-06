@@ -942,12 +942,12 @@ BAN_GIF = "https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExbDE4YnhmZms4b29va2J
 # Arquivo de configuração
 WELCOME_CONFIG_FILE = "welcome_config.json"
 
-# Estado do sistema (ATIVADO automaticamente)
+# Estado do sistema (DESATIVADO por padrão - aguarda dashboard)
 welcome_config = {
-    'welcome_enabled': True,  # ✅ Boas-vindas SEMPRE ATIVAS
-    'goodbye_enabled': True,  # ✅ Mensagem de saída SEMPRE ATIVA
-    'autorole_enabled': True,  # ✅ Auto-cargo SEMPRE ATIVO
-    'tickets_enabled': True,  # ✅ Sistema de tickets SEMPRE ATIVO
+    'welcome_enabled': False,  # ❌ Aguardando dashboard
+    'goodbye_enabled': False,  # ❌ Aguardando dashboard
+    'autorole_enabled': False,  # ❌ Aguardando dashboard
+    'tickets_enabled': False,  # ❌ Aguardando dashboard
     'status_message_id': None
 }
 
@@ -969,33 +969,49 @@ def load_welcome_config():
         print(f"🔄 Tentando conectar ao dashboard: {dashboard_url}/api/config/status")
         
         try:
-            response = requests.get(f'{dashboard_url}/api/config/status', timeout=5)
+            import requests
+            response = requests.get(f'{dashboard_url}/api/config/status', timeout=10)
             print(f"📡 Response status: {response.status_code}")
             
             if response.status_code == 200:
-                welcome_config = response.json()
-                print(f"✅ Configs carregadas do DASHBOARD!")
-                print(f"   Welcome: {welcome_config.get('welcome_enabled')}")
-                print(f"   Goodbye: {welcome_config.get('goodbye_enabled')}")
-                print(f"   Autorole: {welcome_config.get('autorole_enabled')}")
-                print(f"   Tickets: {welcome_config.get('tickets_enabled')}")
-                return
+                new_config = response.json()
+                # Validar se tem as chaves necessárias
+                if 'welcome_enabled' in new_config:
+                    welcome_config.update(new_config)
+                    print(f"✅ Configs carregadas do DASHBOARD COM SUCESSO!")
+                    print(f"   Welcome: {welcome_config.get('welcome_enabled')}")
+                    print(f"   Goodbye: {welcome_config.get('goodbye_enabled')}")
+                    print(f"   Autorole: {welcome_config.get('autorole_enabled')}")
+                    print(f"   Tickets: {welcome_config.get('tickets_enabled')}")
+                    save_welcome_config()  # Salvar no arquivo local também
+                    return
+                else:
+                    print(f"⚠️ Dashboard retornou dados inválidos")
             else:
                 print(f"❌ Dashboard retornou status {response.status_code}")
-                print(f"   Response: {response.text[:200]}")
+        except requests.exceptions.Timeout:
+            print(f"⚠️ Timeout ao conectar no dashboard (>10s)")
+        except requests.exceptions.RequestException as e:
+            print(f"⚠️ Erro de rede ao conectar no dashboard: {str(e)}")
         except Exception as e:
             print(f"⚠️ Erro ao conectar no dashboard: {type(e).__name__}: {str(e)}")
-            print("   Usando arquivo local como fallback...")
+        
+        print("   Tentando carregar do arquivo local...")
         
         # FALLBACK: Ler do arquivo local se dashboard não estiver disponível
         if os.path.exists(WELCOME_CONFIG_FILE):
             with open(WELCOME_CONFIG_FILE, 'r', encoding='utf-8') as f:
-                welcome_config = json.load(f)
+                loaded_config = json.load(f)
+                welcome_config.update(loaded_config)
             print(f"✅ Configurações carregadas do arquivo local")
+            print(f"   Welcome: {welcome_config.get('welcome_enabled')}")
+            print(f"   Goodbye: {welcome_config.get('goodbye_enabled')}")
         else:
-            print("📝 Usando configurações padrão")
+            print("⚠️ AVISO: Arquivo local não encontrado! Usando configs DESATIVADAS por segurança")
+            print(f"   Welcome: {welcome_config.get('welcome_enabled')}")
     except Exception as e:
         print(f"❌ Erro crítico ao carregar configurações: {e}")
+        print("   Mantendo tudo DESATIVADO por segurança")
 
 async def update_status_panel(guild):
     """Atualiza o painel de status do sistema"""
