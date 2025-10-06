@@ -4624,10 +4624,10 @@ def placeholder_function():
 # ========================================
 # INICIALIZAÇÃO DO BOT
 # ========================================
-# NOTA: Comandos de música removidos do bot principal.
-# Use apenas os bots CAOS Music 1-4 com prefixo 'mc.' para música.
-def create_music_bot(bot_name, token):
-    """Factory para criar bot de música ISOLADO (evita closure bug)"""
+
+# Função temporária removida - código de música deletado
+
+# ===== TEMP =====
     intents = discord.Intents.default()
     intents.message_content = True
     intents.guilds = True
@@ -4890,68 +4890,43 @@ async def start_music_bot(name, token):
         traceback.print_exc()
 
 async def start_all_bots():
-    """Inicia o bot principal + 4 bots de música ISOLADOS"""
+    """Inicia o bot principal - SEM MÚSICA"""
     try:
         print('=' * 60)
-        print('🚀 INICIANDO SISTEMA CAOS')
+        print(' INICIANDO CAOS BOT - MODERAÇÃO E VENDAS')
         print('=' * 60)
         
         # Verificar token principal
         if not TOKEN:
-            print('❌ ERRO: DISCORD_TOKEN não encontrado!')
+            print(' ERRO: DISCORD_TOKEN não encontrado!')
             exit(1)
         
-        # Lavalink será conectado individualmente por cada bot de música
-        print('🎵 Bots de música conectarão ao Lavalink ao iniciar...')
+        print(' Iniciando bot principal (CAOS Hub)...')
         
-        # Criar tasks para todos os bots
-        tasks = []
-        
-        # Bot principal com status personalizado
-        async def start_main():
-            print('🤖 Iniciando bot principal (CAOS Hub)...')
+        @bot.event
+        async def on_ready():
+            print(f' [{bot.user}] está online!')
+            print(f'  [{bot.user}] conectado em {len(bot.guilds)} servidor(es)')
             
-            @bot.event
-            async def on_ready():
-                print(f'✅ [{bot.user}] está online!')
-                print(f'📊 [{bot.user}] conectado em {len(bot.guilds)} servidor(es)')
-                
-                # Status personalizado
-                activity = discord.Game("💭 O Hub dos sonhos...")
-                await bot.change_presence(activity=activity)
-                
-                # Carregar dados
-                load_warnings_data()
-                load_role_config()
-                load_welcome_config()
-                
-                # Sistema anti-hibernação
-                if not keep_alive.is_running():
-                    keep_alive.start()
+            # Status personalizado
+            activity = discord.Game("  O Hub dos sonhos...")
+            await bot.change_presence(activity=activity)
             
-            await bot.start(TOKEN)
+            # Carregar dados
+            load_warnings_data()
+            load_role_config()
+            load_welcome_config()
+            
+            # Sistema anti-hibernação
+            if not keep_alive.is_running():
+                keep_alive.start()
         
-        tasks.append(asyncio.create_task(start_main()))
-        
-        # 4 bots de música ISOLADOS (usando factory)
-        print(f'\n🎵 Preparando {len(MUSIC_TOKENS)} bots de música...')
-        for bot_name, token in MUSIC_TOKENS.items():
-            if token:
-                print(f'   → {bot_name}')
-                tasks.append(asyncio.create_task(start_music_bot(bot_name, token)))
-            else:
-                print(f'   ⚠️ {bot_name}: Token não configurado')
-        
-        print('\n⏳ Aguardando todos os bots iniciarem...\n')
-        
-        # Aguardar todos
-        await asyncio.gather(*tasks, return_exceptions=True)
+        await bot.start(TOKEN)
         
     except KeyboardInterrupt:
-        print('\n⚠️ Encerrando sistema...')
+        print('\n Encerrando sistema...')
     except Exception as e:
-        print(f'❌ Erro crítico: {e}')
-        import traceback
+        print(f' Erro crítico: {e}')
         traceback.print_exc()
         time.sleep(30)
 
