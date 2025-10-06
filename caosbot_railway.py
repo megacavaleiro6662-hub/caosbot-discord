@@ -85,9 +85,6 @@ async def on_ready():
     print(f'📊 Conectado em {len(bot.guilds)} servidor(es)')
     print(f'🤖 Bot ID: {bot.user.id}')
     
-    # Conectar ao Lavalink com retry
-    await connect_lavalink(bot)
-    
     # Carregar dados das advertências
     load_warnings_data()
     
@@ -102,55 +99,10 @@ async def on_ready():
         keep_alive.start()
         print('🔄 Sistema anti-hibernação ATIVADO! Bot ficará online 24/7')
     
-    # Status do bot
     await bot.change_presence(
-        activity=discord.Game(name=".play para música | O Hub dos sonhos 💭"),
+        activity=discord.Game(name=".play para música | O Hub dos sonhos"),
         status=discord.Status.online
     )
-
-# ========================================
-# EVENTO WAVELINK - TOCAR PRÓXIMA MÚSICA
-# ========================================
-
-@bot.event
-async def on_wavelink_track_end(payload: wavelink.TrackEndEventPayload):
-    """Chamado quando uma música termina"""
-    player = payload.player
-    if not player:
-        return
-    
-    queue_obj = get_queue(player.guild.id)
-    
-    # Loop da música
-    if queue_obj.loop_mode == 'song' and queue_obj.current:
-        await player.play(queue_obj.current)
-        await player.set_volume(queue_obj.volume)
-        print(f'🔂 Loop: {queue_obj.current.title}')
-        return
-    
-    # Loop da fila
-    if queue_obj.loop_mode == 'queue' and queue_obj.current:
-        queue_obj.queue.append(queue_obj.current)
-    
-    # Próxima música
-    if queue_obj.queue:
-        next_track = queue_obj.queue.popleft()
-        queue_obj.current = next_track
-        queue_obj.skip_votes.clear()
-        await player.play(next_track)
-        await player.set_volume(queue_obj.volume)
-        print(f'🎵 Tocando próxima: {next_track.title}')
-        
-        # Atualizar painel
-        if queue_obj.control_message:
-            view = MusicControlPanel(None, queue_obj)
-            embed = await view.create_embed()
-            try:
-                await queue_obj.control_message.edit(embed=embed, view=view)
-            except:
-                pass
-    else:
-        queue_obj.current = None
 
 # ========================================
 # EVENTOS DE BOAS-VINDAS/SAÍDA/BAN
