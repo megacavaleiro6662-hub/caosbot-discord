@@ -925,17 +925,29 @@ def save_welcome_config():
         print(f"❌ Erro ao salvar configurações de boas-vindas: {e}")
 
 def load_welcome_config():
-    """Carrega configurações do sistema de boas-vindas"""
+    """Carrega configurações do sistema de boas-vindas VIA DASHBOARD API"""
     global welcome_config
     try:
+        # TENTAR BUSCAR DO DASHBOARD PRIMEIRO (prioritário!)
+        dashboard_url = os.getenv('DASHBOARD_URL', 'https://ticket-dashboard.onrender.com')
+        try:
+            response = requests.get(f'{dashboard_url}/api/config/status', timeout=5)
+            if response.status_code == 200:
+                welcome_config = response.json()
+                print(f"✅ Configs carregadas do DASHBOARD! Welcome: {welcome_config.get('welcome_enabled')}")
+                return
+        except:
+            print("⚠️ Dashboard não disponível, usando arquivo local...")
+        
+        # FALLBACK: Ler do arquivo local se dashboard não estiver disponível
         if os.path.exists(WELCOME_CONFIG_FILE):
             with open(WELCOME_CONFIG_FILE, 'r', encoding='utf-8') as f:
                 welcome_config = json.load(f)
-            print(f"✅ Configurações de boas-vindas carregadas")
+            print(f"✅ Configurações carregadas do arquivo local")
         else:
-            print("📝 Arquivo de boas-vindas não encontrado, usando padrões")
+            print("📝 Usando configurações padrão")
     except Exception as e:
-        print(f"❌ Erro ao carregar configurações de boas-vindas: {e}")
+        print(f"❌ Erro ao carregar configurações: {e}")
 
 async def update_status_panel(guild):
     """Atualiza o painel de status do sistema"""
