@@ -930,14 +930,26 @@ def load_welcome_config():
     try:
         # TENTAR BUSCAR DO DASHBOARD PRIMEIRO (prioritário!)
         dashboard_url = os.getenv('DASHBOARD_URL', 'https://ticket-dashboard.onrender.com')
+        print(f"🔄 Tentando conectar ao dashboard: {dashboard_url}/api/config/status")
+        
         try:
             response = requests.get(f'{dashboard_url}/api/config/status', timeout=5)
+            print(f"📡 Response status: {response.status_code}")
+            
             if response.status_code == 200:
                 welcome_config = response.json()
-                print(f"✅ Configs carregadas do DASHBOARD! Welcome: {welcome_config.get('welcome_enabled')}")
+                print(f"✅ Configs carregadas do DASHBOARD!")
+                print(f"   Welcome: {welcome_config.get('welcome_enabled')}")
+                print(f"   Goodbye: {welcome_config.get('goodbye_enabled')}")
+                print(f"   Autorole: {welcome_config.get('autorole_enabled')}")
+                print(f"   Tickets: {welcome_config.get('tickets_enabled')}")
                 return
-        except:
-            print("⚠️ Dashboard não disponível, usando arquivo local...")
+            else:
+                print(f"❌ Dashboard retornou status {response.status_code}")
+                print(f"   Response: {response.text[:200]}")
+        except Exception as e:
+            print(f"⚠️ Erro ao conectar no dashboard: {type(e).__name__}: {str(e)}")
+            print("   Usando arquivo local como fallback...")
         
         # FALLBACK: Ler do arquivo local se dashboard não estiver disponível
         if os.path.exists(WELCOME_CONFIG_FILE):
@@ -947,7 +959,7 @@ def load_welcome_config():
         else:
             print("📝 Usando configurações padrão")
     except Exception as e:
-        print(f"❌ Erro ao carregar configurações: {e}")
+        print(f"❌ Erro crítico ao carregar configurações: {e}")
 
 async def update_status_panel(guild):
     """Atualiza o painel de status do sistema"""
