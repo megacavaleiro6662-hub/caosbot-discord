@@ -137,8 +137,14 @@ async def on_ready():
 async def on_member_join(member):
     """Evento quando alguém entra no servidor - CONTROLADO PELO DASHBOARD"""
     try:
-        print(f"📥 Novo membro detectado: {member.name}")
-        print(f"   Estado atual - Welcome: {welcome_config.get('welcome_enabled')}, Autorole: {welcome_config.get('autorole_enabled')}")
+        print(f"\n{'='*50}")
+        print(f"📥 NOVO MEMBRO DETECTADO: {member.name}")
+        print(f"{'='*50}")
+        print(f"🔍 DEBUG - Configurações atuais:")
+        print(f"   welcome_config completo: {welcome_config}")
+        print(f"   welcome_enabled: {welcome_config.get('welcome_enabled')}")
+        print(f"   autorole_enabled: {welcome_config.get('autorole_enabled')}")
+        print(f"   Tipo de welcome_enabled: {type(welcome_config.get('welcome_enabled'))}")
         
         # AUTOROLE - Verificação INTELIGENTE
         if welcome_config.get('autorole_enabled', False):
@@ -153,8 +159,12 @@ async def on_member_join(member):
             print(f"   ❌ Autorole DESATIVADO - Pulando...")
         
         # BOAS-VINDAS - Verificação INTELIGENTE
+        print(f"\n🎯 VERIFICANDO TOGGLE DE BOAS-VINDAS...")
+        print(f"   Valor de welcome_enabled: {welcome_config.get('welcome_enabled')}")
+        print(f"   Condição: {welcome_config.get('welcome_enabled', False)}")
+        
         if welcome_config.get('welcome_enabled', False):
-            print(f"   ✅ Boas-vindas ATIVADO - Enviando mensagem...")
+            print(f"   ✅ TOGGLE ATIVADO - Enviando mensagem de boas-vindas!")
             channel = member.guild.get_channel(WELCOME_CHANNEL_ID)
             if channel:
                 embed = discord.Embed(
@@ -172,7 +182,10 @@ async def on_member_join(member):
             else:
                 print(f"   ⚠️ Canal de boas-vindas não encontrado!")
         else:
-            print(f"   ❌ Boas-vindas DESATIVADO - Pulando...")
+            print(f"   ❌ TOGGLE DESATIVADO - NÃO enviando mensagem!")
+            print(f"   🎉 Sistema funcionando corretamente - toggle respeitado!")
+        
+        print(f"{'='*50}\n")
                 
     except Exception as e:
         print(f"❌ Erro no evento de entrada: {e}")
