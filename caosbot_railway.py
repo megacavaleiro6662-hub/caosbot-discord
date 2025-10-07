@@ -1288,8 +1288,8 @@ class TicketPanelView(discord.ui.View):
     @discord.ui.button(label="Abrir Ticket", emoji="🎫", style=discord.ButtonStyle.success, custom_id="open_ticket_button")
     async def open_ticket(self, interaction: discord.Interaction, button: discord.ui.Button):
         try:
-            # Verificar se o sistema de tickets está ativado
-            if not ticket_config.get('enabled', False):
+            # Verificar se o sistema de tickets está ativado (DASHBOARD TOGGLE)
+            if not welcome_config.get('tickets_enabled', False):
                 await interaction.response.send_message(
                     "❌ **Sistema de tickets desativado!**\nPeça a um administrador para ativar no dashboard.",
                     ephemeral=True
