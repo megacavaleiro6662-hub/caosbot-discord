@@ -916,6 +916,8 @@ async def config_bloqueio_error(ctx, error):
 # ========================================
 
 # IDs dos cargos de STAFF (hierarquia do maior pro menor)
+FOUNDER_ROLE_ID = 1365636960651051069    # [FND] Founder
+SUBDONO_ROLE_ID = 1365636456386789437    # [SDN] Sub Dono
 ADMIN_ROLE_ID = 1365633918593794079      # [ADM] Administrador
 STAFF_ROLE_ID = 1365634226254254150      # [STF] Staff
 MOD_ROLE_ID = 1365633102973763595        # [MOD] Moderador
@@ -931,6 +933,8 @@ LOG_CHANNEL_ID = 1417638740435800186
 
 # Hierarquia de cargos (maior número = mais poder)
 ROLE_HIERARCHY = {
+    FOUNDER_ROLE_ID: 6,  # Founder
+    SUBDONO_ROLE_ID: 5,  # Sub Dono
     ADMIN_ROLE_ID: 4,    # Administrador
     STAFF_ROLE_ID: 3,    # Staff
     MOD_ROLE_ID: 2,      # Moderador
@@ -980,6 +984,8 @@ user_warnings_details = {}  # Detalhes das advertências: motivo, moderador, tim
 # Sistema de nicknames automáticos por cargo (configurado com IDs reais)
 CARGO_PREFIXES = {
     # Cargos de moderação do servidor (IDs fornecidos pelo usuário)
+    1365636960651051069: "[FND]",  # Founder
+    1365636456386789437: "[SDN]",  # Sub Dono
     1365633918593794079: "[ADM]",  # Administrador
     1365634226254254150: "[STF]",  # Staff
     1365633102973763595: "[MOD]",  # Moderador
@@ -1588,6 +1594,8 @@ async def adv_command(ctx, usuario: discord.Member = None, *, motivo=None):
                        f"**Cargo do alvo:** {target_role.mention if target_role else 'Nenhum'}\n\n"
                        f"⚖️ **Regra:** Você só pode advertir membros com cargo **inferior** ao seu na hierarquia.\n\n"
                        f"**Hierarquia atual:**\n"
+                       f"👑 [FND] Founder\n"
+                       f"💎 [SDN] Sub Dono\n"
                        f"🔴 [ADM] Administrador\n"
                        f"🟠 [STF] Staff\n"
                        f"🟡 [MOD] Moderador\n"
@@ -5219,5 +5227,4 @@ if __name__ == '__main__':
         traceback.print_exc()
 
 # Sistema anti-hibernação já definido no início do arquivo
-# Force update: hierarquia de cargos implementada
 
