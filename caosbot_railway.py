@@ -1092,13 +1092,124 @@ class TicketManageView(discord.ui.View):
     
     @discord.ui.button(label="Fechar Ticket", emoji="🔒", style=discord.ButtonStyle.danger, custom_id="close_ticket_new")
     async def close_button(self, interaction: discord.Interaction, button: discord.ui.Button):
-        # Pedir confirmação e avaliação
+        # Pegar informações do ticket
+        guild = interaction.guild
+        channel = interaction.channel
+        channel_name = channel.name
+        channel_id = channel.id
+        
+        # Buscar quem abriu o ticket (do topic)
+        topic = channel.topic or ""
+        user_id_match = topic.split("Ticket de ")
+        opener_id = int(user_id_match[1].split(" |")[0]) if len(user_id_match) > 1 else None
+        opener = guild.get_member(opener_id) if opener_id else None
+        
+        # Gerar transcript
+        messages = []
+        message_count = 0
+        participants = set()
+        
+        async for msg in channel.history(limit=500, oldest_first=True):
+            timestamp = msg.created_at.strftime('%d/%m/%Y %H:%M:%S')
+            messages.append(f"[{timestamp}] {msg.author.name} ({msg.author.id}): {msg.content}")
+            message_count += 1
+            participants.add(msg.author.id)
+        
+        transcript_text = f"=== HISTÓRICO DO TICKET: {channel_name} ===\n\n" + "\n".join(messages)
+        
+        # Calcular duração
+        if channel.created_at:
+            duration = discord.utils.utcnow() - channel.created_at
+            hours = duration.seconds // 3600
+            minutes = (duration.seconds % 3600) // 60
+            duration_text = f"{hours}h {minutes}m"
+        else:
+            duration_text = "0h 0m"
+        
+        # Salvar transcript
+        import io
+        transcript_file = discord.File(
+            io.BytesIO(transcript_text.encode('utf-8')),
+            filename=f"ticket_{channel_name}_{discord.utils.utcnow().strftime('%Y%m%d_%H%M%S')}.txt"
+        )
+        
+        # Enviar log COMPLETO no canal ticket-logs
+        log_channel = discord.utils.get(guild.text_channels, name='ticket-logs')
+        if log_channel:
+            # Buscar assunto e descrição da primeira mensagem embed
+            assunto_text = "N/A"
+            descricao_text = "N/A"
+            async for msg in channel.history(limit=10, oldest_first=True):
+                if msg.embeds and len(msg.embeds) > 0:
+                    embed = msg.embeds[0]
+                    for field in embed.fields:
+                        if "Assunto" in field.name:
+                            assunto_text = field.value.replace("```", "").strip()
+                        elif "Descrição" in field.name:
+                            descricao_text = field.value.replace("```", "").strip()
+                    break
+            
+            log_embed = discord.Embed(
+                title="🔒 TICKET FECHADO",
+                description=f"**Canal:** [ {channel_name} ]\n**ID:** `{channel_id}`",
+                color=0xFF0000,
+                timestamp=discord.utils.utcnow()
+            )
+            
+            if opener:
+                log_embed.add_field(
+                    name="👤 Aberto por",
+                    value=f"{opener.mention}\n**ID:** `{opener.id}`",
+                    inline=True
+                )
+            
+            log_embed.add_field(
+                name="📄 Assunto",
+                value=f"```\n{assunto_text}\n```",
+                inline=False
+            )
+            
+            log_embed.add_field(
+                name="📝 Descrição",
+                value=f"```\n{descricao_text[:500]}...\n```" if len(descricao_text) > 500 else f"```\n{descricao_text}\n```",
+                inline=False
+            )
+            
+            log_embed.add_field(
+                name="🔒 Fechado por",
+                value=f"{interaction.user.mention}\n**ID:** `{interaction.user.id}`",
+                inline=True
+            )
+            
+            log_embed.add_field(
+                name="📊 Estatísticas",
+                value=f"**Mensagens:** {message_count}\n**Participantes:** {len(participants)}",
+                inline=True
+            )
+            
+            log_embed.add_field(
+                name="⏱️ Duração",
+                value=duration_text,
+                inline=True
+            )
+            
+            log_embed.set_footer(text=f"Sistema de Tickets • Caos Hub • Hoje às {discord.utils.utcnow().strftime('%I:%M %p')}")
+            
+            await log_channel.send(
+                content=f"📁 **Histórico completo do ticket [ {channel_name} ]:**",
+                embed=log_embed,
+                file=transcript_file
+            )
+        
+        # Avisar que vai fechar
         await interaction.response.send_message(
-            "✅ Ticket será fechado. Como foi o atendimento? (Reaja abaixo)",
+            "🔒 Fechando ticket em 3 segundos...",
             ephemeral=False
         )
         await asyncio.sleep(3)
-        await self.ticket_channel.delete(reason=f'Ticket fechado por {interaction.user}')
+        
+        # Deletar canal
+        await channel.delete(reason=f'Ticket fechado por {interaction.user}')
     
     @discord.ui.button(label="Transcript", emoji="📊", style=discord.ButtonStyle.secondary, custom_id="transcript_ticket")
     async def transcript_button(self, interaction: discord.Interaction, button: discord.ui.Button):
