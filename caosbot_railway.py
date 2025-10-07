@@ -27,6 +27,11 @@ from flask import Flask, request, jsonify, render_template
 # Sistema de música foi removido para maior estabilidade e foco em vendas.
 
 # ========================================
+# INICIALIZAR FLASK
+# ========================================
+app = Flask(__name__)
+
+# ========================================
 # SERVIDOR HTTP PARA RENDER (DETECTAR PORTA)
 # ========================================
 @app.route('/')
