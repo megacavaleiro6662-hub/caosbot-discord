@@ -86,7 +86,163 @@ def dashboard():
     """Página principal do dashboard"""
     try:
         config = load_config_dashboard()
-        return render_template('dashboard.html', config=config)
+        
+        # HTML embutido (não precisa de templates/)
+        html = f"""
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CAOS Bot - Dashboard</title>
+    <style>
+        * {{ margin: 0; padding: 0; box-sizing: border-box; }}
+        body {{ font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; padding: 20px; }}
+        .container {{ max-width: 1200px; margin: 0 auto; }}
+        header {{ text-align: center; color: white; margin-bottom: 40px; padding: 30px; background: rgba(255, 255, 255, 0.1); border-radius: 20px; backdrop-filter: blur(10px); }}
+        header h1 {{ font-size: 2.5em; margin-bottom: 10px; text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3); }}
+        .controls-grid {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 25px; margin-bottom: 30px; }}
+        .control-card {{ background: white; border-radius: 20px; padding: 25px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2); }}
+        .card-header {{ display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding-bottom: 15px; border-bottom: 2px solid #f0f0f0; }}
+        .card-header h2 {{ font-size: 1.5em; color: #333; }}
+        .toggle-switch {{ position: relative; width: 60px; height: 30px; }}
+        .toggle-switch input {{ opacity: 0; width: 0; height: 0; }}
+        .toggle-switch label {{ position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: 0.4s; border-radius: 30px; }}
+        .toggle-switch label:before {{ position: absolute; content: ""; height: 22px; width: 22px; left: 4px; bottom: 4px; background-color: white; transition: 0.4s; border-radius: 50%; }}
+        .toggle-switch input:checked + label {{ background-color: #4caf50; }}
+        .toggle-switch input:checked + label:before {{ transform: translateX(30px); }}
+        .card-status {{ font-weight: 600; padding: 10px; border-radius: 10px; background: #f5f5f5; }}
+        .status-on {{ color: #4caf50; font-weight: bold; }}
+        .status-off {{ color: #f44336; font-weight: bold; }}
+        .actions {{ display: flex; gap: 15px; justify-content: center; margin-bottom: 30px; flex-wrap: wrap; }}
+        .btn {{ padding: 15px 30px; border: none; border-radius: 10px; font-size: 1.1em; font-weight: 600; cursor: pointer; transition: all 0.3s; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2); color: white; }}
+        .btn-success {{ background: linear-gradient(135deg, #4caf50 0%, #45a049 100%); }}
+        .btn-danger {{ background: linear-gradient(135deg, #f44336 0%, #d32f2f 100%); }}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎛️ CAOS BOT - DASHBOARD</h1>
+            <p>Sistema de Controle de Eventos e Automação</p>
+        </header>
+        <div class="controls-grid">
+            <div class="control-card">
+                <div class="card-header">
+                    <h2>👋 Boas-vindas</h2>
+                    <div class="toggle-switch">
+                        <input type="checkbox" id="welcome_enabled" {"checked" if config.get('welcome_enabled') else ""}>
+                        <label for="welcome_enabled"></label>
+                    </div>
+                </div>
+                <div class="card-status">
+                    Status: <span id="welcome-status" class="{'status-on' if config.get('welcome_enabled') else 'status-off'}">
+                        {'Ativado' if config.get('welcome_enabled') else 'Desativado'}
+                    </span>
+                </div>
+            </div>
+            <div class="control-card">
+                <div class="card-header">
+                    <h2>👋 Saída/Ban</h2>
+                    <div class="toggle-switch">
+                        <input type="checkbox" id="goodbye_enabled" {"checked" if config.get('goodbye_enabled') else ""}>
+                        <label for="goodbye_enabled"></label>
+                    </div>
+                </div>
+                <div class="card-status">
+                    Status: <span id="goodbye-status" class="{'status-on' if config.get('goodbye_enabled') else 'status-off'}">
+                        {'Ativado' if config.get('goodbye_enabled') else 'Desativado'}
+                    </span>
+                </div>
+            </div>
+            <div class="control-card">
+                <div class="card-header">
+                    <h2>🎭 Autorole</h2>
+                    <div class="toggle-switch">
+                        <input type="checkbox" id="autorole_enabled" {"checked" if config.get('autorole_enabled') else ""}>
+                        <label for="autorole_enabled"></label>
+                    </div>
+                </div>
+                <div class="card-status">
+                    Status: <span id="autorole-status" class="{'status-on' if config.get('autorole_enabled') else 'status-off'}">
+                        {'Ativado' if config.get('autorole_enabled') else 'Desativado'}
+                    </span>
+                </div>
+            </div>
+            <div class="control-card">
+                <div class="card-header">
+                    <h2>🎫 Tickets</h2>
+                    <div class="toggle-switch">
+                        <input type="checkbox" id="tickets_enabled" {"checked" if config.get('tickets_enabled') else ""}>
+                        <label for="tickets_enabled"></label>
+                    </div>
+                </div>
+                <div class="card-status">
+                    Status: <span id="tickets-status" class="{'status-on' if config.get('tickets_enabled') else 'status-off'}">
+                        {'Ativado' if config.get('tickets_enabled') else 'Desativado'}
+                    </span>
+                </div>
+            </div>
+        </div>
+        <div class="actions">
+            <button class="btn btn-success" onclick="enableAll()">✅ Ativar Tudo</button>
+            <button class="btn btn-danger" onclick="disableAll()">❌ Desativar Tudo</button>
+        </div>
+    </div>
+    <script>
+        document.querySelectorAll('.toggle-switch input').forEach(toggle => {{
+            toggle.addEventListener('change', async function() {{
+                const key = this.id;
+                const statusSpan = document.getElementById(key.replace('_enabled', '-status'));
+                try {{
+                    const response = await fetch('/api/config/toggle', {{
+                        method: 'POST',
+                        headers: {{ 'Content-Type': 'application/json' }},
+                        body: JSON.stringify({{ key: key }})
+                    }});
+                    const data = await response.json();
+                    if (data.success) {{
+                        statusSpan.textContent = data.new_value ? 'Ativado' : 'Desativado';
+                        statusSpan.className = data.new_value ? 'status-on' : 'status-off';
+                        alert(data.message);
+                    }}
+                }} catch (error) {{
+                    this.checked = !this.checked;
+                    alert('Erro ao atualizar');
+                }}
+            }});
+        }});
+        async function enableAll() {{
+            await fetch('/api/config/update', {{
+                method: 'POST',
+                headers: {{ 'Content-Type': 'application/json' }},
+                body: JSON.stringify({{
+                    welcome_enabled: true,
+                    goodbye_enabled: true,
+                    autorole_enabled: true,
+                    tickets_enabled: true
+                }})
+            }});
+            location.reload();
+        }}
+        async function disableAll() {{
+            await fetch('/api/config/update', {{
+                method: 'POST',
+                headers: {{ 'Content-Type': 'application/json' }},
+                body: JSON.stringify({{
+                    welcome_enabled: false,
+                    goodbye_enabled: false,
+                    autorole_enabled: false,
+                    tickets_enabled: false
+                }})
+            }});
+            location.reload();
+        }}
+    </script>
+</body>
+</html>
+        """
+        return html
     except Exception as e:
         return f"Erro ao carregar dashboard: {e}", 500
 
