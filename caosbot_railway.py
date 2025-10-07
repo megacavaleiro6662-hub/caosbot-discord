@@ -94,26 +94,28 @@ def dashboard():
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CAOS Bot - Premium Dashboard</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <title>CAOS Hub - Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         * {{ margin: 0; padding: 0; box-sizing: border-box; }}
-        body {{ font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; background: #0f0f23; min-height: 100vh; color: #fff; overflow-x: hidden; }}
-        .sidebar {{ position: fixed; left: 0; top: 0; width: 260px; height: 100vh; background: #1a1a2e; border-right: 1px solid #2a2a3e; padding: 24px; }}
-        .sidebar-logo {{ font-size: 20px; font-weight: 700; color: #8b5cf6; margin-bottom: 32px; }}
+        body {{ font-family: 'Poppins', sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; color: #fff; overflow-x: hidden; }}
+        .sidebar {{ position: fixed; left: 0; top: 0; width: 280px; height: 100vh; background: rgba(26, 26, 46, 0.95); backdrop-filter: blur(10px); border-right: 2px solid rgba(139, 92, 246, 0.2); padding: 32px 24px; }}
+        .sidebar-logo {{ display: flex; align-items: center; justify-content: center; margin-bottom: 40px; }}
+        .sidebar-logo img {{ width: 180px; height: auto; filter: drop-shadow(0 0 20px rgba(139, 92, 246, 0.4)); }}
         .sidebar-nav {{ list-style: none; }}
-        .sidebar-nav li {{ margin-bottom: 8px; }}
-        .sidebar-nav a {{ display: flex; align-items: center; padding: 12px 16px; color: #9ca3af; text-decoration: none; border-radius: 6px; transition: all 0.2s; }}
-        .sidebar-nav a:hover, .sidebar-nav a.active {{ background: #2a2a3e; color: #fff; }}
-        .main {{ margin-left: 260px; padding: 24px; }}
-        .header {{ background: #1a1a2e; border: 1px solid #2a2a3e; border-radius: 6px; padding: 24px; margin-bottom: 24px; }}
-        .header h1 {{ font-size: 28px; font-weight: 700; margin-bottom: 8px; }}
-        .header p {{ color: #9ca3af; font-size: 14px; }}
-        .grid {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }}
-        .card {{ background: #1a1a2e; border: 1px solid #2a2a3e; border-radius: 6px; padding: 20px; transition: all 0.2s; }}
-        .card:hover {{ border-color: #8b5cf6; }}
-        .card-header {{ display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }}
-        .card-header h2 {{ font-size: 16px; font-weight: 600; }}
+        .sidebar-nav li {{ margin-bottom: 12px; }}
+        .sidebar-nav a {{ display: flex; align-items: center; padding: 14px 18px; color: #9ca3af; text-decoration: none; border-radius: 2px; border-left: 3px solid transparent; transition: all 0.3s; font-weight: 500; }}
+        .sidebar-nav a:hover {{ background: rgba(139, 92, 246, 0.1); color: #fff; border-left-color: #8b5cf6; }}
+        .sidebar-nav a.active {{ background: rgba(139, 92, 246, 0.15); color: #fff; border-left-color: #8b5cf6; }}
+        .main {{ margin-left: 280px; padding: 32px; }}
+        .header {{ background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); border: 2px solid rgba(255, 255, 255, 0.1); border-radius: 2px; padding: 32px; margin-bottom: 32px; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2); }}
+        .header h1 {{ font-size: 32px; font-weight: 800; margin-bottom: 8px; text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3); }}
+        .header p {{ color: #e5e7eb; font-size: 16px; }}
+        .grid {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 24px; }}
+        .card {{ background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); border: 2px solid rgba(255, 255, 255, 0.1); border-radius: 2px; padding: 24px; transition: all 0.3s; box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1); }}
+        .card:hover {{ border-color: rgba(139, 92, 246, 0.5); transform: translateY(-4px); box-shadow: 0 8px 24px rgba(139, 92, 246, 0.2); }}
+        .card-header {{ display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }}
+        .card-header h2 {{ font-size: 18px; font-weight: 700; }}
         .toggle {{ position: relative; width: 48px; height: 24px; }}
         .toggle input {{ opacity: 0; width: 0; height: 0; }}
         .toggle label {{ position: absolute; cursor: pointer; inset: 0; background: #374151; transition: 0.3s; border-radius: 24px; }}
@@ -146,10 +148,13 @@ def dashboard():
 <body>
     <!-- Sidebar -->
     <div class="sidebar">
-        <div class="sidebar-logo">🔥 CAOS BOT</div>
+        <div class="sidebar-logo">
+            <img src="https://i.ibb.co/Fq5Lgzs5/Chat-GPT-Image-7-de-out-de-2025-00-25-49.png" alt="CAOS Hub">
+        </div>
         <ul class="sidebar-nav">
             <li><a href="#" class="active" onclick="showPage('dashboard')">📊 Dashboard</a></li>
             <li><a href="#" onclick="showPage('tickets')">🎫 Tickets</a></li>
+            <li><a href="#" onclick="showPage('stats')">📈 Estatísticas</a></li>
         </ul>
     </div>
     
@@ -225,15 +230,15 @@ def dashboard():
                 <div class="card">
                     <form id="ticket-form" onsubmit="sendTicketPanel(event)">
                         <div class="form-group">
-                            <label class="form-label">Canal de Destino</label>
-                            <select id="ticket-channel" class="form-select" required>
-                                <option value="">Carregando canais...</option>
+                            <label class="form-label">1. Selecione a Categoria</label>
+                            <select id="ticket-category" class="form-select" required onchange="loadChannelsByCategory()">
+                                <option value="">Carregando categorias...</option>
                             </select>
                         </div>
                         <div class="form-group">
-                            <label class="form-label">Categoria dos Tickets</label>
-                            <select id="ticket-category" class="form-select" required>
-                                <option value="">Carregando categorias...</option>
+                            <label class="form-label">2. Selecione o Canal</label>
+                            <select id="ticket-channel" class="form-select" required disabled>
+                                <option value="">Primeiro selecione uma categoria</option>
                             </select>
                         </div>
                         <div class="form-group">
@@ -257,6 +262,16 @@ def dashboard():
                 </div>
             </div>
         </div>
+        
+        <!-- Stats Page -->
+        <div id="stats-page" class="page">
+            <div class="section">
+                <h2 class="section-title">📈 Estatísticas do Servidor</h2>
+                <div class="grid" id="stats-grid">
+                    <div class="card"><h3>⏳ Carregando...</h3></div>
+                </div>
+            </div>
+        </div>
     </div>
     
     <!-- Toast Notification -->
@@ -274,8 +289,9 @@ def dashboard():
             event.target.classList.add('active');
             
             if (page === 'tickets') {{
-                loadChannels();
                 loadCategories();
+            }} else if (page === 'stats') {{
+                loadStats();
             }}
         }}
         
@@ -316,23 +332,37 @@ def dashboard():
             }});
         }});
         
-        // Carregar canais do Discord
-        async function loadChannels() {{
+        // Carregar canais por categoria
+        async function loadChannelsByCategory() {{
+            const categoryId = document.getElementById('ticket-category').value;
+            const channelSelect = document.getElementById('ticket-channel');
+            
+            if (!categoryId) {{
+                channelSelect.disabled = true;
+                channelSelect.innerHTML = '<option value="">Primeiro selecione uma categoria</option>';
+                return;
+            }}
+            
             try {{
-                const response = await fetch('/api/discord/channels');
+                channelSelect.disabled = true;
+                channelSelect.innerHTML = '<option value="">Carregando canais...</option>';
+                
+                const response = await fetch(`/api/channels/by-category/${{categoryId}}`);
                 const data = await response.json();
-                const select = document.getElementById('ticket-channel');
-                select.innerHTML = '<option value="">Selecione um canal...</option>';
+                
+                channelSelect.innerHTML = '<option value="">Selecione um canal...</option>';
                 if (data.success) {{
                     data.channels.forEach(ch => {{
                         const opt = document.createElement('option');
                         opt.value = ch.id;
-                        opt.textContent = `#${{ch.name}} (${{ch.category}})`;
-                        select.appendChild(opt);
+                        opt.textContent = `#${{ch.name}}`;
+                        channelSelect.appendChild(opt);
                     }});
+                    channelSelect.disabled = false;
                 }}
             }} catch (error) {{
                 console.error('Erro ao carregar canais:', error);
+                channelSelect.innerHTML = '<option value="">Erro ao carregar</option>';
             }}
         }}
         
@@ -353,6 +383,48 @@ def dashboard():
                 }}
             }} catch (error) {{
                 console.error('Erro ao carregar categorias:', error);
+            }}
+        }}
+        
+        // Carregar estatísticas do servidor
+        async function loadStats() {{
+            const grid = document.getElementById('stats-grid');
+            try {{
+                const response = await fetch('/api/server/stats');
+                const data = await response.json();
+                
+                if (data.success) {{
+                    grid.innerHTML = `
+                        <div class="card">
+                            <h3>👥 Membros Totais</h3>
+                            <p style="font-size: 32px; font-weight: 800; margin-top: 16px;">${{data.total_members}}</p>
+                        </div>
+                        <div class="card">
+                            <h3>🟢 Membros Online</h3>
+                            <p style="font-size: 32px; font-weight: 800; margin-top: 16px; color: #22c55e;">${{data.online_members}}</p>
+                        </div>
+                        <div class="card">
+                            <h3>💬 Canais de Texto</h3>
+                            <p style="font-size: 32px; font-weight: 800; margin-top: 16px;">${{data.text_channels}}</p>
+                        </div>
+                        <div class="card">
+                            <h3>🎙️ Canais de Voz</h3>
+                            <p style="font-size: 32px; font-weight: 800; margin-top: 16px;">${{data.voice_channels}}</p>
+                        </div>
+                        <div class="card">
+                            <h3>🎭 Cargos Totais</h3>
+                            <p style="font-size: 32px; font-weight: 800; margin-top: 16px;">${{data.total_roles}}</p>
+                        </div>
+                        <div class="card">
+                            <h3>🚀 Boost Level</h3>
+                            <p style="font-size: 32px; font-weight: 800; margin-top: 16px; color: #f472b6;">${{data.boost_level}}</p>
+                        </div>
+                    `;
+                }} else {{
+                    grid.innerHTML = '<div class="card"><h3>❌ Erro ao carregar estatísticas</h3></div>';
+                }}
+            }} catch (error) {{
+                grid.innerHTML = '<div class="card"><h3>❌ Erro de conexão</h3></div>';
             }}
         }}
         
