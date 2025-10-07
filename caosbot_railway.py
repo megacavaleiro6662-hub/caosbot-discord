@@ -667,6 +667,112 @@ async def on_ready():
     )
 
 # ========================================
+# HANDLER DE INTERAÇÕES (BOTÕES)
+# ========================================
+
+@bot.event
+async def on_interaction(interaction: discord.Interaction):
+    """Handler para interações de botões"""
+    try:
+        if interaction.type == discord.InteractionType.component:
+            custom_id = interaction.data.get('custom_id')
+            
+            # Botão de criar ticket
+            if custom_id == 'create_ticket':
+                await handle_create_ticket(interaction)
+            
+            # Botão de fechar ticket
+            elif custom_id == 'close_ticket':
+                await handle_close_ticket(interaction)
+                
+    except Exception as e:
+        print(f'❌ Erro no handler de interação: {e}')
+        try:
+            await interaction.response.send_message('❌ Erro ao processar interação', ephemeral=True)
+        except:
+            pass
+
+async def handle_close_ticket(interaction: discord.Interaction):
+    """Fecha um ticket"""
+    try:
+        channel = interaction.channel
+        await interaction.response.send_message('🔒 Fechando ticket em 3 segundos...', ephemeral=False)
+        await asyncio.sleep(3)
+        await channel.delete(reason=f'Ticket fechado por {interaction.user}')
+    except Exception as e:
+        print(f'❌ Erro ao fechar ticket: {e}')
+
+async def handle_create_ticket(interaction: discord.Interaction):
+    """Cria um novo ticket quando o botão é clicado"""
+    try:
+        guild = interaction.guild
+        member = interaction.user
+        
+        # Verificar se já tem ticket aberto
+        existing_ticket = discord.utils.get(guild.text_channels, topic=f'Ticket de {member.id}')
+        if existing_ticket:
+            await interaction.response.send_message(
+                f'❌ Você já possui um ticket aberto: {existing_ticket.mention}',
+                ephemeral=True
+            )
+            return
+        
+        # Obter categoria de tickets (você pode configurar isso)
+        ticket_category = discord.utils.get(guild.categories, name='📂 TICKETS')
+        if not ticket_category:
+            # Se não existe, criar categoria
+            ticket_category = await guild.create_category('📂 TICKETS')
+        
+        # Criar canal do ticket
+        ticket_channel = await guild.create_text_channel(
+            name=f'ticket-{member.name}',
+            category=ticket_category,
+            topic=f'Ticket de {member.id}'
+        )
+        
+        # Configurar permissões
+        await ticket_channel.set_permissions(guild.default_role, view_channel=False)
+        await ticket_channel.set_permissions(member, view_channel=True, send_messages=True)
+        
+        # Adicionar permissões para staff (você pode adicionar IDs de cargos de staff aqui)
+        # Exemplo: staff_role = guild.get_role(STAFF_ROLE_ID)
+        # if staff_role:
+        #     await ticket_channel.set_permissions(staff_role, view_channel=True, send_messages=True)
+        
+        # Enviar mensagem inicial no ticket
+        embed = discord.Embed(
+            title='🎫 Ticket Criado!',
+            description=f'Olá {member.mention}! Nossa equipe irá atendê-lo em breve.\n\nDescreva seu problema ou dúvida abaixo.',
+            color=0x5865F2
+        )
+        embed.set_footer(text='Sistema de Tickets • Caos Hub')
+        
+        # Criar botão de fechar ticket
+        class CloseTicketView(discord.ui.View):
+            def __init__(self):
+                super().__init__(timeout=None)
+            
+            @discord.ui.button(label='🔒 Fechar Ticket', style=discord.ButtonStyle.danger, custom_id='close_ticket')
+            async def close_button(self, interaction: discord.Interaction, button: discord.ui.Button):
+                await interaction.response.send_message('🔒 Fechando ticket...', ephemeral=True)
+                await ticket_channel.delete(reason=f'Ticket fechado por {interaction.user}')
+        
+        await ticket_channel.send(embed=embed, view=CloseTicketView())
+        
+        # Responder ao usuário
+        await interaction.response.send_message(
+            f'✅ Ticket criado com sucesso! {ticket_channel.mention}',
+            ephemeral=True
+        )
+        
+    except Exception as e:
+        print(f'❌ Erro ao criar ticket: {e}')
+        try:
+            await interaction.response.send_message('❌ Erro ao criar ticket. Contate um administrador.', ephemeral=True)
+        except:
+            pass
+
+# ========================================
 # EVENTOS DE BOAS-VINDAS/SAÍDA/BAN
 # ========================================
 
