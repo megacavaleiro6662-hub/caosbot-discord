@@ -2688,6 +2688,7 @@ def load_welcome_config():
     global welcome_config
     try:
         # TENTAR BUSCAR DO DASHBOARD PRIMEIRO (prioritário!)
+        # FIX FINAL: URL CORRETO! (não é ticket-dashboard!)
         dashboard_url = os.getenv('DASHBOARD_URL', 'https://caosbot-discord.onrender.com')
         print(f"🔄 Tentando conectar ao dashboard: {dashboard_url}/api/config/status")
         
