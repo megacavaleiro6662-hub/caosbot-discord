@@ -576,6 +576,62 @@ def send_ticket_panel():
     except Exception as e:
         return jsonify({'success': False, 'message': str(e)}), 500
 
+@app.route('/api/server/stats', methods=['GET'])
+def get_server_stats():
+    """Retorna estatísticas do servidor"""
+    try:
+        if not bot.guilds:
+            return jsonify({'success': False, 'message': 'Bot não conectado'}), 500
+        
+        guild = bot.guilds[0]
+        
+        # Contar membros online
+        online_members = sum(1 for m in guild.members if m.status != discord.Status.offline)
+        
+        stats = {
+            'success': True,
+            'server_name': guild.name,
+            'server_icon': str(guild.icon.url) if guild.icon else None,
+            'total_members': guild.member_count,
+            'online_members': online_members,
+            'total_channels': len(guild.channels),
+            'text_channels': len(guild.text_channels),
+            'voice_channels': len(guild.voice_channels),
+            'total_roles': len(guild.roles),
+            'boost_level': guild.premium_tier,
+            'boost_count': guild.premium_subscription_count,
+            'created_at': guild.created_at.strftime('%Y-%m-%d')
+        }
+        
+        return jsonify(stats)
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+@app.route('/api/channels/by-category/<category_id>', methods=['GET'])
+def get_channels_by_category(category_id):
+    """Retorna canais de uma categoria específica"""
+    try:
+        if not bot.guilds:
+            return jsonify({'success': False, 'message': 'Bot não conectado'}), 500
+        
+        guild = bot.guilds[0]
+        category = guild.get_channel(int(category_id))
+        
+        if not category or not isinstance(category, discord.CategoryChannel):
+            return jsonify({'success': False, 'message': 'Categoria não encontrada'}), 404
+        
+        channels = []
+        for channel in category.text_channels:
+            channels.append({
+                'id': str(channel.id),
+                'name': channel.name,
+                'position': channel.position
+            })
+        
+        return jsonify({'success': True, 'channels': channels})
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)}), 500
+
 def run_web():
     import os
     port = int(os.getenv("PORT", 10000))
