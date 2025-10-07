@@ -39,6 +39,36 @@ def home():
 def health():
     return {"status": "online", "bot": "CAOSBot", "lavalink": "active"}
 
+@app.route('/test_connection', methods=['POST'])
+def test_connection():
+    """Endpoint para testar conexão dashboard → bot"""
+    try:
+        from flask import request
+        data = request.get_json()
+        channel_id = data.get('channel_id')
+        message = data.get('message', '🧪 TESTE DE CONEXÃO DASHBOARD → BOT')
+        
+        # Agendar envio de mensagem
+        async def send_test():
+            channel = bot.get_channel(int(channel_id))
+            if channel:
+                await channel.send(f"✅ {message}\n⏰ Horário: {datetime.now().strftime('%H:%M:%S')}")
+                return True
+            return False
+        
+        # Executar de forma assíncrona
+        import asyncio
+        future = asyncio.run_coroutine_threadsafe(send_test(), bot.loop)
+        result = future.result(timeout=10)
+        
+        if result:
+            return {"success": True, "message": "Mensagem enviada com sucesso!"}
+        else:
+            return {"success": False, "message": "Canal não encontrado"}, 404
+            
+    except Exception as e:
+        return {"success": False, "message": str(e)}, 500
+
 def run_web():
     import os
     port = int(os.getenv("PORT", 10000))
