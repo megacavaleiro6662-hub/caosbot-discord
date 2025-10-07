@@ -94,103 +94,203 @@ def dashboard():
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CAOS Bot - Dashboard</title>
+    <title>CAOS Bot - Premium Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         * {{ margin: 0; padding: 0; box-sizing: border-box; }}
-        body {{ font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; padding: 20px; }}
-        .container {{ max-width: 1200px; margin: 0 auto; }}
-        header {{ text-align: center; color: white; margin-bottom: 40px; padding: 30px; background: rgba(255, 255, 255, 0.1); border-radius: 20px; backdrop-filter: blur(10px); }}
-        header h1 {{ font-size: 2.5em; margin-bottom: 10px; text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3); }}
-        .controls-grid {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 25px; margin-bottom: 30px; }}
-        .control-card {{ background: white; border-radius: 20px; padding: 25px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2); }}
-        .card-header {{ display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding-bottom: 15px; border-bottom: 2px solid #f0f0f0; }}
-        .card-header h2 {{ font-size: 1.5em; color: #333; }}
-        .toggle-switch {{ position: relative; width: 60px; height: 30px; }}
-        .toggle-switch input {{ opacity: 0; width: 0; height: 0; }}
-        .toggle-switch label {{ position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: 0.4s; border-radius: 30px; }}
-        .toggle-switch label:before {{ position: absolute; content: ""; height: 22px; width: 22px; left: 4px; bottom: 4px; background-color: white; transition: 0.4s; border-radius: 50%; }}
-        .toggle-switch input:checked + label {{ background-color: #4caf50; }}
-        .toggle-switch input:checked + label:before {{ transform: translateX(30px); }}
-        .card-status {{ font-weight: 600; padding: 10px; border-radius: 10px; background: #f5f5f5; }}
-        .status-on {{ color: #4caf50; font-weight: bold; }}
-        .status-off {{ color: #f44336; font-weight: bold; }}
-        .actions {{ display: flex; gap: 15px; justify-content: center; margin-bottom: 30px; flex-wrap: wrap; }}
-        .btn {{ padding: 15px 30px; border: none; border-radius: 10px; font-size: 1.1em; font-weight: 600; cursor: pointer; transition: all 0.3s; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2); color: white; }}
-        .btn-success {{ background: linear-gradient(135deg, #4caf50 0%, #45a049 100%); }}
-        .btn-danger {{ background: linear-gradient(135deg, #f44336 0%, #d32f2f 100%); }}
+        body {{ font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; background: #0f0f23; min-height: 100vh; color: #fff; overflow-x: hidden; }}
+        .sidebar {{ position: fixed; left: 0; top: 0; width: 260px; height: 100vh; background: #1a1a2e; border-right: 1px solid #2a2a3e; padding: 24px; }}
+        .sidebar-logo {{ font-size: 20px; font-weight: 700; color: #8b5cf6; margin-bottom: 32px; }}
+        .sidebar-nav {{ list-style: none; }}
+        .sidebar-nav li {{ margin-bottom: 8px; }}
+        .sidebar-nav a {{ display: flex; align-items: center; padding: 12px 16px; color: #9ca3af; text-decoration: none; border-radius: 6px; transition: all 0.2s; }}
+        .sidebar-nav a:hover, .sidebar-nav a.active {{ background: #2a2a3e; color: #fff; }}
+        .main {{ margin-left: 260px; padding: 24px; }}
+        .header {{ background: #1a1a2e; border: 1px solid #2a2a3e; border-radius: 6px; padding: 24px; margin-bottom: 24px; }}
+        .header h1 {{ font-size: 28px; font-weight: 700; margin-bottom: 8px; }}
+        .header p {{ color: #9ca3af; font-size: 14px; }}
+        .grid {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }}
+        .card {{ background: #1a1a2e; border: 1px solid #2a2a3e; border-radius: 6px; padding: 20px; transition: all 0.2s; }}
+        .card:hover {{ border-color: #8b5cf6; }}
+        .card-header {{ display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }}
+        .card-header h2 {{ font-size: 16px; font-weight: 600; }}
+        .toggle {{ position: relative; width: 48px; height: 24px; }}
+        .toggle input {{ opacity: 0; width: 0; height: 0; }}
+        .toggle label {{ position: absolute; cursor: pointer; inset: 0; background: #374151; transition: 0.3s; border-radius: 24px; }}
+        .toggle label:before {{ content: ""; position: absolute; height: 18px; width: 18px; left: 3px; bottom: 3px; background: white; transition: 0.3s; border-radius: 50%; }}
+        .toggle input:checked + label {{ background: #8b5cf6; }}
+        .toggle input:checked + label:before {{ transform: translateX(24px); }}
+        .status {{ display: inline-block; padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: 500; }}
+        .status-on {{ background: #22c55e20; color: #22c55e; }}
+        .status-off {{ background: #ef444420; color: #ef4444; }}
+        .btn {{ padding: 12px 24px; border: none; border-radius: 6px; font-size: 14px; font-weight: 500; cursor: pointer; transition: all 0.2s; }}
+        .btn-primary {{ background: #8b5cf6; color: white; }}
+        .btn-primary:hover {{ background: #7c3aed; }}
+        .btn-danger {{ background: #ef4444; color: white; }}
+        .btn-danger:hover {{ background: #dc2626; }}
+        .section {{ margin-bottom: 32px; }}
+        .section-title {{ font-size: 20px; font-weight: 600; margin-bottom: 16px; }}
+        .page {{ display: none; }}
+        .page.active {{ display: block; }}
+        .form-group {{ margin-bottom: 16px; }}
+        .form-label {{ display: block; margin-bottom: 8px; font-size: 14px; font-weight: 500; color: #d1d5db; }}
+        .form-input, .form-select, .form-textarea {{ width: 100%; padding: 10px 14px; background: #0f0f23; border: 1px solid #2a2a3e; border-radius: 6px; color: white; font-family: 'Inter', sans-serif; font-size: 14px; }}
+        .form-input:focus, .form-select:focus, .form-textarea:focus {{ outline: none; border-color: #8b5cf6; }}
+        .form-textarea {{ resize: vertical; min-height: 100px; }}
+        .toast {{ position: fixed; top: 24px; right: 24px; background: #1a1a2e; border: 1px solid #8b5cf6; border-radius: 6px; padding: 16px; min-width: 300px; opacity: 0; transform: translateX(400px); transition: all 0.3s; z-index: 1000; }}
+        .toast.show {{ opacity: 1; transform: translateX(0); }}
+        .toast-success {{ border-color: #22c55e; }}
+        .toast-error {{ border-color: #ef4444; }}
     </style>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>🎛️ CAOS BOT - DASHBOARD</h1>
-            <p>Sistema de Controle de Eventos e Automação</p>
-        </header>
-        <div class="controls-grid">
-            <div class="control-card">
-                <div class="card-header">
-                    <h2>👋 Boas-vindas</h2>
-                    <div class="toggle-switch">
-                        <input type="checkbox" id="welcome_enabled" {"checked" if config.get('welcome_enabled') else ""}>
-                        <label for="welcome_enabled"></label>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-logo">🔥 CAOS BOT</div>
+        <ul class="sidebar-nav">
+            <li><a href="#" class="active" onclick="showPage('dashboard')">📊 Dashboard</a></li>
+            <li><a href="#" onclick="showPage('tickets')">🎫 Tickets</a></li>
+        </ul>
+    </div>
+    
+    <!-- Main Content -->
+    <div class="main">
+        <!-- Header -->
+        <div class="header">
+            <h1>Painel de Controle</h1>
+            <p>Gerencie seu bot Discord de forma profissional</p>
+        </div>
+        
+        <!-- Dashboard Page -->
+        <div id="dashboard-page" class="page active">
+            <div class="section">
+                <h2 class="section-title">Configurações do Servidor</h2>
+                <div class="grid">
+                    <div class="card">
+                        <div class="card-header">
+                            <h2>👋 Boas-vindas</h2>
+                            <div class="toggle">
+                                <input type="checkbox" id="welcome_enabled" {"checked" if config.get('welcome_enabled') else ""}>
+                                <label for="welcome_enabled"></label>
+                            </div>
+                        </div>
+                        <span id="welcome-status" class="status {'status-on' if config.get('welcome_enabled') else 'status-off'}">
+                            {'Ativado' if config.get('welcome_enabled') else 'Desativado'}
+                        </span>
                     </div>
-                </div>
-                <div class="card-status">
-                    Status: <span id="welcome-status" class="{'status-on' if config.get('welcome_enabled') else 'status-off'}">
-                        {'Ativado' if config.get('welcome_enabled') else 'Desativado'}
-                    </span>
-                </div>
-            </div>
-            <div class="control-card">
-                <div class="card-header">
-                    <h2>👋 Saída/Ban</h2>
-                    <div class="toggle-switch">
-                        <input type="checkbox" id="goodbye_enabled" {"checked" if config.get('goodbye_enabled') else ""}>
-                        <label for="goodbye_enabled"></label>
+                    <div class="card">
+                        <div class="card-header">
+                            <h2>👋 Saída/Ban</h2>
+                            <div class="toggle">
+                                <input type="checkbox" id="goodbye_enabled" {"checked" if config.get('goodbye_enabled') else ""}>
+                                <label for="goodbye_enabled"></label>
+                            </div>
+                        </div>
+                        <span id="goodbye-status" class="status {'status-on' if config.get('goodbye_enabled') else 'status-off'}">
+                            {'Ativado' if config.get('goodbye_enabled') else 'Desativado'}
+                        </span>
                     </div>
-                </div>
-                <div class="card-status">
-                    Status: <span id="goodbye-status" class="{'status-on' if config.get('goodbye_enabled') else 'status-off'}">
-                        {'Ativado' if config.get('goodbye_enabled') else 'Desativado'}
-                    </span>
-                </div>
-            </div>
-            <div class="control-card">
-                <div class="card-header">
-                    <h2>🎭 Autorole</h2>
-                    <div class="toggle-switch">
-                        <input type="checkbox" id="autorole_enabled" {"checked" if config.get('autorole_enabled') else ""}>
-                        <label for="autorole_enabled"></label>
+                    <div class="card">
+                        <div class="card-header">
+                            <h2>🎭 Autorole</h2>
+                            <div class="toggle">
+                                <input type="checkbox" id="autorole_enabled" {"checked" if config.get('autorole_enabled') else ""}>
+                                <label for="autorole_enabled"></label>
+                            </div>
+                        </div>
+                        <span id="autorole-status" class="status {'status-on' if config.get('autorole_enabled') else 'status-off'}">
+                            {'Ativado' if config.get('autorole_enabled') else 'Desativado'}
+                        </span>
                     </div>
-                </div>
-                <div class="card-status">
-                    Status: <span id="autorole-status" class="{'status-on' if config.get('autorole_enabled') else 'status-off'}">
-                        {'Ativado' if config.get('autorole_enabled') else 'Desativado'}
-                    </span>
-                </div>
-            </div>
-            <div class="control-card">
-                <div class="card-header">
-                    <h2>🎫 Tickets</h2>
-                    <div class="toggle-switch">
-                        <input type="checkbox" id="tickets_enabled" {"checked" if config.get('tickets_enabled') else ""}>
-                        <label for="tickets_enabled"></label>
+                    <div class="card">
+                        <div class="card-header">
+                            <h2>🎫 Tickets</h2>
+                            <div class="toggle">
+                                <input type="checkbox" id="tickets_enabled" {"checked" if config.get('tickets_enabled') else ""}>
+                                <label for="tickets_enabled"></label>
+                            </div>
+                        </div>
+                        <span id="tickets-status" class="status {'status-on' if config.get('tickets_enabled') else 'status-off'}">
+                            {'Ativado' if config.get('tickets_enabled') else 'Desativado'}
+                        </span>
                     </div>
-                </div>
-                <div class="card-status">
-                    Status: <span id="tickets-status" class="{'status-on' if config.get('tickets_enabled') else 'status-off'}">
-                        {'Ativado' if config.get('tickets_enabled') else 'Desativado'}
-                    </span>
                 </div>
             </div>
         </div>
-        <div class="actions">
-            <button class="btn btn-success" onclick="enableAll()">✅ Ativar Tudo</button>
-            <button class="btn btn-danger" onclick="disableAll()">❌ Desativar Tudo</button>
+        
+        <!-- Tickets Page -->
+        <div id="tickets-page" class="page">
+            <div class="section">
+                <h2 class="section-title">🎫 Criar Painel de Ticket</h2>
+                <div class="card">
+                    <form id="ticket-form" onsubmit="sendTicketPanel(event)">
+                        <div class="form-group">
+                            <label class="form-label">Canal de Destino</label>
+                            <select id="ticket-channel" class="form-select" required>
+                                <option value="">Carregando canais...</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Categoria dos Tickets</label>
+                            <select id="ticket-category" class="form-select" required>
+                                <option value="">Carregando categorias...</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Título do Painel</label>
+                            <input type="text" id="ticket-title" class="form-input" value="🎫 SISTEMA DE TICKETS" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Descrição</label>
+                            <textarea id="ticket-description" class="form-textarea" required>Clique no botão abaixo para abrir um ticket e nossa equipe irá atendê-lo em breve!</textarea>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Cor do Embed (Hex)</label>
+                            <input type="text" id="ticket-color" class="form-input" value="0x5865F2" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Texto do Botão</label>
+                            <input type="text" id="ticket-button" class="form-input" value="📩 Abrir Ticket" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary">🚀 Enviar Painel Agora</button>
+                    </form>
+                </div>
+            </div>
         </div>
     </div>
+    
+    <!-- Toast Notification -->
+    <div id="toast" class="toast"></div>
+    
+    <!-- Notification Sound -->
+    <audio id="notif-sound" preload="auto">
+        <source src="data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBSuBzvLZiDYIGWi77eeeTRAMUKfl8LZiGwY5kdXyzX",>
     <script>
-        document.querySelectorAll('.toggle-switch input').forEach(toggle => {{
+        // Navegação entre páginas
+        function showPage(page) {{
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.sidebar-nav a').forEach(a => a.classList.remove('active'));
+            document.getElementById(page + '-page').classList.add('active');
+            event.target.classList.add('active');
+            
+            if (page === 'tickets') {{
+                loadChannels();
+                loadCategories();
+            }}
+        }}
+        
+        // Notificação com som
+        function showToast(message, type = 'success') {{
+            const toast = document.getElementById('toast');
+            const sound = document.getElementById('notif-sound');
+            toast.textContent = message;
+            toast.className = `toast toast-${{type}} show`;
+            sound.play().catch(() => {{}});
+            setTimeout(() => toast.classList.remove('show'), 3000);
+        }}
+        
+        // Toggle de configurações
+        document.querySelectorAll('.toggle input').forEach(toggle => {{
             toggle.addEventListener('change', async function() {{
                 const key = this.id;
                 const statusSpan = document.getElementById(key.replace('_enabled', '-status'));
@@ -198,45 +298,97 @@ def dashboard():
                     const response = await fetch('/api/config/toggle', {{
                         method: 'POST',
                         headers: {{ 'Content-Type': 'application/json' }},
-                        body: JSON.stringify({{ key: key }})
+                        body: JSON.stringify({{ key }})
                     }});
                     const data = await response.json();
                     if (data.success) {{
                         statusSpan.textContent = data.new_value ? 'Ativado' : 'Desativado';
-                        statusSpan.className = data.new_value ? 'status-on' : 'status-off';
-                        alert(data.message);
+                        statusSpan.className = `status ${{data.new_value ? 'status-on' : 'status-off'}}`;
+                        showToast(data.message);
+                    }} else {{
+                        this.checked = !this.checked;
+                        showToast(data.message || 'Erro ao atualizar', 'error');
                     }}
                 }} catch (error) {{
                     this.checked = !this.checked;
-                    alert('Erro ao atualizar');
+                    showToast('Erro de conexão', 'error');
                 }}
             }});
         }});
-        async function enableAll() {{
-            await fetch('/api/config/update', {{
-                method: 'POST',
-                headers: {{ 'Content-Type': 'application/json' }},
-                body: JSON.stringify({{
-                    welcome_enabled: true,
-                    goodbye_enabled: true,
-                    autorole_enabled: true,
-                    tickets_enabled: true
-                }})
-            }});
-            location.reload();
+        
+        // Carregar canais do Discord
+        async function loadChannels() {{
+            try {{
+                const response = await fetch('/api/discord/channels');
+                const data = await response.json();
+                const select = document.getElementById('ticket-channel');
+                select.innerHTML = '<option value="">Selecione um canal...</option>';
+                if (data.success) {{
+                    data.channels.forEach(ch => {{
+                        const opt = document.createElement('option');
+                        opt.value = ch.id;
+                        opt.textContent = `#${{ch.name}} (${{ch.category}})`;
+                        select.appendChild(opt);
+                    }});
+                }}
+            }} catch (error) {{
+                console.error('Erro ao carregar canais:', error);
+            }}
         }}
-        async function disableAll() {{
-            await fetch('/api/config/update', {{
-                method: 'POST',
-                headers: {{ 'Content-Type': 'application/json' }},
-                body: JSON.stringify({{
-                    welcome_enabled: false,
-                    goodbye_enabled: false,
-                    autorole_enabled: false,
-                    tickets_enabled: false
-                }})
-            }});
-            location.reload();
+        
+        // Carregar categorias do Discord
+        async function loadCategories() {{
+            try {{
+                const response = await fetch('/api/discord/categories');
+                const data = await response.json();
+                const select = document.getElementById('ticket-category');
+                select.innerHTML = '<option value="">Selecione uma categoria...</option>';
+                if (data.success) {{
+                    data.categories.forEach(cat => {{
+                        const opt = document.createElement('option');
+                        opt.value = cat.id;
+                        opt.textContent = cat.name;
+                        select.appendChild(opt);
+                    }});
+                }}
+            }} catch (error) {{
+                console.error('Erro ao carregar categorias:', error);
+            }}
+        }}
+        
+        // Enviar painel de ticket
+        async function sendTicketPanel(e) {{
+            e.preventDefault();
+            const btn = e.target.querySelector('button[type=\"submit\"]');
+            btn.disabled = true;
+            btn.textContent = '⏳ Enviando...';
+            
+            try {{
+                const response = await fetch('/api/tickets/panel/send', {{
+                    method: 'POST',
+                    headers: {{ 'Content-Type': 'application/json' }},
+                    body: JSON.stringify({{
+                        channel_id: document.getElementById('ticket-channel').value,
+                        title: document.getElementById('ticket-title').value,
+                        description: document.getElementById('ticket-description').value,
+                        color: document.getElementById('ticket-color').value,
+                        button_label: document.getElementById('ticket-button').value
+                    }})
+                }});
+                
+                const data = await response.json();
+                if (data.success) {{
+                    showToast('🎉 Painel enviado com sucesso!');
+                    e.target.reset();
+                }} else {{
+                    showToast(data.message || 'Erro ao enviar painel', 'error');
+                }}
+            }} catch (error) {{
+                showToast('Erro de conexão', 'error');
+            }} finally {{
+                btn.disabled = false;
+                btn.textContent = '🚀 Enviar Painel Agora';
+            }}
         }}
     </script>
 </body>
