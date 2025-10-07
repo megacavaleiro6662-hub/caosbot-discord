@@ -670,8 +670,8 @@ def send_ticket_panel():
                 )
                 embed.set_footer(text='Sistema de Tickets • Caos Hub')
                 
-                # Usar o novo sistema de categorias
-                view = TicketCategorySelect()
+                # Usar o novo sistema de BOTÃO (abre dropdowns ephemeral)
+                view = TicketPanelView()
                 
                 await channel.send(embed=embed, view=view)
                 return True
@@ -1224,6 +1224,94 @@ async def handle_create_ticket(interaction: discord.Interaction):
     """Handler antigo - redireciona para novo sistema"""
     # Agora não usa mais - substituído pelo sistema de categorias
     pass
+
+# Nova função COMPLETA com todos os campos
+async def create_ticket_channel_complete(interaction, category_name, category_emoji, priority_name, priority_emoji, assunto, descricao, idioma, info_adicional):
+    """Cria canal de ticket COMPLETO igual da imagem"""
+    try:
+        guild = interaction.guild
+        member = interaction.user
+        
+        # Verificar se já tem ticket aberto
+        existing_ticket = discord.utils.get(guild.text_channels, topic=f'Ticket de {member.id}')
+        if existing_ticket:
+            await interaction.followup.send(
+                f'❌ Você já possui um ticket aberto: {existing_ticket.mention}',
+                ephemeral=True
+            )
+            return
+        
+        # Obter ou criar categoria
+        ticket_category = discord.utils.get(guild.categories, name='📂 TICKETS')
+        if not ticket_category:
+            ticket_category = await guild.create_category('📂 TICKETS')
+        
+        # Mapear nomes curtos
+        category_map = {
+            "Geral": "geral", "Compras": "compras", "Suporte Técnico": "suporte",
+            "Denúncia": "denuncia", "Parceria": "parceria", "Financeiro": "financeiro",
+            "Moderação": "moderacao", "Bug": "bug",
+        }
+        
+        # Incrementar contador
+        category_short = category_map.get(category_name, "ticket")
+        ticket_counters[category_short] += 1
+        ticket_number = ticket_counters[category_short]
+        
+        # Nome: emoji-categoria-numero
+        ticket_name = f'{category_emoji}-{category_short}-{ticket_number}'
+        
+        # Criar canal
+        ticket_channel = await guild.create_text_channel(
+            name=ticket_name,
+            category=ticket_category,
+            topic=f'Ticket de {member.id} | {category_name} #{ticket_number}'
+        )
+        
+        # Permissões
+        await ticket_channel.set_permissions(guild.default_role, view_channel=False)
+        await ticket_channel.set_permissions(member, view_channel=True, send_messages=True)
+        
+        # Cor baseada na prioridade
+        priority_colors = {"Baixa": 0x00ff00, "Média": 0xffff00, "Alta": 0xff8800, "Urgente": 0xff0000}
+        embed_color = priority_colors.get(priority_name, 0x5865F2)
+        
+        # EMBED COMPLETO
+        embed = discord.Embed(
+            title=f"{category_emoji} Ticket de {member.display_name}",
+            description=f"**🎫 NOVO TICKET ABERTO**\n\n*Olá! Obrigado por abrir um ticket. Nossa equipe responderá em breve.*\n\n*Nossa equipe responderá o mais breve possível!*",
+            color=embed_color,
+            timestamp=discord.utils.utcnow()
+        )
+        
+        embed.add_field(name="👤 Aberto por", value=f"{member.mention}\n**ID:** `{member.id}`", inline=True)
+        embed.add_field(name=f"{category_emoji} Categoria", value=f"{category_emoji} {category_name}", inline=True)
+        embed.add_field(name=f"{priority_emoji} Prioridade", value=f"{priority_emoji} {priority_name}", inline=True)
+        embed.add_field(name="🌐 Idioma", value=idioma, inline=False)
+        embed.add_field(name="📄 Assunto", value=f"```\n{assunto}\n```", inline=False)
+        embed.add_field(name="📝 Descrição Detalhada", value=f"```\n{descricao}\n```", inline=False)
+        embed.add_field(name="ℹ️ Informações Adicionais", value=f"```\n{info_adicional}\n```", inline=False)
+        embed.set_footer(text=f"Sistema de Tickets • Caos Hub • Hoje às {discord.utils.utcnow().strftime('%I:%M %p')}")
+        
+        # Enviar
+        await ticket_channel.send(f"{member.mention}", embed=embed, view=TicketManageView(ticket_channel))
+        
+        await interaction.followup.send(f'✅ Ticket criado! {ticket_channel.mention}', ephemeral=True)
+        
+        # LOG
+        log_channel = discord.utils.get(guild.text_channels, name='ticket-logs')
+        if log_channel:
+            log_embed = discord.Embed(title="🎫 NOVO TICKET", description=f"Ticket `{ticket_name}` criado", color=0x00ff00, timestamp=discord.utils.utcnow())
+            log_embed.add_field(name="Canal", value=ticket_channel.mention, inline=True)
+            log_embed.add_field(name="Usuário", value=member.mention, inline=True)
+            log_embed.add_field(name="Categoria", value=f"{category_emoji} {category_name}", inline=True)
+            log_embed.add_field(name="Prioridade", value=f"{priority_emoji} {priority_name}", inline=True)
+            await log_channel.send(embed=log_embed)
+        
+    except Exception as e:
+        print(f'❌ Erro: {e}')
+        import traceback
+        traceback.print_exc()
 
 # ========================================
 # EVENTOS DE BOAS-VINDAS/SAÍDA/BAN
