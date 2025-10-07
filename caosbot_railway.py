@@ -250,8 +250,12 @@ def dashboard():
                             <textarea id="ticket-description" class="form-textarea" required>Clique no botão abaixo para abrir um ticket e nossa equipe irá atendê-lo em breve!</textarea>
                         </div>
                         <div class="form-group">
-                            <label class="form-label">Cor do Embed (Hex)</label>
-                            <input type="text" id="ticket-color" class="form-input" value="0x5865F2" required>
+                            <label class="form-label">Cor do Embed</label>
+                            <div style="display: flex; gap: 12px; align-items: center;">
+                                <input type="color" id="ticket-color-picker" class="form-input" value="#5865F2" style="width: 60px; height: 40px; cursor: pointer; padding: 4px;">
+                                <input type="text" id="ticket-color" class="form-input" value="0x5865F2" required style="flex: 1;" readonly>
+                            </div>
+                            <small style="color: #9ca3af; font-size: 12px;">Clique no seletor de cor para escolher</small>
                         </div>
                         <div class="form-group">
                             <label class="form-label">Texto do Botão</label>
@@ -428,6 +432,17 @@ def dashboard():
             }}
         }}
         
+        // Color picker
+        const colorPicker = document.getElementById('ticket-color-picker');
+        const colorInput = document.getElementById('ticket-color');
+        
+        if (colorPicker && colorInput) {{
+            colorPicker.addEventListener('input', function() {{
+                const hex = this.value.replace('#', '');
+                colorInput.value = '0x' + hex;
+            }});
+        }}
+        
         // Enviar painel de ticket
         async function sendTicketPanel(e) {{
             e.preventDefault();
@@ -451,7 +466,11 @@ def dashboard():
                 const data = await response.json();
                 if (data.success) {{
                     showToast('🎉 Painel enviado com sucesso!');
-                    e.target.reset();
+                    // Resetar para valores padrão
+                    document.getElementById('ticket-title').value = '🎫 SISTEMA DE TICKETS';
+                    document.getElementById('ticket-description').value = 'Clique no botão abaixo para abrir um ticket e nossa equipe irá atendê-lo em breve!';
+                    document.getElementById('ticket-color-picker').value = '#5865F2';
+                    document.getElementById('ticket-color').value = '0x5865F2';
                 }} else {{
                     showToast(data.message || 'Erro ao enviar painel', 'error');
                 }}
@@ -599,14 +618,13 @@ def get_discord_categories():
 
 @app.route('/api/tickets/panel/send', methods=['POST'])
 def send_ticket_panel():
-    """Envia painel de ticket para um canal específico"""
+    """Envia painel de ticket COMPLETO com categorias"""
     try:
         data = request.get_json()
         channel_id = data.get('channel_id')
         title = data.get('title', '🎫 SISTEMA DE TICKETS')
-        description = data.get('description', 'Clique no botão abaixo para abrir um ticket!')
+        description = data.get('description', 'Selecione uma categoria abaixo para abrir um ticket!')
         color = data.get('color', '0x5865F2')
-        button_label = data.get('button_label', '📩 Abrir Ticket')
         
         if not channel_id:
             return jsonify({'success': False, 'message': 'Canal não especificado'}), 400
@@ -621,14 +639,23 @@ def send_ticket_panel():
                 embed = discord.Embed(
                     title=title,
                     description=description,
-                    color=int(color, 16)
+                    color=int(color, 16) if isinstance(color, str) else color
+                )
+                embed.add_field(
+                    name="📋 Categorias Disponíveis",
+                    value=(
+                        "🛒 **Compra** - Dúvidas sobre compras\n"
+                        "🛡️ **Suporte Técnico** - Problemas técnicos\n"
+                        "👮 **Moderação** - Questões de moderação\n"
+                        "💬 **Geral** - Outras dúvidas\n"
+                        "📝 **Parcerias** - Propostas de parceria"
+                    ),
+                    inline=False
                 )
                 embed.set_footer(text='Sistema de Tickets • Caos Hub')
                 
-                # Criar botão
-                view = View(timeout=None)
-                button = Button(label=button_label, style=discord.ButtonStyle.primary, custom_id='create_ticket')
-                view.add_item(button)
+                # Usar o novo sistema de categorias
+                view = TicketCategorySelect()
                 
                 await channel.send(embed=embed, view=view)
                 return True
@@ -800,23 +827,24 @@ async def on_ready():
 
 @bot.event
 async def on_interaction(interaction: discord.Interaction):
-    """Handler para interações de botões"""
+    """Handler para interações de botões e modals"""
     try:
         if interaction.type == discord.InteractionType.component:
             custom_id = interaction.data.get('custom_id')
             
-            # Botão de criar ticket
+            # Sistema antigo de tickets (manter compatibilidade)
             if custom_id == 'create_ticket':
                 await handle_create_ticket(interaction)
-            
-            # Botão de fechar ticket
             elif custom_id == 'close_ticket':
                 await handle_close_ticket(interaction)
+            
+            # Novo sistema não precisa de handlers aqui, os buttons já têm callbacks nas classes
                 
     except Exception as e:
         print(f'❌ Erro no handler de interação: {e}')
         try:
-            await interaction.response.send_message('❌ Erro ao processar interação', ephemeral=True)
+            if not interaction.response.is_done():
+                await interaction.response.send_message('❌ Erro ao processar interação', ephemeral=True)
         except:
             pass
 
@@ -830,8 +858,116 @@ async def handle_close_ticket(interaction: discord.Interaction):
     except Exception as e:
         print(f'❌ Erro ao fechar ticket: {e}')
 
-async def handle_create_ticket(interaction: discord.Interaction):
-    """Cria um novo ticket quando o botão é clicado"""
+# ========================================
+# SISTEMA DE TICKETS COMPLETO - CLASSES UI
+# ========================================
+
+# Modal para formulário de ticket
+class TicketModal(discord.ui.Modal):
+    def __init__(self, category_name, category_emoji):
+        super().__init__(title=f"{category_emoji} {category_name}")
+        self.category_name = category_name
+        
+        self.assunto = discord.ui.TextInput(
+            label="Assunto",
+            placeholder="Descreva brevemente o motivo do ticket",
+            max_length=100,
+            required=True
+        )
+        self.add_item(self.assunto)
+        
+        self.descricao = discord.ui.TextInput(
+            label="Descrição Detalhada",
+            placeholder="Explique detalhadamente sua solicitação...",
+            style=discord.TextStyle.paragraph,
+            max_length=1000,
+            required=True
+        )
+        self.add_item(self.descricao)
+    
+    async def on_submit(self, interaction: discord.Interaction):
+        await create_ticket_channel(
+            interaction,
+            self.category_name,
+            self.assunto.value,
+            self.descricao.value
+        )
+
+# View de seleção de categoria
+class TicketCategorySelect(discord.ui.View):
+    def __init__(self):
+        super().__init__(timeout=None)
+    
+    @discord.ui.button(label="Compra", emoji="🛒", style=discord.ButtonStyle.success, custom_id="ticket_compra")
+    async def compra_button(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await interaction.response.send_modal(TicketModal("Compra", "🛒"))
+    
+    @discord.ui.button(label="Suporte Técnico", emoji="🛡️", style=discord.ButtonStyle.primary, custom_id="ticket_suporte")
+    async def suporte_button(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await interaction.response.send_modal(TicketModal("Suporte Técnico", "🛡️"))
+    
+    @discord.ui.button(label="Moderação", emoji="👮", style=discord.ButtonStyle.danger, custom_id="ticket_moderacao")
+    async def moderacao_button(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await interaction.response.send_modal(TicketModal("Moderação", "👮"))
+    
+    @discord.ui.button(label="Geral", emoji="💬", style=discord.ButtonStyle.secondary, custom_id="ticket_geral")
+    async def geral_button(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await interaction.response.send_modal(TicketModal("Geral", "💬"))
+    
+    @discord.ui.button(label="Parcerias", emoji="📝", style=discord.ButtonStyle.success, custom_id="ticket_parceria")
+    async def parceria_button(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await interaction.response.send_modal(TicketModal("Parcerias", "📝"))
+
+# View de gerenciamento do ticket
+class TicketManageView(discord.ui.View):
+    def __init__(self, ticket_channel):
+        super().__init__(timeout=None)
+        self.ticket_channel = ticket_channel
+    
+    @discord.ui.button(label="Fechar Ticket", emoji="🔒", style=discord.ButtonStyle.danger, custom_id="close_ticket_new")
+    async def close_button(self, interaction: discord.Interaction, button: discord.ui.Button):
+        # Pedir confirmação e avaliação
+        await interaction.response.send_message(
+            "✅ Ticket será fechado. Como foi o atendimento? (Reaja abaixo)",
+            ephemeral=False
+        )
+        await asyncio.sleep(3)
+        await self.ticket_channel.delete(reason=f'Ticket fechado por {interaction.user}')
+    
+    @discord.ui.button(label="Transcript", emoji="📊", style=discord.ButtonStyle.secondary, custom_id="transcript_ticket")
+    async def transcript_button(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await interaction.response.defer(ephemeral=True)
+        
+        # Gerar transcrição
+        messages = []
+        async for msg in self.ticket_channel.history(limit=100, oldest_first=True):
+            messages.append(f"[{msg.created_at.strftime('%H:%M:%S')}] {msg.author.name}: {msg.content}")
+        
+        transcript = "\n".join(messages)
+        
+        # Salvar em arquivo
+        import io
+        file = discord.File(io.BytesIO(transcript.encode()), filename=f"transcript-{self.ticket_channel.name}.txt")
+        
+        await interaction.followup.send("📊 Transcrição do ticket:", file=file, ephemeral=True)
+    
+    @discord.ui.button(label="Adicionar Nota", emoji="📝", style=discord.ButtonStyle.primary, custom_id="add_note_ticket")
+    async def note_button(self, interaction: discord.Interaction, button: discord.ui.Button):
+        # Verificar se é staff
+        if not interaction.user.guild_permissions.manage_messages:
+            await interaction.response.send_message("❌ Apenas staff pode adicionar notas!", ephemeral=True)
+            return
+        
+        embed = discord.Embed(
+            title="📝 Nota Adicionada",
+            description=f"**Staff {interaction.user.mention} adicionou uma nota ao ticket.**",
+            color=0xFFA500,
+            timestamp=discord.utils.utcnow()
+        )
+        await interaction.response.send_message(embed=embed)
+
+async def create_ticket_channel(interaction, category_name, assunto, descricao):
+    """Cria canal de ticket com todas as informações"""
     try:
         guild = interaction.guild
         member = interaction.user
@@ -839,56 +975,45 @@ async def handle_create_ticket(interaction: discord.Interaction):
         # Verificar se já tem ticket aberto
         existing_ticket = discord.utils.get(guild.text_channels, topic=f'Ticket de {member.id}')
         if existing_ticket:
-            await interaction.response.send_message(
+            await interaction.followup.send(
                 f'❌ Você já possui um ticket aberto: {existing_ticket.mention}',
                 ephemeral=True
             )
             return
         
-        # Obter categoria de tickets (você pode configurar isso)
+        # Obter ou criar categoria
         ticket_category = discord.utils.get(guild.categories, name='📂 TICKETS')
         if not ticket_category:
-            # Se não existe, criar categoria
             ticket_category = await guild.create_category('📂 TICKETS')
         
-        # Criar canal do ticket
+        # Criar canal
         ticket_channel = await guild.create_text_channel(
             name=f'ticket-{member.name}',
             category=ticket_category,
             topic=f'Ticket de {member.id}'
         )
         
-        # Configurar permissões
+        # Permissões
         await ticket_channel.set_permissions(guild.default_role, view_channel=False)
         await ticket_channel.set_permissions(member, view_channel=True, send_messages=True)
         
-        # Adicionar permissões para staff (você pode adicionar IDs de cargos de staff aqui)
-        # Exemplo: staff_role = guild.get_role(STAFF_ROLE_ID)
-        # if staff_role:
-        #     await ticket_channel.set_permissions(staff_role, view_channel=True, send_messages=True)
-        
-        # Enviar mensagem inicial no ticket
+        # Embed com informações
         embed = discord.Embed(
-            title='🎫 Ticket Criado!',
-            description=f'Olá {member.mention}! Nossa equipe irá atendê-lo em breve.\n\nDescreva seu problema ou dúvida abaixo.',
-            color=0x5865F2
+            title=f"🎫 Ticket: {category_name}",
+            description=f"**Criado por:** {member.mention}\n**Categoria:** {category_name}",
+            color=0x5865F2,
+            timestamp=discord.utils.utcnow()
         )
-        embed.set_footer(text='Sistema de Tickets • Caos Hub')
+        embed.add_field(name="📋 Assunto", value=assunto, inline=False)
+        embed.add_field(name="📝 Descrição", value=descricao, inline=False)
+        embed.add_field(name="⏰ Status", value="🟢 Aguardando atendimento", inline=True)
+        embed.set_footer(text="Sistema de Tickets • Caos Hub")
         
-        # Criar botão de fechar ticket
-        class CloseTicketView(discord.ui.View):
-            def __init__(self):
-                super().__init__(timeout=None)
-            
-            @discord.ui.button(label='🔒 Fechar Ticket', style=discord.ButtonStyle.danger, custom_id='close_ticket')
-            async def close_button(self, interaction: discord.Interaction, button: discord.ui.Button):
-                await interaction.response.send_message('🔒 Fechando ticket...', ephemeral=True)
-                await ticket_channel.delete(reason=f'Ticket fechado por {interaction.user}')
+        # Enviar com botões de gerenciamento
+        await ticket_channel.send(f"{member.mention}", embed=embed, view=TicketManageView(ticket_channel))
         
-        await ticket_channel.send(embed=embed, view=CloseTicketView())
-        
-        # Responder ao usuário
-        await interaction.response.send_message(
+        # Responder
+        await interaction.followup.send(
             f'✅ Ticket criado com sucesso! {ticket_channel.mention}',
             ephemeral=True
         )
@@ -896,9 +1021,14 @@ async def handle_create_ticket(interaction: discord.Interaction):
     except Exception as e:
         print(f'❌ Erro ao criar ticket: {e}')
         try:
-            await interaction.response.send_message('❌ Erro ao criar ticket. Contate um administrador.', ephemeral=True)
+            await interaction.followup.send('❌ Erro ao criar ticket. Contate um administrador.', ephemeral=True)
         except:
             pass
+
+async def handle_create_ticket(interaction: discord.Interaction):
+    """Handler antigo - redireciona para novo sistema"""
+    # Agora não usa mais - substituído pelo sistema de categorias
+    pass
 
 # ========================================
 # EVENTOS DE BOAS-VINDAS/SAÍDA/BAN
