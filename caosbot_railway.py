@@ -975,7 +975,7 @@ async def on_voice_state_update(member, before, after):
 
 @bot.event
 async def on_message(message):
-    """Sistema de moderação automática e bloqueio de comandos"""
+    """Sistema de moderação automática COMPLETO + bloqueio de comandos"""
     # Ignorar mensagens do próprio bot
     if message.author.bot:
         await bot.process_commands(message)
@@ -985,25 +985,16 @@ async def on_message(message):
     # BLOQUEIO DE COMANDOS DE MÚSICA EM CALLS PROTEGIDAS
     # ========================================
     
-    # Lista de comandos de música do Jockie
     music_commands = ['m!p', 'm!play', 'm!join', 'm!summon', 'm!connect']
-    
-    # Verificar se a mensagem começa com algum comando de música
     message_lower = message.content.lower()
     is_music_command = any(message_lower.startswith(cmd) for cmd in music_commands)
     
     if is_music_command:
-        # Verificar se o usuário está em um canal de voz
         if message.author.voice and message.author.voice.channel:
             voice_channel = message.author.voice.channel
-            
-            # Verificar se está em um canal protegido
             if voice_channel.id in PROTECTED_VOICE_CHANNELS:
                 try:
-                    # Deletar a mensagem do comando
                     await message.delete()
-                    
-                    # Enviar aviso
                     embed = discord.Embed(
                         title="🚫 COMANDO BLOQUEADO",
                         description=f"{message.author.mention}, você não pode usar comandos de música neste canal de voz!",
@@ -1020,15 +1011,11 @@ async def on_message(message):
                         inline=True
                     )
                     embed.set_footer(text="Sistema de Bloqueio • Caos Hub")
-                    
-                    # Enviar e deletar após 10 segundos
                     warning = await message.channel.send(embed=embed)
                     await asyncio.sleep(10)
                     await warning.delete()
-                    
                     print(f"🚫 Comando de música bloqueado de {message.author.name} no canal {voice_channel.name}")
                     return
-                    
                 except Exception as e:
                     print(f"❌ Erro ao bloquear comando de música: {e}")
     
@@ -1036,12 +1023,99 @@ async def on_message(message):
     # IGNORAR MODERADORES PARA SISTEMAS DE PROTEÇÃO
     # ========================================
     
-    # Ignorar moderadores (usuários com permissão de gerenciar mensagens)
     if message.author.guild_permissions.manage_messages:
         await bot.process_commands(message)
         return
     
-    # Processar outros comandos normalmente
+    # ========================================
+    # SISTEMA ANTI-SPAM E ANTI-FLOOD ATIVADO
+    # ========================================
+    
+    user_id = message.author.id
+    current_time = time.time()
+    content = message.content
+    
+    # ANTI-MENÇÃO (máximo 1 menção)
+    mention_count = len(message.raw_mentions) + len(message.raw_role_mentions)
+    if mention_count >= 2:
+        try:
+            await message.delete()
+        except:
+            pass
+        mencoes = []
+        for uid in message.raw_mentions:
+            mencoes.append(f"<@{uid}>")
+        for rid in message.raw_role_mentions:
+            mencoes.append(f"<@&{rid}>")
+        embed = discord.Embed(
+            title="⚠️ EXCESSO DE MENÇÕES",
+            description=f"**{message.author.display_name}**, você mencionou **{mention_count}** pessoas/cargos!",
+            color=0xff8c00
+        )
+        embed.add_field(
+            name="📋 Regra",
+            value=f"**Máximo permitido:** 1 menção por mensagem\n**Você mencionou:** {', '.join(mencoes)}",
+            inline=False
+        )
+        embed.set_footer(text="Sistema de Moderação • Caos Hub")
+        await message.channel.send(embed=embed, delete_after=10)
+        return
+    
+    # Adicionar ao histórico
+    message_history[user_id].append(content.lower())
+    user_message_times[user_id].append(current_time)
+    
+    # ANTI-SPAM (mensagens idênticas)
+    if len(message_history[user_id]) >= 3:
+        recent_messages = list(message_history[user_id])[-3:]
+        if len(set(recent_messages)) == 1:
+            await auto_moderate_spam(message, "spam de mensagens idênticas", f"Enviou 3 mensagens iguais: '{content[:50]}...'")
+            return
+    
+    # ANTI-FLOOD (muitas mensagens rápidas)
+    current_warnings = spam_warnings[user_id]
+    flood_limit = 5 if current_warnings == 0 else (4 if current_warnings == 1 else 3)
+    
+    if len(user_message_times[user_id]) >= flood_limit:
+        recent_times = list(user_message_times[user_id])[-flood_limit:]
+        time_diff = recent_times[-1] - recent_times[0]
+        if time_diff < 8:
+            await auto_moderate_spam(message, "flood de mensagens", f"Enviou {flood_limit} mensagens em {time_diff:.1f} segundos")
+            return
+    
+    # ANTI-CAPS (excesso de maiúsculas)
+    if len(content) > 10:
+        uppercase_count = sum(1 for c in content if c.isupper())
+        total_letters = sum(1 for c in content if c.isalpha())
+        if total_letters > 0:
+            caps_percentage = (uppercase_count / total_letters) * 100
+            if caps_percentage > 70 and total_letters > 15:
+                await auto_moderate_spam(message, "excesso de maiúsculas", f"Mensagem com {caps_percentage:.1f}% em maiúsculas")
+                return
+    
+    # ANTI-MENSAGEM LONGA (máximo 90 caracteres)
+    if len(content) > 90:
+        await auto_moderate_spam(message, "mensagem muito longa", f"Mensagem com {len(content)} caracteres (máximo: 90)")
+        return
+    
+    # ANTI-EMOJI SPAM
+    import re
+    emoji_pattern = re.compile(r'[😀-🙏🌀-🗿🚀-🛿☀-⛿✀-➿]')
+    unicode_emojis = len(emoji_pattern.findall(content))
+    custom_emojis = content.count('<:') + content.count('<a:')
+    total_emojis = unicode_emojis + custom_emojis
+    if total_emojis > 10:
+        await auto_moderate_spam(message, "spam de emojis", f"Enviou {total_emojis} emojis em uma mensagem")
+        return
+    
+    # ANTI-LINK SPAM
+    link_patterns = ['http://', 'https://', 'www.', '.com', '.net', '.org', '.br', '.gg']
+    link_count = sum(content.lower().count(pattern) for pattern in link_patterns)
+    if link_count > 3:
+        await auto_moderate_spam(message, "spam de links", f"Enviou {link_count} links em uma mensagem")
+        return
+    
+    # Processar comandos normalmente
     await bot.process_commands(message)
 
 @bot.event
