@@ -83,8 +83,7 @@ def run_web():
     print(f'🌐 Servidor HTTP iniciado na porta {port}')
     app.run(host="0.0.0.0", port=port, debug=False, use_reloader=False)
 
-# Iniciar servidor HTTP em thread separada
-threading.Thread(target=run_web, daemon=True).start()
+# NÃO inicia aqui! Vai iniciar no bloco if __name__ == '__main__'
 
 # Configuração do bot
 intents = discord.Intents.default()
@@ -5135,6 +5134,10 @@ if __name__ == '__main__':
     if not TOKEN:
         print('❌ ERRO: DISCORD_TOKEN não encontrado!')
         exit(1)
+    
+    # Iniciar servidor Flask em thread separada
+    print('🌐 Iniciando servidor HTTP...')
+    threading.Thread(target=run_web, daemon=True).start()
     
     print('🚀 Iniciando bot principal (CAOS Hub)...')
     
