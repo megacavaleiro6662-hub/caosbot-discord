@@ -2516,70 +2516,8 @@ async def toggle_autorole_error(ctx, error):
     if isinstance(error, commands.MissingPermissions):
         await ctx.reply("❌ Você precisa ser **ADMINISTRADOR** para usar este comando!")
 
-@bot.command(name='toggletickets')
-@commands.has_permissions(administrator=True)
-async def toggle_tickets_command(ctx):
-    """Liga/desliga sistema de tickets"""
-    
-    welcome_config['tickets_enabled'] = not welcome_config['tickets_enabled']
-    save_welcome_config()
-    
-    # Também atualizar o ticket_config se existir
-    guild_id = str(ctx.guild.id)
-    if 'ticket_config' in globals():
-        if guild_id not in ticket_config:
-            ticket_config[guild_id] = {
-                'enabled': False,
-                'category_id': None,
-                'staff_role_ids': [],
-                'welcome_message': 'Olá! Obrigado por abrir um ticket. Nossa equipe responderá em breve.'
-            }
-        ticket_config[guild_id]['enabled'] = welcome_config['tickets_enabled']
-        save_ticket_config()
-    
-    # Atualizar painel
-    await update_status_panel(ctx.guild)
-    
-    status = "✅ **ATIVADO**" if welcome_config['tickets_enabled'] else "❌ **DESATIVADO**"
-    
-    embed = discord.Embed(
-        title="🔄 TICKETS ATUALIZADO",
-        description=f"Sistema de tickets: {status}",
-        color=0x00ff88 if welcome_config['tickets_enabled'] else 0xff6b6b
-    )
-    
-    # Adicionar info extra se tiver configuração
-    if 'ticket_config' in globals() and guild_id in ticket_config:
-        tconfig = ticket_config[guild_id]
-        info_text = ""
-        
-        if tconfig.get('category_id'):
-            category = ctx.guild.get_channel(tconfig['category_id'])
-            info_text += f"📂 **Categoria:** {category.mention if category else '`Não encontrada`'}\n"
-        
-        if tconfig.get('staff_role_ids'):
-            staff_roles = [ctx.guild.get_role(rid) for rid in tconfig['staff_role_ids']]
-            staff_roles = [r for r in staff_roles if r]
-            if staff_roles:
-                info_text += f"👮 **Staff:** {', '.join([r.mention for r in staff_roles[:3]])}\n"
-        
-        if info_text:
-            embed.add_field(name="📋 Configuração", value=info_text, inline=False)
-        else:
-            embed.add_field(
-                name="⚠️ Aviso",
-                value="Configure o sistema com `.ticket config` antes de usar!",
-                inline=False
-            )
-    
-    embed.set_footer(text="Sistema de Tickets • Caos Hub")
-    
-    await ctx.reply(embed=embed)
-
-@toggle_tickets_command.error
-async def toggle_tickets_error(ctx, error):
-    if isinstance(error, commands.MissingPermissions):
-        await ctx.reply("❌ Você precisa ser **ADMINISTRADOR** para usar este comando!")
+# COMANDO .toggletickets REMOVIDO - USE O DASHBOARD
+# Acesse: https://caosbot-discord.onrender.com/dashboard
 
 # ========================================
 # SISTEMA DE BLOQUEIO DE BOTS EM CALLS
@@ -5670,191 +5608,20 @@ def save_ticket_config():
 # Carregar configurações ao iniciar
 load_ticket_config()
 
-@bot.command(name='ticket')
-@commands.has_permissions(administrator=True)
-async def ticket_command(ctx, acao=None, *args):
-    """Sistema de tickets - Uso: .ticket [ação]"""
-    
-    guild_id = str(ctx.guild.id)
-    
-    if acao is None:
-        # Mostrar ajuda
-        embed = discord.Embed(
-            title="🎫 SISTEMA DE TICKETS",
-            description="Configure o sistema de tickets do servidor",
-            color=0x00ff88
-        )
-        embed.add_field(
-            name="📋 Comandos Disponíveis",
-            value=(
-                "`.ticket config` - ⭐ **Configuração interativa** (RECOMENDADO)\n"
-                "`.ticket setup` - Cria mensagem de abertura\n"
-                "`.ticket categoria [ID]` - Define categoria manualmente\n"
-                "`.ticket staff [IDs]` - Define cargos staff manualmente\n"
-                "`.ticket mensagem [texto]` - Define mensagem de boas-vindas\n"
-                "`.ticket ativar` - Ativa o sistema\n"
-                "`.ticket desativar` - Desativa o sistema\n"
-                "`.ticket status` - Ver configuração atual"
-            ),
-            inline=False
-        )
-        embed.set_footer(text="Sistema de Tickets • Caos Hub")
-        await ctx.reply(embed=embed)
-        return
-    
-    # Inicializar config do servidor se não existir
-    if guild_id not in ticket_config:
-        ticket_config[guild_id] = {
-            'enabled': False,
-            'category_id': None,
-            'staff_role_ids': [],
-            'welcome_message': 'Olá! Obrigado por abrir um ticket. Nossa equipe responderá em breve.'
-        }
-    
-    config = ticket_config[guild_id]
-    
-    # Ações
-    if acao == 'setup':
-        # Criar mensagem com botão para abrir ticket
-        embed = discord.Embed(
-            title="🎫 ABRIR TICKET",
-            description="Clique no botão abaixo para abrir um ticket e falar com a equipe!",
-            color=0x00ff88
-        )
-        embed.set_footer(text="Sistema de Tickets • Caos Hub")
-        
-        view = TicketView()
-        await ctx.send(embed=embed, view=view)
-        await ctx.reply("✅ Mensagem de ticket criada!")
-        
-    elif acao == 'categoria':
-        if not args:
-            await ctx.reply("❌ Uso: `.ticket categoria [ID]`")
-            return
-        
-        category_id = args[0]
-        try:
-            category = ctx.guild.get_channel(int(category_id))
-            if category and isinstance(category, discord.CategoryChannel):
-                config['category_id'] = int(category_id)
-                save_ticket_config()
-                await ctx.reply(f"✅ Categoria definida: **{category.name}**")
-            else:
-                await ctx.reply("❌ Categoria não encontrada!")
-        except:
-            await ctx.reply("❌ ID inválido!")
-            
-    elif acao == 'staff':
-        if not args:
-            await ctx.reply("❌ Uso: `.ticket staff [IDs separados por vírgula]`")
-            return
-        
-        role_ids = ' '.join(args).replace(' ', '').split(',')
-        valid_roles = []
-        
-        for role_id in role_ids:
-            try:
-                role = ctx.guild.get_role(int(role_id))
-                if role:
-                    valid_roles.append(int(role_id))
-            except:
-                pass
-        
-        if valid_roles:
-            config['staff_role_ids'] = valid_roles
-            save_ticket_config()
-            await ctx.reply(f"✅ {len(valid_roles)} cargo(s) staff definido(s)!")
-        else:
-            await ctx.reply("❌ Nenhum cargo válido encontrado!")
-            
-    elif acao == 'mensagem':
-        if not args:
-            await ctx.reply("❌ Uso: `.ticket mensagem [texto]`")
-            return
-        
-        message = ' '.join(args)
-        config['welcome_message'] = message
-        save_ticket_config()
-        await ctx.reply("✅ Mensagem de boas-vindas definida!")
-        
-    elif acao == 'ativar':
-        if not config.get('category_id'):
-            await ctx.reply("❌ Configure a categoria primeiro! (`.ticket categoria [ID]`)")
-            return
-        
-        config['enabled'] = True
-        save_ticket_config()
-        await ctx.reply("✅ Sistema de tickets **ATIVADO**!")
-        
-    elif acao == 'desativar':
-        config['enabled'] = False
-        save_ticket_config()
-        await ctx.reply("✅ Sistema de tickets **DESATIVADO**!")
-        
-    elif acao == 'status':
-        # Mostrar configuração atual
-        embed = discord.Embed(
-            title="📊 STATUS DO SISTEMA DE TICKETS",
-            color=0x00ff88 if config.get('enabled') else 0xff0000
-        )
-        
-        status = "✅ ATIVADO" if config.get('enabled') else "❌ DESATIVADO"
-        embed.add_field(name="Status", value=status, inline=False)
-        
-        if config.get('category_id'):
-            category = ctx.guild.get_channel(config['category_id'])
-            embed.add_field(name="Categoria", value=category.name if category else "Não encontrada", inline=False)
-        else:
-            embed.add_field(name="Categoria", value="Não configurada", inline=False)
-        
-        if config.get('staff_role_ids'):
-            roles = [ctx.guild.get_role(rid).mention for rid in config['staff_role_ids'] if ctx.guild.get_role(rid)]
-            embed.add_field(name="Cargos Staff", value=', '.join(roles) if roles else "Nenhum", inline=False)
-        else:
-            embed.add_field(name="Cargos Staff", value="Não configurados", inline=False)
-        
-        embed.add_field(name="Mensagem", value=config.get('welcome_message', 'Padrão'), inline=False)
-        embed.set_footer(text="Sistema de Tickets • Caos Hub")
-        
-        await ctx.reply(embed=embed)
-    
-    elif acao == 'config':
-        # Painel interativo de configuração
-        config_view = TicketConfigView(ctx.guild, guild_id)
-        
-        embed = discord.Embed(
-            title="⚙️ CONFIGURAÇÃO INTERATIVA",
-            description="Use os menus abaixo para configurar o sistema de tickets:",
-            color=0x00aaff
-        )
-        embed.add_field(
-            name="📋 Passo 1",
-            value="Selecione a **Categoria** onde os tickets serão criados",
-            inline=False
-        )
-        embed.add_field(
-            name="👮 Passo 2",
-            value="Selecione os **Cargos Staff** que poderão ver os tickets",
-            inline=False
-        )
-        embed.add_field(
-            name="✅ Passo 3",
-            value="Clique em **Salvar Configurações**",
-            inline=False
-        )
-        embed.set_footer(text="Sistema de Tickets • Caos Hub")
-        
-        await ctx.reply(embed=embed, view=config_view)
-    
-    # Removido else para não dar erro
+# COMANDO .ticket REMOVIDO - USE O DASHBOARD WEB
+# Acesse: https://caosbot-discord.onrender.com/dashboard
+# Vá em "Tickets" e configure tudo pela interface web!
 
-@ticket_command.error
-async def ticket_error(ctx, error):
-    if isinstance(error, commands.MissingPermissions):
-        await ctx.reply("❌ Você precisa ser **ADMINISTRADOR** para usar este comando!")
+# TODAS AS VIEWS ANTIGAS DE TICKETS FORAM REMOVIDAS
+# O sistema agora usa APENAS o sistema V2 com TicketPanelView, TicketConfigView (V2), etc
+# Essas classes estão definidas mais acima no código
 
-# View de configuração interativa
-class TicketConfigView(discord.ui.View):
+# ========================================
+# SISTEMA DE PREFIXOS AUTOMÁTICOS
+# ========================================
+
+# FUNÇÃO DESABILITADA - CAUSAVA DUPLICAÇÕES
+class PlaceholderOldTicketConfigView_REMOVED(discord.ui.View):
     def __init__(self, guild, guild_id):
         super().__init__(timeout=300)
         self.guild = guild
