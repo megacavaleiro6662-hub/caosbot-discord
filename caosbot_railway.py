@@ -636,37 +636,11 @@ def send_ticket_panel():
                 if not channel:
                     return False
                 
+                # EMBED LIMPO (sem lista de categorias - aparecem no dropdown)
                 embed = discord.Embed(
                     title=title,
                     description=description,
                     color=int(color, 16) if isinstance(color, str) else color
-                )
-                embed.add_field(
-                    name="📋 Categorias Disponíveis",
-                    value=(
-                        "🛒 **Compra** - Dúvidas sobre compras\n"
-                        "🛡️ **Suporte** - Ajuda técnica\n"
-                        "👮 **Moderação** - Questões de moderação\n"
-                        "❓ **Dúvidas** - Perguntas gerais\n"
-                        "🤝 **Parcerias** - Propostas de parceria\n"
-                        "⚠️ **Denúncia** - Reportar usuários\n"
-                        "💡 **Sugestão** - Ideias e melhorias\n"
-                        "🐛 **Bug** - Reportar bugs"
-                    ),
-                    inline=True
-                )
-                embed.add_field(
-                    name="💼 Mais Categorias",
-                    value=(
-                        "😠 **Reclamação** - Insatisfações\n"
-                        "💰 **Financeiro** - Pagamentos\n"
-                        "📋 **Aplicar Staff** - Ser da equipe\n"
-                        "💸 **Reembolso** - Devoluções\n"
-                        "⭐ **VIP** - Benefícios VIP\n"
-                        "📌 **Outros** - Outros assuntos\n"
-                        "🚨 **Urgente** - Urgências"
-                    ),
-                    inline=True
                 )
                 embed.set_footer(text='Sistema de Tickets • Caos Hub')
                 
@@ -831,6 +805,10 @@ async def on_ready():
     if not reload_configs.is_running():
         reload_configs.start()
         print('⚡ Sistema de auto-reload ATIVADO! Configs sincronizam a cada 3s (quase instantâneo!)')
+    
+    # REGISTRAR PERSISTENT VIEWS (sistema de tickets V2)
+    bot.add_view(TicketPanelView())
+    print('🎫 Sistema de Tickets V2 registrado (persistent views)')
     
     await bot.change_presence(
         activity=discord.Game(name=".play para música | O Hub dos sonhos"),
