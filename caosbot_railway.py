@@ -915,6 +915,12 @@ async def config_bloqueio_error(ctx, error):
 # COMANDOS DE MODERAÇÃO
 # ========================================
 
+# IDs dos cargos de STAFF (hierarquia do maior pro menor)
+ADMIN_ROLE_ID = 1365633918593794079      # [ADM] Administrador
+STAFF_ROLE_ID = 1365634226254254150      # [STF] Staff
+MOD_ROLE_ID = 1365633102973763595        # [MOD] Moderador
+SUBMOD_ROLE_ID = 1365631940434333748     # [SBM] Sub Moderador
+
 # IDs dos cargos ADV
 ADV_CARGO_1_ID = 1365861145738477598  # ADV 1
 ADV_CARGO_2_ID = 1365861187392241714  # ADV 2
@@ -922,6 +928,47 @@ ADV_CARGO_3_ID = 1365861225900277832  # ADV 3
 
 # ID do canal de logs
 LOG_CHANNEL_ID = 1417638740435800186
+
+# Hierarquia de cargos (maior número = mais poder)
+ROLE_HIERARCHY = {
+    ADMIN_ROLE_ID: 4,    # Administrador
+    STAFF_ROLE_ID: 3,    # Staff
+    MOD_ROLE_ID: 2,      # Moderador
+    SUBMOD_ROLE_ID: 1    # Sub Moderador
+}
+
+def get_highest_staff_role(member):
+    """Retorna o cargo de staff mais alto do membro e seu nível de hierarquia"""
+    highest_level = 0
+    highest_role = None
+    
+    for role in member.roles:
+        if role.id in ROLE_HIERARCHY:
+            level = ROLE_HIERARCHY[role.id]
+            if level > highest_level:
+                highest_level = level
+                highest_role = role
+    
+    return highest_role, highest_level
+
+def can_moderate(moderator, target):
+    """Verifica se o moderador pode punir o alvo baseado na hierarquia"""
+    mod_role, mod_level = get_highest_staff_role(moderator)
+    target_role, target_level = get_highest_staff_role(target)
+    
+    # Se o alvo não tem cargo de staff, pode punir
+    if target_level == 0:
+        return True, None
+    
+    # Se o moderador tem cargo maior, pode punir
+    if mod_level > target_level:
+        return True, None
+    
+    # Se tem o mesmo nível ou menor, não pode
+    if mod_level <= target_level:
+        return False, target_role
+    
+    return False, None
 
 # Arquivo para salvar dados das advertências
 WARNINGS_FILE = "warnings_data.json"
@@ -1525,6 +1572,27 @@ async def adv_command(ctx, usuario: discord.Member = None, *, motivo=None):
         embed = discord.Embed(
             title="❌ Erro no Comando",
             description="Você precisa mencionar um usuário!\n\n**Uso:** `.adv @usuário [motivo]`",
+            color=0xff0000
+        )
+        await ctx.reply(embed=embed)
+        return
+    
+    # VERIFICAÇÃO DE HIERARQUIA
+    can_punish, target_role = can_moderate(ctx.author, usuario)
+    if not can_punish:
+        mod_role, mod_level = get_highest_staff_role(ctx.author)
+        embed = discord.Embed(
+            title="🛡️ Sem Permissão - Hierarquia",
+            description=f"❌ **Você não pode advertir este usuário!**\n\n"
+                       f"**Seu cargo:** {mod_role.mention if mod_role else 'Nenhum'}\n"
+                       f"**Cargo do alvo:** {target_role.mention if target_role else 'Nenhum'}\n\n"
+                       f"⚖️ **Regra:** Você só pode advertir membros com cargo **inferior** ao seu na hierarquia.\n\n"
+                       f"**Hierarquia atual:**\n"
+                       f"🔴 [ADM] Administrador\n"
+                       f"🟠 [STF] Staff\n"
+                       f"🟡 [MOD] Moderador\n"
+                       f"🟢 [SBM] Sub Moderador\n"
+                       f"⚪ Membro",
             color=0xff0000
         )
         await ctx.reply(embed=embed)
