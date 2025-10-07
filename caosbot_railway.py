@@ -328,6 +328,102 @@ def save_config_dashboard(config):
     with open(WELCOME_CONFIG_FILE, 'w') as f:
         json.dump(config, f, indent=2)
 
+# ========================================
+# ENDPOINTS DO SISTEMA DE TICKETS
+# ========================================
+
+@app.route('/api/discord/channels', methods=['GET'])
+def get_discord_channels():
+    """Retorna lista de canais do Discord"""
+    try:
+        if not bot.guilds:
+            return jsonify({'success': False, 'message': 'Bot não conectado'}), 500
+        
+        guild = bot.guilds[0]  # Primeiro servidor
+        channels = []
+        
+        for channel in guild.text_channels:
+            channels.append({
+                'id': str(channel.id),
+                'name': channel.name,
+                'category': channel.category.name if channel.category else 'Sem categoria'
+            })
+        
+        return jsonify({'success': True, 'channels': channels})
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+@app.route('/api/discord/categories', methods=['GET'])
+def get_discord_categories():
+    """Retorna lista de categorias do Discord"""
+    try:
+        if not bot.guilds:
+            return jsonify({'success': False, 'message': 'Bot não conectado'}), 500
+        
+        guild = bot.guilds[0]
+        categories = []
+        
+        for category in guild.categories:
+            categories.append({
+                'id': str(category.id),
+                'name': category.name
+            })
+        
+        return jsonify({'success': True, 'categories': categories})
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+@app.route('/api/tickets/panel/send', methods=['POST'])
+def send_ticket_panel():
+    """Envia painel de ticket para um canal específico"""
+    try:
+        data = request.get_json()
+        channel_id = data.get('channel_id')
+        title = data.get('title', '🎫 SISTEMA DE TICKETS')
+        description = data.get('description', 'Clique no botão abaixo para abrir um ticket!')
+        color = data.get('color', '0x5865F2')
+        button_label = data.get('button_label', '📩 Abrir Ticket')
+        
+        if not channel_id:
+            return jsonify({'success': False, 'message': 'Canal não especificado'}), 400
+        
+        # Agendar envio do painel
+        async def send_panel():
+            try:
+                channel = bot.get_channel(int(channel_id))
+                if not channel:
+                    return False
+                
+                embed = discord.Embed(
+                    title=title,
+                    description=description,
+                    color=int(color, 16)
+                )
+                embed.set_footer(text='Sistema de Tickets • Caos Hub')
+                
+                # Criar botão
+                view = View(timeout=None)
+                button = Button(label=button_label, style=discord.ButtonStyle.primary, custom_id='create_ticket')
+                view.add_item(button)
+                
+                await channel.send(embed=embed, view=view)
+                return True
+            except Exception as e:
+                print(f'Erro ao enviar painel: {e}')
+                return False
+        
+        # Executar
+        future = asyncio.run_coroutine_threadsafe(send_panel(), bot.loop)
+        result = future.result(timeout=10)
+        
+        if result:
+            return jsonify({'success': True, 'message': 'Painel enviado com sucesso!'})
+        else:
+            return jsonify({'success': False, 'message': 'Erro ao enviar painel'}), 500
+            
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)}), 500
+
 def run_web():
     import os
     port = int(os.getenv("PORT", 10000))
