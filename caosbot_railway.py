@@ -1173,7 +1173,7 @@ async def on_ready():
     print('🎫 Sistema de Tickets V2 registrado (persistent views)')
     
     await bot.change_presence(
-        activity=discord.Game(name="🎫 Sistema de Tickets | O Hub dos sonhos"),
+        activity=discord.Game(name="✨ O Hub dos sonhos"),
         status=discord.Status.online
     )
 
