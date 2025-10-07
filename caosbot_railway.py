@@ -1257,8 +1257,26 @@ class TicketPanelView(discord.ui.View):
     
     @discord.ui.button(label="Abrir Ticket", emoji="🎫", style=discord.ButtonStyle.success, custom_id="open_ticket_button")
     async def open_ticket(self, interaction: discord.Interaction, button: discord.ui.Button):
-        # Enviar configuração ephemeral (só o usuário vê)
-        await send_ticket_config_message(interaction)
+        try:
+            # Verificar se o sistema de tickets está ativado
+            if not ticket_config.get('enabled', False):
+                await interaction.response.send_message(
+                    "❌ **Sistema de tickets desativado!**\nPeça a um administrador para ativar no dashboard.",
+                    ephemeral=True
+                )
+                return
+            
+            # Enviar configuração ephemeral (só o usuário vê)
+            await send_ticket_config_message(interaction)
+        except Exception as e:
+            print(f"❌ Erro ao abrir ticket: {e}")
+            try:
+                await interaction.response.send_message(
+                    "❌ **Erro ao processar sua solicitação.**\nTente novamente em alguns segundos.",
+                    ephemeral=True
+                )
+            except:
+                pass
 
 # View de configuração - Categoria + Prioridade
 class TicketConfigView(discord.ui.View):
