@@ -645,12 +645,28 @@ def send_ticket_panel():
                     name="📋 Categorias Disponíveis",
                     value=(
                         "🛒 **Compra** - Dúvidas sobre compras\n"
-                        "🛡️ **Suporte Técnico** - Problemas técnicos\n"
+                        "🛡️ **Suporte** - Ajuda técnica\n"
                         "👮 **Moderação** - Questões de moderação\n"
-                        "💬 **Geral** - Outras dúvidas\n"
-                        "📝 **Parcerias** - Propostas de parceria"
+                        "❓ **Dúvidas** - Perguntas gerais\n"
+                        "🤝 **Parcerias** - Propostas de parceria\n"
+                        "⚠️ **Denúncia** - Reportar usuários\n"
+                        "💡 **Sugestão** - Ideias e melhorias\n"
+                        "🐛 **Bug** - Reportar bugs"
                     ),
-                    inline=False
+                    inline=True
+                )
+                embed.add_field(
+                    name="💼 Mais Categorias",
+                    value=(
+                        "😠 **Reclamação** - Insatisfações\n"
+                        "💰 **Financeiro** - Pagamentos\n"
+                        "📋 **Aplicar Staff** - Ser da equipe\n"
+                        "💸 **Reembolso** - Devoluções\n"
+                        "⭐ **VIP** - Benefícios VIP\n"
+                        "📌 **Outros** - Outros assuntos\n"
+                        "🚨 **Urgente** - Urgências"
+                    ),
+                    inline=True
                 )
                 embed.set_footer(text='Sistema de Tickets • Caos Hub')
                 
@@ -893,8 +909,8 @@ class TicketModal(discord.ui.Modal):
             self.descricao.value
         )
 
-# View de seleção de categoria
-class TicketCategorySelect(discord.ui.View):
+# View de seleção de categoria - LINHA 1
+class TicketCategorySelect1(discord.ui.View):
     def __init__(self):
         super().__init__(timeout=None)
     
@@ -902,21 +918,88 @@ class TicketCategorySelect(discord.ui.View):
     async def compra_button(self, interaction: discord.Interaction, button: discord.ui.Button):
         await interaction.response.send_modal(TicketModal("Compra", "🛒"))
     
-    @discord.ui.button(label="Suporte Técnico", emoji="🛡️", style=discord.ButtonStyle.primary, custom_id="ticket_suporte")
+    @discord.ui.button(label="Suporte", emoji="🛡️", style=discord.ButtonStyle.primary, custom_id="ticket_suporte")
     async def suporte_button(self, interaction: discord.Interaction, button: discord.ui.Button):
-        await interaction.response.send_modal(TicketModal("Suporte Técnico", "🛡️"))
+        await interaction.response.send_modal(TicketModal("Suporte", "🛡️"))
     
     @discord.ui.button(label="Moderação", emoji="👮", style=discord.ButtonStyle.danger, custom_id="ticket_moderacao")
     async def moderacao_button(self, interaction: discord.Interaction, button: discord.ui.Button):
         await interaction.response.send_modal(TicketModal("Moderação", "👮"))
     
-    @discord.ui.button(label="Geral", emoji="💬", style=discord.ButtonStyle.secondary, custom_id="ticket_geral")
-    async def geral_button(self, interaction: discord.Interaction, button: discord.ui.Button):
-        await interaction.response.send_modal(TicketModal("Geral", "💬"))
+    @discord.ui.button(label="Dúvidas", emoji="❓", style=discord.ButtonStyle.secondary, custom_id="ticket_duvidas")
+    async def duvidas_button(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await interaction.response.send_modal(TicketModal("Dúvidas", "❓"))
     
-    @discord.ui.button(label="Parcerias", emoji="📝", style=discord.ButtonStyle.success, custom_id="ticket_parceria")
+    @discord.ui.button(label="Parcerias", emoji="🤝", style=discord.ButtonStyle.success, custom_id="ticket_parceria")
     async def parceria_button(self, interaction: discord.Interaction, button: discord.ui.Button):
-        await interaction.response.send_modal(TicketModal("Parcerias", "📝"))
+        await interaction.response.send_modal(TicketModal("Parcerias", "🤝"))
+
+# View de seleção de categoria - LINHA 2
+class TicketCategorySelect2(discord.ui.View):
+    def __init__(self):
+        super().__init__(timeout=None)
+    
+    @discord.ui.button(label="Denúncia", emoji="⚠️", style=discord.ButtonStyle.danger, custom_id="ticket_denuncia")
+    async def denuncia_button(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await interaction.response.send_modal(TicketModal("Denúncia", "⚠️"))
+    
+    @discord.ui.button(label="Sugestão", emoji="💡", style=discord.ButtonStyle.primary, custom_id="ticket_sugestao")
+    async def sugestao_button(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await interaction.response.send_modal(TicketModal("Sugestão", "💡"))
+    
+    @discord.ui.button(label="Bug Report", emoji="🐛", style=discord.ButtonStyle.danger, custom_id="ticket_bug")
+    async def bug_button(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await interaction.response.send_modal(TicketModal("Bug", "🐛"))
+    
+    @discord.ui.button(label="Reclamação", emoji="😠", style=discord.ButtonStyle.secondary, custom_id="ticket_reclamacao")
+    async def reclamacao_button(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await interaction.response.send_modal(TicketModal("Reclamação", "😠"))
+    
+    @discord.ui.button(label="Financeiro", emoji="💰", style=discord.ButtonStyle.success, custom_id="ticket_financeiro")
+    async def financeiro_button(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await interaction.response.send_modal(TicketModal("Financeiro", "💰"))
+
+# View de seleção de categoria - LINHA 3
+class TicketCategorySelect3(discord.ui.View):
+    def __init__(self):
+        super().__init__(timeout=None)
+    
+    @discord.ui.button(label="Aplicar Staff", emoji="📋", style=discord.ButtonStyle.primary, custom_id="ticket_aplicar")
+    async def aplicar_button(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await interaction.response.send_modal(TicketModal("Aplicação", "📋"))
+    
+    @discord.ui.button(label="Reembolso", emoji="💸", style=discord.ButtonStyle.danger, custom_id="ticket_reembolso")
+    async def reembolso_button(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await interaction.response.send_modal(TicketModal("Reembolso", "💸"))
+    
+    @discord.ui.button(label="VIP", emoji="⭐", style=discord.ButtonStyle.success, custom_id="ticket_vip")
+    async def vip_button(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await interaction.response.send_modal(TicketModal("VIP", "⭐"))
+    
+    @discord.ui.button(label="Outros", emoji="📌", style=discord.ButtonStyle.secondary, custom_id="ticket_outros")
+    async def outros_button(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await interaction.response.send_modal(TicketModal("Outros", "📌"))
+    
+    @discord.ui.button(label="Urgente", emoji="🚨", style=discord.ButtonStyle.danger, custom_id="ticket_urgente")
+    async def urgente_button(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await interaction.response.send_modal(TicketModal("Urgente", "🚨"))
+
+# Combinar todas as views
+class TicketCategorySelect(discord.ui.View):
+    def __init__(self):
+        super().__init__(timeout=None)
+        
+        # Adicionar todos os botões de todas as categorias
+        view1 = TicketCategorySelect1()
+        view2 = TicketCategorySelect2()
+        view3 = TicketCategorySelect3()
+        
+        for item in view1.children:
+            self.add_item(item)
+        for item in view2.children:
+            self.add_item(item)
+        for item in view3.children:
+            self.add_item(item)
 
 # View de gerenciamento do ticket
 class TicketManageView(discord.ui.View):
@@ -986,11 +1069,39 @@ async def create_ticket_channel(interaction, category_name, assunto, descricao):
         if not ticket_category:
             ticket_category = await guild.create_category('📂 TICKETS')
         
+        # Mapear emojis e nomes curtos por categoria (15 categorias!)
+        category_map = {
+            "Compra": {"emoji": "🛒", "short": "compra"},
+            "Suporte": {"emoji": "🛡️", "short": "suporte"},
+            "Moderação": {"emoji": "👮", "short": "moderacao"},
+            "Dúvidas": {"emoji": "❓", "short": "duvidas"},
+            "Parcerias": {"emoji": "🤝", "short": "parceria"},
+            "Denúncia": {"emoji": "⚠️", "short": "denuncia"},
+            "Sugestão": {"emoji": "💡", "short": "sugestao"},
+            "Bug": {"emoji": "🐛", "short": "bug"},
+            "Reclamação": {"emoji": "😠", "short": "reclamacao"},
+            "Financeiro": {"emoji": "💰", "short": "financeiro"},
+            "Aplicação": {"emoji": "📋", "short": "aplicacao"},
+            "Reembolso": {"emoji": "💸", "short": "reembolso"},
+            "VIP": {"emoji": "⭐", "short": "vip"},
+            "Outros": {"emoji": "📌", "short": "outros"},
+            "Urgente": {"emoji": "🚨", "short": "urgente"}
+        }
+        
+        # Incrementar contador da categoria
+        category_short = category_map.get(category_name, {"short": "ticket"})["short"]
+        ticket_counters[category_short] += 1
+        ticket_number = ticket_counters[category_short]
+        
+        # Nome do canal com emoji e número
+        category_emoji = category_map.get(category_name, {"emoji": "🎫"})["emoji"]
+        ticket_name = f'{category_emoji}-{category_short}-{ticket_number}'
+        
         # Criar canal
         ticket_channel = await guild.create_text_channel(
-            name=f'ticket-{member.name}',
+            name=ticket_name,
             category=ticket_category,
-            topic=f'Ticket de {member.id}'
+            topic=f'Ticket de {member.id} | {category_name} #{ticket_number}'
         )
         
         # Permissões
@@ -999,15 +1110,16 @@ async def create_ticket_channel(interaction, category_name, assunto, descricao):
         
         # Embed com informações
         embed = discord.Embed(
-            title=f"🎫 Ticket: {category_name}",
+            title=f"{category_emoji} Ticket #{ticket_number}: {category_name}",
             description=f"**Criado por:** {member.mention}\n**Categoria:** {category_name}",
             color=0x5865F2,
             timestamp=discord.utils.utcnow()
         )
         embed.add_field(name="📋 Assunto", value=assunto, inline=False)
         embed.add_field(name="📝 Descrição", value=descricao, inline=False)
+        embed.add_field(name="🔢 Número do Ticket", value=f"`#{ticket_number}`", inline=True)
         embed.add_field(name="⏰ Status", value="🟢 Aguardando atendimento", inline=True)
-        embed.set_footer(text="Sistema de Tickets • Caos Hub")
+        embed.set_footer(text=f"Sistema de Tickets • Caos Hub | Ticket {ticket_name}")
         
         # Enviar com botões de gerenciamento
         await ticket_channel.send(f"{member.mention}", embed=embed, view=TicketManageView(ticket_channel))
@@ -2386,6 +2498,9 @@ def is_sub_moderator_or_higher():
 message_history = defaultdict(lambda: deque(maxlen=5))  # Últimas 5 mensagens por usuário
 user_message_times = defaultdict(lambda: deque(maxlen=5))  # Timestamps das mensagens
 spam_warnings = defaultdict(int)  # Avisos de spam por usuário (0=5msgs, 1=4msgs, 2+=3msgs)
+
+# Sistema de contadores de tickets por categoria
+ticket_counters = defaultdict(int)  # Contador incremental por categoria
 
 # ========================================
 # SISTEMA ANTI-RAID AVANÇADO
