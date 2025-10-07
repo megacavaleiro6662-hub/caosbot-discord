@@ -266,6 +266,14 @@ def dashboard():
                             </select>
                         </div>
                         
+                        <div class="form-group">
+                            <label class="form-label">👥 4. Cargos da Staff (quem vê tickets)</label>
+                            <select id="ticket-staff-roles" class="form-select" multiple style="height: 120px;">
+                                <option value="">Carregando cargos...</option>
+                            </select>
+                            <small style="color: #9ca3af; margin-top: 5px; display: block;">Segure Ctrl/Cmd para selecionar múltiplos cargos</small>
+                        </div>
+                        
                         <hr style="border: 1px solid rgba(255,255,255,0.1); margin: 20px 0;">
                         
                         <div class="form-group">
@@ -595,6 +603,31 @@ def dashboard():
                 }}
             }} catch (error) {{
                 console.error('Erro ao carregar canais de texto:', error);
+            }}
+            
+            // Carregar roles (cargos) também
+            loadStaffRoles();
+        }}
+        
+        // Carregar cargos do servidor (para staff)
+        async function loadStaffRoles() {{
+            try {{
+                const response = await fetch('/api/discord/roles');
+                const data = await response.json();
+                const select = document.getElementById('ticket-staff-roles');
+                
+                select.innerHTML = '';
+                
+                if (data.success && data.roles) {{
+                    data.roles.forEach(role => {{
+                        const opt = document.createElement('option');
+                        opt.value = role.id;
+                        opt.textContent = role.name;
+                        select.appendChild(opt);
+                    }});
+                }}
+            }} catch (error) {{
+                console.error('Erro ao carregar cargos:', error);
             }}
         }}
         
@@ -963,6 +996,29 @@ def get_all_text_channels():
             })
         
         return jsonify({'success': True, 'channels': channels})
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+@app.route('/api/discord/roles', methods=['GET'])
+def get_discord_roles():
+    """Retorna todos os cargos do servidor"""
+    try:
+        if not bot.guilds:
+            return jsonify({'success': False, 'message': 'Bot não conectado'}), 500
+        
+        guild = bot.guilds[0]
+        roles = []
+        
+        for role in guild.roles:
+            # Pular @everyone
+            if role.name != "@everyone":
+                roles.append({
+                    'id': str(role.id),
+                    'name': role.name,
+                    'color': str(role.color)
+                })
+        
+        return jsonify({'success': True, 'roles': roles})
     except Exception as e:
         return jsonify({'success': False, 'message': str(e)}), 500
 
