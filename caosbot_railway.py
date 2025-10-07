@@ -29,18 +29,19 @@ from flask import Flask, request, jsonify, render_template
 # ========================================
 # SERVIDOR HTTP PARA RENDER (DETECTAR PORTA)
 # ========================================
-app = Flask(__name__)
-
 @app.route('/')
 def home():
     return "✅ CAOSBot está rodando!"
 
+@app.route('/ping')
+def ping():
+    """Rota para keep-alive (evitar sleep do Render)"""
+    return {"status": "alive", "bot": "online", "uptime": "running"}, 200
+
+# CARREGAMENTO DE CONFIGURAÇÕES
 @app.route('/health')
 def health():
     return {"status": "online", "bot": "CAOSBot", "lavalink": "active"}
-
-@app.route('/test_connection', methods=['POST'])
-def test_connection():
     """Endpoint para testar conexão dashboard → bot"""
     try:
         data = request.get_json()
