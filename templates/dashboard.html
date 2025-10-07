@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CAOS Bot - Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎛️ CAOS BOT - DASHBOARD</h1>
+            <p>Sistema de Controle de Eventos e Automação</p>
+        </header>
+
+        <div class="status-bar">
+            <div class="status-item">
+                <span class="status-label">Status do Bot:</span>
+                <span class="status-value online" id="bot-status">Online</span>
+            </div>
+            <div class="status-item">
+                <span class="status-label">Última atualização:</span>
+                <span class="status-value" id="last-update">Carregando...</span>
+            </div>
+        </div>
+
+        <div class="controls-grid">
+            <!-- Boas-vindas -->
+            <div class="control-card">
+                <div class="card-header">
+                    <h2>👋 Boas-vindas</h2>
+                    <div class="toggle-switch">
+                        <input type="checkbox" id="welcome_enabled" {% if config.welcome_enabled %}checked{% endif %}>
+                        <label for="welcome_enabled"></label>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <p>Sistema de mensagens de boas-vindas para novos membros</p>
+                    <div class="card-status">
+                        Status: <span id="welcome-status" class="{% if config.welcome_enabled %}status-on{% else %}status-off{% endif %}">
+                            {% if config.welcome_enabled %}Ativado{% else %}Desativado{% endif %}
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Saída/Ban -->
+            <div class="control-card">
+                <div class="card-header">
+                    <h2>👋 Saída/Ban</h2>
+                    <div class="toggle-switch">
+                        <input type="checkbox" id="goodbye_enabled" {% if config.goodbye_enabled %}checked{% endif %}>
+                        <label for="goodbye_enabled"></label>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <p>Mensagens quando membros saem ou são banidos</p>
+                    <div class="card-status">
+                        Status: <span id="goodbye-status" class="{% if config.goodbye_enabled %}status-on{% else %}status-off{% endif %}">
+                            {% if config.goodbye_enabled %}Ativado{% else %}Desativado{% endif %}
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Autorole -->
+            <div class="control-card">
+                <div class="card-header">
+                    <h2>🎭 Autorole</h2>
+                    <div class="toggle-switch">
+                        <input type="checkbox" id="autorole_enabled" {% if config.autorole_enabled %}checked{% endif %}>
+                        <label for="autorole_enabled"></label>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <p>Atribuição automática de cargo para novos membros</p>
+                    <div class="card-status">
+                        Status: <span id="autorole-status" class="{% if config.autorole_enabled %}status-on{% else %}status-off{% endif %}">
+                            {% if config.autorole_enabled %}Ativado{% else %}Desativado{% endif %}
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tickets -->
+            <div class="control-card">
+                <div class="card-header">
+                    <h2>🎫 Tickets</h2>
+                    <div class="toggle-switch">
+                        <input type="checkbox" id="tickets_enabled" {% if config.tickets_enabled %}checked{% endif %}>
+                        <label for="tickets_enabled"></label>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <p>Sistema de tickets de suporte</p>
+                    <div class="card-status">
+                        Status: <span id="tickets-status" class="{% if config.tickets_enabled %}status-on{% else %}status-off{% endif %}">
+                            {% if config.tickets_enabled %}Ativado{% else %}Desativado{% endif %}
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="actions">
+            <button class="btn btn-primary" onclick="refreshStatus()">🔄 Atualizar Status</button>
+            <button class="btn btn-success" onclick="enableAll()">✅ Ativar Tudo</button>
+            <button class="btn btn-danger" onclick="disableAll()">❌ Desativar Tudo</button>
+        </div>
+
+        <div class="info-box">
+            <h3>ℹ️ Informações</h3>
+            <ul>
+                <li>As mudanças são aplicadas <strong>instantaneamente</strong> no bot</li>
+                <li>O bot sincroniza as configurações a cada <strong>3 segundos</strong></li>
+                <li>Todas as alterações são salvas automaticamente</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        // Função para toggle individual
+        document.querySelectorAll('.toggle-switch input').forEach(toggle => {
+            toggle.addEventListener('change', async function() {
+                const key = this.id;
+                const statusSpan = document.getElementById(key.replace('_enabled', '-status'));
+                
+                try {
+                    const response = await fetch('/api/config/toggle', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ key: key })
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        // Atualizar UI
+                        statusSpan.textContent = data.new_value ? 'Ativado' : 'Desativado';
+                        statusSpan.className = data.new_value ? 'status-on' : 'status-off';
+                        
+                        // Mostrar notificação
+                        showNotification(data.message, 'success');
+                    } else {
+                        // Reverter toggle
+                        this.checked = !this.checked;
+                        showNotification(data.message || 'Erro ao atualizar', 'error');
+                    }
+                } catch (error) {
+                    console.error('Erro:', error);
+                    this.checked = !this.checked;
+                    showNotification('Erro de conexão', 'error');
+                }
+            });
+        });
+
+        // Atualizar status
+        async function refreshStatus() {
+            try {
+                const response = await fetch('/api/config/status');
+                const config = await response.json();
+                
+                // Atualizar toggles
+                Object.keys(config).forEach(key => {
+                    const toggle = document.getElementById(key);
+                    if (toggle) {
+                        toggle.checked = config[key];
+                        const statusSpan = document.getElementById(key.replace('_enabled', '-status'));
+                        if (statusSpan) {
+                            statusSpan.textContent = config[key] ? 'Ativado' : 'Desativado';
+                            statusSpan.className = config[key] ? 'status-on' : 'status-off';
+                        }
+                    }
+                });
+                
+                // Atualizar timestamp
+                document.getElementById('last-update').textContent = new Date().toLocaleTimeString('pt-BR');
+                showNotification('Status atualizado!', 'success');
+            } catch (error) {
+                showNotification('Erro ao atualizar status', 'error');
+            }
+        }
+
+        // Ativar tudo
+        async function enableAll() {
+            await updateAll(true);
+        }
+
+        // Desativar tudo
+        async function disableAll() {
+            await updateAll(false);
+        }
+
+        async function updateAll(enabled) {
+            try {
+                const response = await fetch('/api/config/update', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        welcome_enabled: enabled,
+                        goodbye_enabled: enabled,
+                        autorole_enabled: enabled,
+                        tickets_enabled: enabled
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    await refreshStatus();
+                    showNotification(`Todos os sistemas ${enabled ? 'ativados' : 'desativados'}!`, 'success');
+                }
+            } catch (error) {
+                showNotification('Erro ao atualizar', 'error');
+            }
+        }
+
+        // Notificações
+        function showNotification(message, type) {
+            const notification = document.createElement('div');
+            notification.className = `notification notification-${type}`;
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.classList.add('show');
+            }, 10);
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+                setTimeout(() => notification.remove(), 300);
+            }, 3000);
+        }
+
+        // Auto-refresh a cada 10 segundos
+        setInterval(refreshStatus, 10000);
+        
+        // Atualizar timestamp inicial
+        document.getElementById('last-update').textContent = new Date().toLocaleTimeString('pt-BR');
+    </script>
+</body>
+</html>
