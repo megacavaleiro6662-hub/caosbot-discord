@@ -906,8 +906,57 @@ async def handle_create_ticket(interaction: discord.Interaction):
 
 @bot.event
 async def on_member_join(member):
-    """Evento quando alguém entra no servidor - CONTROLADO PELO DASHBOARD"""
+    """Evento quando alguém entra no servidor - CONTROLADO PELO DASHBOARD + ANTI-RAID"""
     try:
+        guild = member.guild
+        current_time = time.time()
+        
+        # ========================================
+        # SISTEMA ANTI-RAID - VERIFICAÇÃO DE ENTRADA
+        # ========================================
+        
+        # Adicionar entrada ao histórico
+        raid_detection['recent_joins'].append(current_time)
+        
+        # Verificar se é usuário suspeito
+        is_suspicious, suspicion_reason = await check_suspicious_user(member)
+        
+        # SE ESTÁ EM MODO RAID + usuário suspeito = BAN IMEDIATO
+        if raid_detection['in_raid_mode'] and is_suspicious:
+            try:
+                await member.ban(reason=f"[ANTI-RAID] {suspicion_reason}")
+                raid_detection['auto_banned'].add(member.id)
+                print(f"🚨 [ANTI-RAID] Banido: {member.name} - {suspicion_reason}")
+                
+                # Log
+                log_channel = guild.get_channel(1315107491453444137)
+                if log_channel:
+                    embed = discord.Embed(
+                        title="🚨 AUTO-BAN (MODO RAID)",
+                        description=f"**{member.name}** foi banido automaticamente.",
+                        color=0xFF0000,
+                        timestamp=discord.utils.utcnow()
+                    )
+                    embed.add_field(name="👤 Usuário", value=f"{member.mention}\nID: `{member.id}`", inline=True)
+                    embed.add_field(name="🔍 Motivo", value=suspicion_reason, inline=True)
+                    embed.set_footer(text="Sistema Anti-Raid • Caos Hub")
+                    await log_channel.send(embed=embed)
+                
+                return  # Para o processamento
+            except Exception as e:
+                print(f"❌ Erro ao banir raider: {e}")
+        
+        # Verificar padrão de raid (muitas entradas)
+        if await check_raid_pattern(guild):
+            # Ativar modo raid se não estiver ativo
+            if not raid_detection['in_raid_mode']:
+                asyncio.create_task(activate_raid_mode(guild))
+        
+        # Adicionar à lista de suspeitos se for suspeito (mesmo sem raid mode)
+        if is_suspicious:
+            raid_detection['suspicious_users'].add(member.id)
+            print(f"⚠️ Usuário suspeito detectado: {member.name} - {suspicion_reason}")
+        
         print(f"\n{'='*50}")
         print(f"📥 NOVO MEMBRO DETECTADO: {member.name}")
         print(f"{'='*50}")
@@ -1098,6 +1147,29 @@ async def on_message(message):
     if message.author.guild_permissions.manage_messages:
         await bot.process_commands(message)
         return
+    
+    # ========================================
+    # SISTEMA ANTI-RAID - DETECÇÃO DE FLOOD GLOBAL
+    # ========================================
+    
+    # Adicionar mensagem ao histórico global
+    raid_detection['recent_messages'].append(time.time())
+    
+    # Verificar flood de mensagens no servidor
+    if await check_message_flood(message.guild):
+        if not raid_detection['in_raid_mode']:
+            asyncio.create_task(activate_raid_mode(message.guild))
+    
+    # SE USUÁRIO SUSPEITO ENVIAR MENSAGEM EM MODO RAID = BAN
+    if raid_detection['in_raid_mode'] and message.author.id in raid_detection['suspicious_users']:
+        try:
+            await message.author.ban(reason="[ANTI-RAID] Usuário suspeito enviando mensagens durante raid")
+            raid_detection['auto_banned'].add(message.author.id)
+            raid_detection['suspicious_users'].discard(message.author.id)
+            print(f"🚨 [ANTI-RAID] Banido: {message.author.name} - Atividade suspeita em raid")
+            return
+        except:
+            pass
     
     # ========================================
     # SISTEMA ANTI-SPAM E ANTI-FLOOD ATIVADO
@@ -2184,6 +2256,165 @@ def is_sub_moderator_or_higher():
 message_history = defaultdict(lambda: deque(maxlen=5))  # Últimas 5 mensagens por usuário
 user_message_times = defaultdict(lambda: deque(maxlen=5))  # Timestamps das mensagens
 spam_warnings = defaultdict(int)  # Avisos de spam por usuário (0=5msgs, 1=4msgs, 2+=3msgs)
+
+# ========================================
+# SISTEMA ANTI-RAID AVANÇADO
+# ========================================
+raid_detection = {
+    'enabled': True,
+    'in_raid_mode': False,
+    'raid_start_time': None,
+    'recent_joins': deque(maxlen=20),  # Últimas 20 entradas
+    'recent_messages': deque(maxlen=100),  # Últimas 100 mensagens
+    'suspicious_users': set(),  # Usuários suspeitos
+    'auto_banned': set(),  # IDs de usuários banidos automaticamente
+}
+
+# Configurações do anti-raid
+RAID_CONFIG = {
+    'join_threshold': 10,  # Número de entradas para ativar modo raid
+    'join_timeframe': 60,  # Em quantos segundos (10 entradas em 60s = raid)
+    'message_threshold': 50,  # Mensagens por segundo no servidor
+    'message_timeframe': 10,  # Janela de tempo para contar mensagens
+    'account_age_min': 7,  # Dias mínimos de conta (contas novas são suspeitas)
+    'lockdown_duration': 300,  # Segundos em modo raid (5 minutos)
+    'slowmode_duration': 5,  # Segundos de slowmode durante raid
+}
+
+async def check_raid_pattern(guild):
+    """Verifica se há padrão de raid (entradas massivas)"""
+    if not raid_detection['enabled']:
+        return False
+    
+    current_time = time.time()
+    recent_joins = raid_detection['recent_joins']
+    
+    # Limpar entradas antigas
+    while recent_joins and current_time - recent_joins[0] > RAID_CONFIG['join_timeframe']:
+        recent_joins.popleft()
+    
+    # Se tiver muitas entradas recentes
+    if len(recent_joins) >= RAID_CONFIG['join_threshold']:
+        return True
+    
+    return False
+
+async def check_message_flood(guild):
+    """Verifica se há flood de mensagens no servidor"""
+    current_time = time.time()
+    recent_messages = raid_detection['recent_messages']
+    
+    # Limpar mensagens antigas
+    while recent_messages and current_time - recent_messages[0] > RAID_CONFIG['message_timeframe']:
+        recent_messages.popleft()
+    
+    # Se tiver muitas mensagens em pouco tempo
+    messages_per_second = len(recent_messages) / RAID_CONFIG['message_timeframe']
+    if messages_per_second >= (RAID_CONFIG['message_threshold'] / RAID_CONFIG['message_timeframe']):
+        return True
+    
+    return False
+
+async def activate_raid_mode(guild):
+    """Ativa modo anti-raid no servidor"""
+    if raid_detection['in_raid_mode']:
+        return  # Já está em modo raid
+    
+    raid_detection['in_raid_mode'] = True
+    raid_detection['raid_start_time'] = time.time()
+    
+    print(f"🚨 MODO ANTI-RAID ATIVADO em {guild.name}")
+    
+    # Canal de logs
+    log_channel = guild.get_channel(1315107491453444137)  # Canal de logs
+    
+    if log_channel:
+        embed = discord.Embed(
+            title="🚨 MODO ANTI-RAID ATIVADO",
+            description="**Raid detectado! Medidas de proteção ativadas.**",
+            color=0xFF0000,
+            timestamp=discord.utils.utcnow()
+        )
+        embed.add_field(
+            name="🛡️ Proteções Ativas",
+            value=(
+                "✅ Slowmode (5s) em todos os canais\n"
+                "✅ Auto-ban de contas novas (<7 dias)\n"
+                "✅ Bloqueio de spam intensificado\n"
+                "✅ Monitoramento ativo"
+            ),
+            inline=False
+        )
+        embed.add_field(
+            name="⏱️ Duração",
+            value=f"{RAID_CONFIG['lockdown_duration'] // 60} minutos (automático)",
+            inline=False
+        )
+        embed.set_footer(text="Sistema Anti-Raid • Caos Hub")
+        await log_channel.send("@everyone", embed=embed)
+    
+    # Aplicar slowmode em canais de texto
+    for channel in guild.text_channels:
+        try:
+            if channel.slowmode_delay == 0:  # Só aplicar se não tiver slowmode
+                await channel.edit(slowmode_delay=RAID_CONFIG['slowmode_duration'])
+        except:
+            pass
+    
+    # Agendar desativação automática
+    await asyncio.sleep(RAID_CONFIG['lockdown_duration'])
+    await deactivate_raid_mode(guild)
+
+async def deactivate_raid_mode(guild):
+    """Desativa modo anti-raid"""
+    if not raid_detection['in_raid_mode']:
+        return
+    
+    raid_detection['in_raid_mode'] = False
+    raid_detection['raid_start_time'] = None
+    raid_detection['suspicious_users'].clear()
+    
+    print(f"✅ MODO ANTI-RAID DESATIVADO em {guild.name}")
+    
+    # Canal de logs
+    log_channel = guild.get_channel(1315107491453444137)
+    
+    if log_channel:
+        embed = discord.Embed(
+            title="✅ MODO ANTI-RAID DESATIVADO",
+            description="Servidor voltou ao normal.",
+            color=0x00FF00,
+            timestamp=discord.utils.utcnow()
+        )
+        embed.set_footer(text="Sistema Anti-Raid • Caos Hub")
+        await log_channel.send(embed=embed)
+    
+    # Remover slowmode
+    for channel in guild.text_channels:
+        try:
+            if channel.slowmode_delay == RAID_CONFIG['slowmode_duration']:
+                await channel.edit(slowmode_delay=0)
+        except:
+            pass
+
+async def check_suspicious_user(member):
+    """Verifica se um usuário é suspeito (conta nova, bot, etc)"""
+    # Verificar idade da conta
+    account_age = (discord.utils.utcnow() - member.created_at).days
+    
+    # Conta muito nova
+    if account_age < RAID_CONFIG['account_age_min']:
+        return True, f"Conta criada há {account_age} dias"
+    
+    # Avatar padrão + conta nova
+    if member.avatar is None and account_age < 30:
+        return True, "Sem avatar + conta nova"
+    
+    # Nome suspeito (muitos números)
+    if sum(c.isdigit() for c in member.name) > len(member.name) * 0.7:
+        return True, "Nome suspeito (muitos números)"
+    
+    return False, None
 
 async def get_or_create_mute_role(guild):
     """Obtém ou cria o cargo de mute"""
