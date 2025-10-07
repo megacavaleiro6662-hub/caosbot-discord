@@ -1383,7 +1383,8 @@ class TicketConfigView(discord.ui.View):
         # Habilitar botão se prioridade também foi selecionada
         if self.selected_priority:
             self.continue_button.disabled = False
-            await interaction.response.edit_message(view=self)
+            await interaction.response.defer()
+            await interaction.message.edit(view=self)
             await interaction.followup.send(f"✅ Categoria selecionada: {self.selected_category_emoji} **{self.selected_category}**", ephemeral=True)
         else:
             await interaction.response.send_message(f"✅ Categoria selecionada: {self.selected_category_emoji} **{self.selected_category}**", ephemeral=True)
@@ -1402,7 +1403,8 @@ class TicketConfigView(discord.ui.View):
         # Habilitar botão se categoria também foi selecionada
         if self.selected_category:
             self.continue_button.disabled = False
-            await interaction.response.edit_message(view=self)
+            await interaction.response.defer()
+            await interaction.message.edit(view=self)
             await interaction.followup.send(f"✅ Prioridade selecionada: {self.selected_priority_emoji} **{self.selected_priority}**", ephemeral=True)
         else:
             await interaction.response.send_message(f"✅ Prioridade selecionada: {self.selected_priority_emoji} **{self.selected_priority}**", ephemeral=True)
