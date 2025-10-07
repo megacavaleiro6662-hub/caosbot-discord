@@ -1168,13 +1168,12 @@ async def on_ready():
     if not reload_configs.is_running():
         reload_configs.start()
         print('⚡ Sistema de auto-reload ATIVADO! Configs sincronizam a cada 3s (quase instantâneo!)')
-    
     # REGISTRAR PERSISTENT VIEWS (sistema de tickets V2)
     bot.add_view(TicketPanelView())
     print('🎫 Sistema de Tickets V2 registrado (persistent views)')
     
     await bot.change_presence(
-        activity=discord.Game(name=".play para música | O Hub dos sonhos"),
+        activity=discord.Game(name="🎫 Sistema de Tickets | O Hub dos sonhos"),
         status=discord.Status.online
     )
 
