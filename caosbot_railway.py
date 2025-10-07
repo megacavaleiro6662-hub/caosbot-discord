@@ -152,8 +152,8 @@ def dashboard():
             <img src="https://i.ibb.co/Fq5Lgzs5/Chat-GPT-Image-7-de-out-de-2025-00-25-49.png" alt="CAOS Hub">
         </div>
         <ul class="sidebar-nav">
-            <li><a href="/dashboard" class="active">📊 Dashboard</a></li>
-            <li><a href="/tickets">🎫 Tickets</a></li>
+            <li><a href="#" class="active" onclick="showPage('dashboard')">📊 Dashboard</a></li>
+            <li><a href="#" onclick="showPage('tickets')">🎫 Tickets</a></li>
             <li><a href="#" onclick="showPage('stats')">📈 Estatísticas</a></li>
         </ul>
     </div>
@@ -671,14 +671,6 @@ def get_config_status():
         return jsonify(config)
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-
-@app.route('/tickets')
-def tickets_page():
-    """Página de configuração avançada de tickets"""
-    try:
-        return render_template('tickets.html')
-    except Exception as e:
-        return f"<h1>Erro ao carregar página de tickets</h1><p>{str(e)}</p><a href='/dashboard'>Voltar</a>", 500
 
 @app.route('/api/config/toggle', methods=['POST'])
 def toggle_config_api():
