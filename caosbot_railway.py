@@ -1270,13 +1270,15 @@ class TicketPanelView(discord.ui.View):
             await send_ticket_config_message(interaction)
         except Exception as e:
             print(f"❌ Erro ao abrir ticket: {e}")
-            try:
-                await interaction.response.send_message(
-                    "❌ **Erro ao processar sua solicitação.**\nTente novamente em alguns segundos.",
-                    ephemeral=True
-                )
-            except:
-                pass
+            # Só tenta responder se ainda não respondeu
+            if not interaction.response.is_done():
+                try:
+                    await interaction.response.send_message(
+                        "❌ **Erro ao processar sua solicitação.**\nTente novamente em alguns segundos.",
+                        ephemeral=True
+                    )
+                except:
+                    pass
 
 # View de configuração - Categoria + Prioridade
 class TicketConfigView(discord.ui.View):
