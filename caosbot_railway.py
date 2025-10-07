@@ -226,43 +226,201 @@ def dashboard():
         <!-- Tickets Page -->
         <div id="tickets-page" class="page">
             <div class="section">
-                <h2 class="section-title">🎫 Criar Painel de Ticket</h2>
-                <div class="card">
-                    <form id="ticket-form" onsubmit="sendTicketPanel(event)">
+                <h2 class="section-title">🎫 Configuração Completa de Tickets</h2>
+                
+                <!-- Sub-tabs -->
+                <div style="display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap;">
+                    <button class="btn btn-primary" style="padding: 8px 16px; font-size: 13px;" onclick="showTicketTab('basico')">⚙️ Básico</button>
+                    <button class="btn" style="padding: 8px 16px; font-size: 13px; background: rgba(255,255,255,0.1);" onclick="showTicketTab('painel')">🎨 Painel</button>
+                    <button class="btn" style="padding: 8px 16px; font-size: 13px; background: rgba(255,255,255,0.1);" onclick="showTicketTab('categorias')">📋 Categorias</button>
+                    <button class="btn" style="padding: 8px 16px; font-size: 13px; background: rgba(255,255,255,0.1);" onclick="showTicketTab('prioridades')">⚡ Prioridades</button>
+                    <button class="btn" style="padding: 8px 16px; font-size: 13px; background: rgba(255,255,255,0.1);" onclick="showTicketTab('mensagens')">💬 Mensagens</button>
+                    <button class="btn" style="padding: 8px 16px; font-size: 13px; background: rgba(255,255,255,0.1);" onclick="showTicketTab('campos')">📝 Campos</button>
+                    <button class="btn" style="padding: 8px 16px; font-size: 13px; background: rgba(255,255,255,0.1);" onclick="showTicketTab('avancado')">🔧 Avançado</button>
+                    <button class="btn" style="padding: 8px 16px; font-size: 13px; background: rgba(255,255,255,0.1);" onclick="showTicketTab('logs')">📊 Logs</button>
+                </div>
+                
+                <!-- Aba Básico -->
+                <div id="ticket-tab-basico" class="ticket-tab">
+                    <div class="card">
+                        <h3 style="margin-bottom: 20px;">⚙️ Configuração Básica</h3>
                         <div class="form-group">
-                            <label class="form-label">1. Selecione a Categoria</label>
-                            <select id="ticket-category" class="form-select" required onchange="loadChannelsByCategory()">
-                                <option value="">Carregando categorias...</option>
+                            <label class="form-label">📁 Categoria Destino</label>
+                            <select id="ticket-category" class="form-select">
+                                <option value="">Carregando...</option>
                             </select>
                         </div>
                         <div class="form-group">
-                            <label class="form-label">2. Selecione o Canal</label>
-                            <select id="ticket-channel" class="form-select" required disabled>
-                                <option value="">Primeiro selecione uma categoria</option>
+                            <label class="form-label">📢 Canal de Logs (ticket-logs)</label>
+                            <select id="ticket-log-channel" class="form-select">
+                                <option value="">Carregando...</option>
                             </select>
                         </div>
+                    </div>
+                </div>
+                
+                <!-- Aba Painel -->
+                <div id="ticket-tab-painel" class="ticket-tab" style="display:none;">
+                    <div class="card">
+                        <h3 style="margin-bottom: 20px;">🎨 Personalizar Painel</h3>
                         <div class="form-group">
-                            <label class="form-label">Título do Painel</label>
-                            <input type="text" id="ticket-title" class="form-input" value="🎫 SISTEMA DE TICKETS" required>
+                            <label class="form-label">✏️ Título do Painel</label>
+                            <input type="text" id="ticket-title" class="form-input" value="🎫 SISTEMA DE TICKETS">
                         </div>
                         <div class="form-group">
-                            <label class="form-label">Descrição</label>
-                            <textarea id="ticket-description" class="form-textarea" required>Clique no botão abaixo para abrir um ticket e nossa equipe irá atendê-lo em breve!</textarea>
+                            <label class="form-label">📝 Descrição</label>
+                            <textarea id="ticket-description" class="form-textarea">Clique no botão abaixo para abrir um ticket e falar com a equipe!</textarea>
                         </div>
                         <div class="form-group">
-                            <label class="form-label">Cor do Embed</label>
-                            <div style="display: flex; gap: 12px; align-items: center;">
-                                <input type="color" id="ticket-color-picker" class="form-input" value="#5865F2" style="width: 60px; height: 40px; cursor: pointer; padding: 4px;">
-                                <input type="text" id="ticket-color" class="form-input" value="0x5865F2" required style="flex: 1;" readonly>
-                            </div>
-                            <small style="color: #9ca3af; font-size: 12px;">Clique no seletor de cor para escolher</small>
+                            <label class="form-label">🎨 Cor do Embed</label>
+                            <input type="color" id="ticket-color-picker" value="#5865F2" style="width: 60px; height: 40px;">
                         </div>
                         <div class="form-group">
-                            <label class="form-label">Texto do Botão</label>
-                            <input type="text" id="ticket-button" class="form-input" value="📩 Abrir Ticket" required>
+                            <label class="form-label">📣 Canal para Enviar Painel</label>
+                            <select id="ticket-channel" class="form-select">
+                                <option value="">Carregando...</option>
+                            </select>
                         </div>
-                        <button type="submit" class="btn btn-primary">🚀 Enviar Painel Agora</button>
-                    </form>
+                        <button class="btn btn-primary" onclick="sendTicketPanel(event)">🚀 Enviar Painel Agora</button>
+                    </div>
+                </div>
+                
+                <!-- Aba Categorias -->
+                <div id="ticket-tab-categorias" class="ticket-tab" style="display:none;">
+                    <div class="card">
+                        <h3 style="margin-bottom: 20px;">📋 Categorias Disponíveis</h3>
+                        <p style="color: #9ca3af; margin-bottom: 15px;">Ative/desative categorias (aparecem no dropdown)</p>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px;">
+                            <label style="display: flex; align-items: center; gap: 8px; padding: 10px; background: rgba(255,255,255,0.05); border-radius: 8px; cursor: pointer;">
+                                <input type="checkbox" checked> 📁 Geral
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 8px; padding: 10px; background: rgba(255,255,255,0.05); border-radius: 8px; cursor: pointer;">
+                                <input type="checkbox" checked> 🛒 Compras
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 8px; padding: 10px; background: rgba(255,255,255,0.05); border-radius: 8px; cursor: pointer;">
+                                <input type="checkbox" checked> 🔧 Suporte Técnico
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 8px; padding: 10px; background: rgba(255,255,255,0.05); border-radius: 8px; cursor: pointer;">
+                                <input type="checkbox" checked> 🚨 Denúncia
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 8px; padding: 10px; background: rgba(255,255,255,0.05); border-radius: 8px; cursor: pointer;">
+                                <input type="checkbox" checked> 🤝 Parceria
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 8px; padding: 10px; background: rgba(255,255,255,0.05); border-radius: 8px; cursor: pointer;">
+                                <input type="checkbox" checked> 💰 Financeiro
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 8px; padding: 10px; background: rgba(255,255,255,0.05); border-radius: 8px; cursor: pointer;">
+                                <input type="checkbox" checked> 🛡️ Moderação
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 8px; padding: 10px; background: rgba(255,255,255,0.05); border-radius: 8px; cursor: pointer;">
+                                <input type="checkbox" checked> 🐛 Bug
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Aba Prioridades -->
+                <div id="ticket-tab-prioridades" class="ticket-tab" style="display:none;">
+                    <div class="card">
+                        <h3 style="margin-bottom: 20px;">⚡ Sistema de Prioridades</h3>
+                        <label style="display: flex; align-items: center; gap: 8px; margin-bottom: 15px;">
+                            <input type="checkbox" checked> Ativar sistema de prioridades
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 8px; margin-bottom: 15px;">
+                            <input type="checkbox" checked> Usar cores baseadas na prioridade
+                        </label>
+                        <div style="display: grid; gap: 10px; margin-top: 20px;">
+                            <div style="padding: 10px; background: rgba(0,255,0,0.1); border-radius: 8px;">🟢 Baixa - Não é urgente</div>
+                            <div style="padding: 10px; background: rgba(255,255,0,0.1); border-radius: 8px;">🟡 Média - Prioridade normal</div>
+                            <div style="padding: 10px; background: rgba(255,136,0,0.1); border-radius: 8px;">🟠 Alta - Precisa de atenção</div>
+                            <div style="padding: 10px; background: rgba(255,0,0,0.1); border-radius: 8px;">🔴 Urgente - Muito urgente!</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Aba Mensagens -->
+                <div id="ticket-tab-mensagens" class="ticket-tab" style="display:none;">
+                    <div class="card">
+                        <h3 style="margin-bottom: 20px;">💬 Mensagens Customizáveis</h3>
+                        <div class="form-group">
+                            <label class="form-label">👋 Mensagem de Boas-vindas</label>
+                            <textarea class="form-textarea">Olá! Obrigado por abrir um ticket. Nossa equipe responderá em breve.</textarea>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">📝 Mensagem no Embed</label>
+                            <textarea class="form-textarea">Nossa equipe responderá o mais breve possível!</textarea>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">🔒 Mensagem ao Fechar</label>
+                            <input type="text" class="form-input" value="🔒 Fechando ticket em 3 segundos...">
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Aba Campos -->
+                <div id="ticket-tab-campos" class="ticket-tab" style="display:none;">
+                    <div class="card">
+                        <h3 style="margin-bottom: 20px;">📝 Campos do Modal</h3>
+                        <label style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
+                            <input type="checkbox" checked disabled> 📄 Assunto (obrigatório)
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
+                            <input type="checkbox" checked disabled> 📝 Descrição (obrigatório)
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
+                            <input type="checkbox" checked> 🌐 Idioma
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
+                            <input type="checkbox" checked> ℹ️ Informações Adicionais
+                        </label>
+                    </div>
+                </div>
+                
+                <!-- Aba Avançado -->
+                <div id="ticket-tab-avancado" class="ticket-tab" style="display:none;">
+                    <div class="card">
+                        <h3 style="margin-bottom: 20px;">🔧 Configurações Avançadas</h3>
+                        <div class="form-group">
+                            <label class="form-label">🔢 Limite de tickets por usuário</label>
+                            <input type="number" class="form-input" value="1" min="1" max="10">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">⏰ Cooldown (minutos)</label>
+                            <input type="number" class="form-input" value="0" min="0" max="60">
+                        </div>
+                        <label style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
+                            <input type="checkbox" checked> 📊 Ativar transcrições
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
+                            <input type="checkbox" checked> 📈 Ativar estatísticas
+                        </label>
+                    </div>
+                </div>
+                
+                <!-- Aba Logs -->
+                <div id="ticket-tab-logs" class="ticket-tab" style="display:none;">
+                    <div class="card">
+                        <h3 style="margin-bottom: 20px;">📊 Configuração de Logs</h3>
+                        <label style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
+                            <input type="checkbox" checked> 📢 Ativar sistema de logs
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
+                            <input type="checkbox" checked> 📊 Incluir estatísticas
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
+                            <input type="checkbox" checked> 📁 Anexar transcrição (.txt)
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
+                            <input type="checkbox" checked> 👥 Mostrar participantes
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
+                            <input type="checkbox" checked> ⏱️ Mostrar duração
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="card" style="margin-top: 20px;">
+                    <button class="btn btn-primary" style="width: 100%; padding: 15px;">💾 Salvar Todas as Configurações</button>
                 </div>
             </div>
         </div>
@@ -297,6 +455,22 @@ def dashboard():
             }} else if (page === 'stats') {{
                 loadStats();
             }}
+        }}
+        
+        // Navegação entre abas de tickets
+        function showTicketTab(tab) {{
+            // Esconder todas as abas
+            document.querySelectorAll('.ticket-tab').forEach(t => t.style.display = 'none');
+            
+            // Remover active de todos os botões
+            const buttons = document.querySelectorAll('#tickets-page .btn');
+            buttons.forEach(b => b.style.background = 'rgba(255,255,255,0.1)');
+            
+            // Mostrar aba selecionada
+            document.getElementById('ticket-tab-' + tab).style.display = 'block';
+            
+            // Marcar botão como ativo
+            event.target.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
         }}
         
         // Notificação com som
