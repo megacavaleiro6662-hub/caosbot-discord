@@ -502,7 +502,6 @@ def get_config_status():
 def tickets_page():
     """Página de configuração avançada de tickets"""
     try:
-        from flask import render_template
         return render_template('tickets.html')
     except Exception as e:
         return f"<h1>Erro ao carregar página de tickets</h1><p>{str(e)}</p><a href='/dashboard'>Voltar</a>", 500
