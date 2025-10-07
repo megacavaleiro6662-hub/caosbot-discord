@@ -243,45 +243,56 @@ def dashboard():
                 <!-- Aba Básico -->
                 <div id="ticket-tab-basico" class="ticket-tab">
                     <div class="card">
-                        <h3 style="margin-bottom: 20px;">⚙️ Configuração Básica</h3>
+                        <h3 style="margin-bottom: 20px;">⚙️ Configuração Básica + Enviar Painel</h3>
+                        
                         <div class="form-group">
-                            <label class="form-label">📁 Categoria Destino</label>
-                            <select id="ticket-category" class="form-select">
-                                <option value="">Carregando...</option>
+                            <label class="form-label">📁 1. Categoria Destino (onde criar tickets)</label>
+                            <select id="ticket-category" class="form-select" onchange="loadChannelsByCategory()">
+                                <option value="">Carregando categorias...</option>
                             </select>
                         </div>
+                        
                         <div class="form-group">
-                            <label class="form-label">📢 Canal de Logs (ticket-logs)</label>
+                            <label class="form-label">📣 2. Canal para Enviar Painel</label>
+                            <select id="ticket-channel" class="form-select" disabled>
+                                <option value="">Selecione uma categoria primeiro</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">📢 3. Canal de Logs (ticket-logs)</label>
                             <select id="ticket-log-channel" class="form-select">
-                                <option value="">Carregando...</option>
+                                <option value="">Carregando canais...</option>
                             </select>
                         </div>
+                        
+                        <hr style="border: 1px solid rgba(255,255,255,0.1); margin: 20px 0;">
+                        
+                        <div class="form-group">
+                            <label class="form-label">✏️ Título do Painel</label>
+                            <input type="text" id="ticket-title" class="form-input" value="🎫 SISTEMA DE TICKETS">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">📝 Descrição</label>
+                            <textarea id="ticket-description" class="form-textarea">Clique no botão abaixo para abrir um ticket e falar com a equipe!</textarea>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">🎨 Cor do Embed</label>
+                            <input type="color" id="ticket-color-picker" value="#5865F2" style="width: 60px; height: 40px;">
+                        </div>
+                        
+                        <button class="btn btn-primary" onclick="sendTicketPanel(event)" style="width: 100%; padding: 15px; font-size: 16px; margin-top: 10px;">🚀 Enviar Painel Agora</button>
                     </div>
                 </div>
                 
                 <!-- Aba Painel -->
                 <div id="ticket-tab-painel" class="ticket-tab" style="display:none;">
                     <div class="card">
-                        <h3 style="margin-bottom: 20px;">🎨 Personalizar Painel</h3>
-                        <div class="form-group">
-                            <label class="form-label">✏️ Título do Painel</label>
-                            <input type="text" id="ticket-title" class="form-input" value="🎫 SISTEMA DE TICKETS">
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">📝 Descrição</label>
-                            <textarea id="ticket-description" class="form-textarea">Clique no botão abaixo para abrir um ticket e falar com a equipe!</textarea>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">🎨 Cor do Embed</label>
-                            <input type="color" id="ticket-color-picker" value="#5865F2" style="width: 60px; height: 40px;">
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">📣 Canal para Enviar Painel</label>
-                            <select id="ticket-channel" class="form-select">
-                                <option value="">Carregando...</option>
-                            </select>
-                        </div>
-                        <button class="btn btn-primary" onclick="sendTicketPanel(event)">🚀 Enviar Painel Agora</button>
+                        <h3 style="margin-bottom: 20px;">🎨 Personalização Avançada</h3>
+                        <p style="color: #9ca3af;">Configurações básicas de envio estão na aba "Básico"</p>
+                        <p style="color: #9ca3af;">Esta aba está reservada para customizações futuras.</p>
                     </div>
                 </div>
                 
@@ -562,6 +573,63 @@ def dashboard():
             }} catch (error) {{
                 console.error('Erro ao carregar categorias:', error);
             }}
+            
+            // Carregar todos os canais de texto para logs
+            loadAllTextChannels();
+        }}
+        
+        // Carregar canais de uma categoria específica
+        async function loadChannelsByCategory() {{
+            const categoryId = document.getElementById('ticket-category').value;
+            const channelSelect = document.getElementById('ticket-channel');
+            
+            if (!categoryId) {{
+                channelSelect.disabled = true;
+                channelSelect.innerHTML = '<option value="">Selecione uma categoria primeiro</option>';
+                return;
+            }}
+            
+            try {{
+                const response = await fetch(`/api/discord/channels/${{categoryId}}`);
+                const data = await response.json();
+                
+                channelSelect.innerHTML = '<option value="">Selecione um canal...</option>';
+                channelSelect.disabled = false;
+                
+                if (data.success && data.channels) {{
+                    data.channels.forEach(ch => {{
+                        const opt = document.createElement('option');
+                        opt.value = ch.id;
+                        opt.textContent = ch.name;
+                        channelSelect.appendChild(opt);
+                    }});
+                }}
+            }} catch (error) {{
+                console.error('Erro ao carregar canais:', error);
+                channelSelect.innerHTML = '<option value="">Erro ao carregar</option>';
+            }}
+        }}
+        
+        // Carregar todos os canais de texto (para logs)
+        async function loadAllTextChannels() {{
+            try {{
+                const response = await fetch('/api/discord/text-channels');
+                const data = await response.json();
+                const select = document.getElementById('ticket-log-channel');
+                
+                select.innerHTML = '<option value="">Selecione um canal...</option>';
+                
+                if (data.success && data.channels) {{
+                    data.channels.forEach(ch => {{
+                        const opt = document.createElement('option');
+                        opt.value = ch.id;
+                        opt.textContent = ch.name;
+                        select.appendChild(opt);
+                    }});
+                }}
+            }} catch (error) {{
+                console.error('Erro ao carregar canais de texto:', error);
+            }}
         }}
         
         // Carregar estatísticas do servidor
@@ -620,39 +688,51 @@ def dashboard():
         // Enviar painel de ticket
         async function sendTicketPanel(e) {{
             e.preventDefault();
-            const btn = e.target.querySelector('button[type=\"submit\"]');
+            const btn = e.target;
+            const originalText = btn.textContent;
             btn.disabled = true;
             btn.textContent = '⏳ Enviando...';
             
+            // Validar campos
+            const channelId = document.getElementById('ticket-channel').value;
+            const title = document.getElementById('ticket-title').value;
+            const description = document.getElementById('ticket-description').value;
+            
+            if (!channelId) {{
+                showToast('❌ Selecione um canal para enviar o painel!', 'error');
+                btn.disabled = false;
+                btn.textContent = originalText;
+                return;
+            }}
+            
             try {{
+                // Converter cor para hex
+                const colorPicker = document.getElementById('ticket-color-picker');
+                const hexColor = colorPicker.value.replace('#', '');
+                
                 const response = await fetch('/api/tickets/panel/send', {{
                     method: 'POST',
                     headers: {{ 'Content-Type': 'application/json' }},
                     body: JSON.stringify({{
-                        channel_id: document.getElementById('ticket-channel').value,
-                        title: document.getElementById('ticket-title').value,
-                        description: document.getElementById('ticket-description').value,
-                        color: document.getElementById('ticket-color').value,
-                        button_label: document.getElementById('ticket-button').value
+                        channel_id: channelId,
+                        title: title,
+                        description: description,
+                        color: '0x' + hexColor
                     }})
                 }});
                 
                 const data = await response.json();
                 if (data.success) {{
                     showToast('🎉 Painel enviado com sucesso!');
-                    // Resetar para valores padrão
-                    document.getElementById('ticket-title').value = '🎫 SISTEMA DE TICKETS';
-                    document.getElementById('ticket-description').value = 'Clique no botão abaixo para abrir um ticket e nossa equipe irá atendê-lo em breve!';
-                    document.getElementById('ticket-color-picker').value = '#5865F2';
-                    document.getElementById('ticket-color').value = '0x5865F2';
                 }} else {{
                     showToast(data.message || 'Erro ao enviar painel', 'error');
                 }}
             }} catch (error) {{
-                showToast('Erro de conexão', 'error');
+                console.error('Erro:', error);
+                showToast('❌ Erro de conexão', 'error');
             }} finally {{
                 btn.disabled = false;
-                btn.textContent = '🚀 Enviar Painel Agora';
+                btn.textContent = originalText;
             }}
         }}
     </script>
@@ -873,6 +953,70 @@ def send_ticket_panel():
         else:
             return jsonify({'success': False, 'message': 'Erro ao enviar painel'}), 500
             
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+@app.route('/api/discord/categories', methods=['GET'])
+def get_discord_categories():
+    """Retorna todas as categorias do servidor"""
+    try:
+        if not bot.guilds:
+            return jsonify({'success': False, 'message': 'Bot não conectado'}), 500
+        
+        guild = bot.guilds[0]
+        categories = []
+        
+        for category in guild.categories:
+            categories.append({
+                'id': str(category.id),
+                'name': category.name
+            })
+        
+        return jsonify({'success': True, 'categories': categories})
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+@app.route('/api/discord/channels/<category_id>', methods=['GET'])
+def get_category_channels(category_id):
+    """Retorna canais de uma categoria específica"""
+    try:
+        if not bot.guilds:
+            return jsonify({'success': False, 'message': 'Bot não conectado'}), 500
+        
+        guild = bot.guilds[0]
+        category = guild.get_channel(int(category_id))
+        
+        if not category:
+            return jsonify({'success': False, 'message': 'Categoria não encontrada'}), 404
+        
+        channels = []
+        for channel in category.text_channels:
+            channels.append({
+                'id': str(channel.id),
+                'name': channel.name
+            })
+        
+        return jsonify({'success': True, 'channels': channels})
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+@app.route('/api/discord/text-channels', methods=['GET'])
+def get_all_text_channels():
+    """Retorna todos os canais de texto do servidor"""
+    try:
+        if not bot.guilds:
+            return jsonify({'success': False, 'message': 'Bot não conectado'}), 500
+        
+        guild = bot.guilds[0]
+        channels = []
+        
+        for channel in guild.text_channels:
+            channels.append({
+                'id': str(channel.id),
+                'name': channel.name
+            })
+        
+        return jsonify({'success': True, 'channels': channels})
     except Exception as e:
         return jsonify({'success': False, 'message': str(e)}), 500
 
