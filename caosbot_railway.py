@@ -521,40 +521,6 @@ def dashboard():
             }});
         }});
         
-        // Carregar canais por categoria
-        async function loadChannelsByCategory() {{
-            const categoryId = document.getElementById('ticket-category').value;
-            const channelSelect = document.getElementById('ticket-channel');
-            
-            if (!categoryId) {{
-                channelSelect.disabled = true;
-                channelSelect.innerHTML = '<option value="">Primeiro selecione uma categoria</option>';
-                return;
-            }}
-            
-            try {{
-                channelSelect.disabled = true;
-                channelSelect.innerHTML = '<option value="">Carregando canais...</option>';
-                
-                const response = await fetch(`/api/channels/by-category/${{categoryId}}`);
-                const data = await response.json();
-                
-                channelSelect.innerHTML = '<option value="">Selecione um canal...</option>';
-                if (data.success) {{
-                    data.channels.forEach(ch => {{
-                        const opt = document.createElement('option');
-                        opt.value = ch.id;
-                        opt.textContent = `#${{ch.name}}`;
-                        channelSelect.appendChild(opt);
-                    }});
-                    channelSelect.disabled = false;
-                }}
-            }} catch (error) {{
-                console.error('Erro ao carregar canais:', error);
-                channelSelect.innerHTML = '<option value="">Erro ao carregar</option>';
-            }}
-        }}
-        
         // Carregar categorias do Discord
         async function loadCategories() {{
             try {{
