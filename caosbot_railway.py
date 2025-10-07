@@ -922,26 +922,6 @@ def send_ticket_panel():
     except Exception as e:
         return jsonify({'success': False, 'message': str(e)}), 500
 
-@app.route('/api/discord/categories', methods=['GET'])
-def get_discord_categories():
-    """Retorna todas as categorias do servidor"""
-    try:
-        if not bot.guilds:
-            return jsonify({'success': False, 'message': 'Bot não conectado'}), 500
-        
-        guild = bot.guilds[0]
-        categories = []
-        
-        for category in guild.categories:
-            categories.append({
-                'id': str(category.id),
-                'name': category.name
-            })
-        
-        return jsonify({'success': True, 'categories': categories})
-    except Exception as e:
-        return jsonify({'success': False, 'message': str(e)}), 500
-
 @app.route('/api/discord/channels/<category_id>', methods=['GET'])
 def get_category_channels(category_id):
     """Retorna canais de uma categoria específica"""
@@ -1014,31 +994,6 @@ def get_server_stats():
         }
         
         return jsonify(stats)
-    except Exception as e:
-        return jsonify({'success': False, 'message': str(e)}), 500
-
-@app.route('/api/channels/by-category/<category_id>', methods=['GET'])
-def get_channels_by_category(category_id):
-    """Retorna canais de uma categoria específica"""
-    try:
-        if not bot.guilds:
-            return jsonify({'success': False, 'message': 'Bot não conectado'}), 500
-        
-        guild = bot.guilds[0]
-        category = guild.get_channel(int(category_id))
-        
-        if not category or not isinstance(category, discord.CategoryChannel):
-            return jsonify({'success': False, 'message': 'Categoria não encontrada'}), 404
-        
-        channels = []
-        for channel in category.text_channels:
-            channels.append({
-                'id': str(channel.id),
-                'name': channel.name,
-                'position': channel.position
-            })
-        
-        return jsonify({'success': True, 'channels': channels})
     except Exception as e:
         return jsonify({'success': False, 'message': str(e)}), 500
 
