@@ -18,7 +18,7 @@ from datetime import datetime
 from discord.ui import Button, View
 import math
 import threading
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, render_template
 
 # ========================================
 # SISTEMA DE MÚSICA REMOVIDO
@@ -76,6 +76,101 @@ def test_connection():
     except Exception as e:
         print(f"❌ [TEST] Erro crítico: {e}")
         return jsonify({"success": False, "message": str(e)}), 500
+
+# ========================================
+# ROTAS DO DASHBOARD WEB
+# ========================================
+
+@app.route('/dashboard')
+def dashboard():
+    """Página principal do dashboard"""
+    try:
+        config = load_config_dashboard()
+        return render_template('dashboard.html', config=config)
+    except Exception as e:
+        return f"Erro ao carregar dashboard: {e}", 500
+
+@app.route('/api/config/status', methods=['GET'])
+def get_config_status():
+    """Retorna status atual das configurações"""
+    try:
+        config = load_config_dashboard()
+        return jsonify(config)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/config/toggle', methods=['POST'])
+def toggle_config_api():
+    """Alterna estado de uma configuração"""
+    try:
+        data = request.get_json()
+        key = data.get('key')
+        
+        if not key:
+            return jsonify({'success': False, 'message': 'Key não fornecida'}), 400
+        
+        config = load_config_dashboard()
+        
+        if key not in config:
+            return jsonify({'success': False, 'message': 'Key inválida'}), 400
+        
+        # Alternar estado
+        config[key] = not config[key]
+        save_config_dashboard(config)
+        
+        return jsonify({
+            'success': True,
+            'key': key,
+            'new_value': config[key],
+            'message': f'{key} agora está {"ativado" if config[key] else "desativado"}'
+        })
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+@app.route('/api/config/update', methods=['POST'])
+def update_config_api():
+    """Atualiza múltiplas configurações de uma vez"""
+    try:
+        data = request.get_json()
+        config = load_config_dashboard()
+        
+        # Atualizar apenas chaves válidas
+        valid_keys = ['welcome_enabled', 'goodbye_enabled', 'autorole_enabled', 'tickets_enabled']
+        updated = []
+        
+        for key in valid_keys:
+            if key in data:
+                config[key] = bool(data[key])
+                updated.append(key)
+        
+        save_config_dashboard(config)
+        
+        return jsonify({
+            'success': True,
+            'updated': updated,
+            'config': config,
+            'message': f'{len(updated)} configurações atualizadas'
+        })
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+def load_config_dashboard():
+    """Carrega configurações do dashboard"""
+    if os.path.exists(WELCOME_CONFIG_FILE):
+        with open(WELCOME_CONFIG_FILE, 'r') as f:
+            return json.load(f)
+    return {
+        'welcome_enabled': False,
+        'goodbye_enabled': False,
+        'autorole_enabled': False,
+        'tickets_enabled': False,
+        'status_message_id': None
+    }
+
+def save_config_dashboard(config):
+    """Salva configurações do dashboard"""
+    with open(WELCOME_CONFIG_FILE, 'w') as f:
+        json.dump(config, f, indent=2)
 
 def run_web():
     import os
