@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎫 Configuração de Tickets - CAOS Bot</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        .tabs-container {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        .tabs-header {
+            display: flex;
+            gap: 10px;
+            overflow-x: auto;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+
+        .tab-button {
+            padding: 12px 24px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid transparent;
+            border-radius: 8px;
+            color: #fff;
+            cursor: pointer;
+            transition: all 0.3s;
+            white-space: nowrap;
+            font-size: 14px;
+        }
+
+        .tab-button:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .tab-button.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-color: #667eea;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.3s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #fff;
+            font-weight: 500;
+        }
+
+        .form-group input[type="text"],
+        .form-group textarea,
+        .form-group select,
+        .form-group input[type="number"] {
+            width: 100%;
+            padding: 12px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            color: #fff;
+            font-size: 14px;
+        }
+
+        .form-group textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+
+        .category-item {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+
+        .category-item-header {
+            display: flex;
+            justify-items: space-between;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .save-button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+            margin-top: 20px;
+            width: 100%;
+        }
+
+        .save-button:hover {
+            transform: translateY(-2px);
+        }
+
+        .back-button {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            padding: 10px 20px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            text-decoration: none;
+            display: inline-block;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎫 CONFIGURAÇÃO DE TICKETS</h1>
+            <p>Sistema Completo de Gerenciamento de Tickets</p>
+        </header>
+
+        <a href="/dashboard" class="back-button">← Voltar ao Dashboard</a>
+
+        <div class="tabs-container">
+            <div class="tabs-header">
+                <button class="tab-button active" onclick="openTab('basic')">⚙️ Básico</button>
+                <button class="tab-button" onclick="openTab('panel')">🎨 Painel</button>
+                <button class="tab-button" onclick="openTab('categories')">📋 Categorias</button>
+                <button class="tab-button" onclick="openTab('priorities')">⚡ Prioridades</button>
+                <button class="tab-button" onclick="openTab('messages')">💬 Mensagens</button>
+                <button class="tab-button" onclick="openTab('fields')">📝 Campos</button>
+                <button class="tab-button" onclick="openTab('advanced')">🔧 Avançado</button>
+                <button class="tab-button" onclick="openTab('logs')">📊 Logs</button>
+            </div>
+
+            <!-- ABA 1: BÁSICO -->
+            <div id="basic" class="tab-content active">
+                <h2>⚙️ Configuração Básica</h2>
+                
+                <div class="form-group">
+                    <label>📁 Categoria Destino (onde criar tickets)</label>
+                    <select id="category_id">
+                        <option value="">Selecione uma categoria...</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>👮 Cargos Staff (podem ver tickets)</label>
+                    <select id="staff_roles" multiple style="min-height: 150px;">
+                        <option value="">Carregando...</option>
+                    </select>
+                    <small>Segure Ctrl para selecionar múltiplos</small>
+                </div>
+
+                <div class="form-group">
+                    <label>📢 Canal de Logs</label>
+                    <select id="log_channel_id">
+                        <option value="">Selecione um canal...</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- ABA 2: PERSONALIZAR PAINEL -->
+            <div id="panel" class="tab-content">
+                <h2>🎨 Personalizar Painel</h2>
+
+                <div class="form-group">
+                    <label>✏️ Título do Painel</label>
+                    <input type="text" id="panel_title" value="🎫 SISTEMA DE TICKETS">
+                </div>
+
+                <div class="form-group">
+                    <label>📝 Descrição do Painel</label>
+                    <textarea id="panel_description">Clique no botão abaixo para abrir um ticket e falar com a equipe!</textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>🎨 Cor do Embed</label>
+                    <input type="text" id="panel_color" value="0x5865F2" placeholder="Ex: 0x5865F2">
+                </div>
+
+                <div class="form-group">
+                    <label>🔘 Texto do Botão</label>
+                    <input type="text" id="button_text" value="Abrir Ticket">
+                </div>
+
+                <div class="form-group">
+                    <label>📣 Canal para Enviar Painel</label>
+                    <select id="send_channel_id">
+                        <option value="">Selecione um canal...</option>
+                    </select>
+                </div>
+
+                <button class="save-button" onclick="sendPanel()">🚀 Enviar Painel Agora</button>
+            </div>
+
+            <!-- ABA 3: CATEGORIAS -->
+            <div id="categories" class="tab-content">
+                <h2>📋 Categorias de Ticket</h2>
+                <p>Ative/desative e customize cada categoria:</p>
+
+                <div id="categories-list">
+                    <!-- Será preenchido via JavaScript -->
+                </div>
+            </div>
+
+            <!-- ABA 4: PRIORIDADES -->
+            <div id="priorities" class="tab-content">
+                <h2>⚡ Sistema de Prioridades</h2>
+
+                <div class="checkbox-group">
+                    <input type="checkbox" id="priority_enabled" checked>
+                    <label for="priority_enabled">Ativar sistema de prioridades</label>
+                </div>
+
+                <div class="checkbox-group">
+                    <input type="checkbox" id="priority_colors" checked>
+                    <label for="priority_colors">Usar cores do embed baseadas na prioridade</label>
+                </div>
+
+                <div id="priorities-list">
+                    <!-- Será preenchido via JavaScript -->
+                </div>
+            </div>
+
+            <!-- ABA 5: MENSAGENS -->
+            <div id="messages" class="tab-content">
+                <h2>💬 Mensagens Customizáveis</h2>
+
+                <div class="form-group">
+                    <label>👋 Mensagem de Boas-vindas (no ticket)</label>
+                    <textarea id="message_welcome">Olá! Obrigado por abrir um ticket. Nossa equipe responderá em breve.</textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>📝 Mensagem no Embed Principal</label>
+                    <textarea id="message_embed_main">Nossa equipe responderá o mais breve possível!</textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>🔒 Mensagem ao Fechar</label>
+                    <input type="text" id="message_closing" value="🔒 Fechando ticket em 3 segundos...">
+                </div>
+
+                <div class="form-group">
+                    <label>📋 Título do Modal</label>
+                    <input type="text" id="modal_title" value="📋 Informações do Ticket">
+                </div>
+            </div>
+
+            <!-- ABA 6: CAMPOS DO MODAL -->
+            <div id="fields" class="tab-content">
+                <h2>📝 Campos do Modal</h2>
+
+                <div class="checkbox-group">
+                    <input type="checkbox" id="field_subject_enabled" checked disabled>
+                    <label for="field_subject_enabled">📄 Assunto (sempre obrigatório)</label>
+                </div>
+
+                <div class="checkbox-group">
+                    <input type="checkbox" id="field_description_enabled" checked disabled>
+                    <label for="field_description_enabled">📝 Descrição (sempre obrigatório)</label>
+                </div>
+
+                <div class="checkbox-group">
+                    <input type="checkbox" id="field_language_enabled" checked>
+                    <label for="field_language_enabled">🌐 Idioma</label>
+                </div>
+
+                <div class="checkbox-group">
+                    <input type="checkbox" id="field_additional_enabled" checked>
+                    <label for="field_additional_enabled">ℹ️ Informações Adicionais</label>
+                </div>
+
+                <h3>Limites de Caracteres</h3>
+
+                <div class="form-group">
+                    <label>Assunto (máximo)</label>
+                    <input type="number" id="field_subject_max" value="100" min="50" max="200">
+                </div>
+
+                <div class="form-group">
+                    <label>Descrição (máximo)</label>
+                    <input type="number" id="field_description_max" value="1000" min="500" max="2000">
+                </div>
+
+                <div class="form-group">
+                    <label>Info Adicional (máximo)</label>
+                    <input type="number" id="field_additional_max" value="500" min="100" max="1000">
+                </div>
+            </div>
+
+            <!-- ABA 7: AVANÇADO -->
+            <div id="advanced" class="tab-content">
+                <h2>🔧 Configurações Avançadas</h2>
+
+                <div class="form-group">
+                    <label>🔢 Limite de tickets por usuário</label>
+                    <input type="number" id="ticket_limit_per_user" value="1" min="1" max="10">
+                </div>
+
+                <div class="form-group">
+                    <label>⏰ Cooldown entre tickets (minutos)</label>
+                    <input type="number" id="ticket_cooldown_minutes" value="0" min="0" max="60">
+                </div>
+
+                <div class="checkbox-group">
+                    <input type="checkbox" id="transcript_enabled" checked>
+                    <label for="transcript_enabled">📊 Ativar transcrições</label>
+                </div>
+
+                <div class="checkbox-group">
+                    <input type="checkbox" id="statistics_enabled" checked>
+                    <label for="statistics_enabled">📈 Ativar estatísticas</label>
+                </div>
+
+                <div class="checkbox-group">
+                    <input type="checkbox" id="rating_enabled">
+                    <label for="rating_enabled">⭐ Ativar avaliações (em desenvolvimento)</label>
+                </div>
+
+                <div class="checkbox-group">
+                    <input type="checkbox" id="mention_staff_on_create">
+                    <label for="mention_staff_on_create">🔔 Mencionar staff ao criar ticket</label>
+                </div>
+            </div>
+
+            <!-- ABA 8: LOGS -->
+            <div id="logs" class="tab-content">
+                <h2>📊 Configuração de Logs</h2>
+
+                <div class="checkbox-group">
+                    <input type="checkbox" id="log_enabled" checked>
+                    <label for="log_enabled">📢 Ativar sistema de logs</label>
+                </div>
+
+                <div class="checkbox-group">
+                    <input type="checkbox" id="log_include_stats" checked>
+                    <label for="log_include_stats">📊 Incluir estatísticas nos logs</label>
+                </div>
+
+                <div class="checkbox-group">
+                    <input type="checkbox" id="log_attach_transcript" checked>
+                    <label for="log_attach_transcript">📁 Anexar transcrição (.txt)</label>
+                </div>
+
+                <div class="checkbox-group">
+                    <input type="checkbox" id="log_show_participants" checked>
+                    <label for="log_show_participants">👥 Mostrar participantes</label>
+                </div>
+
+                <div class="checkbox-group">
+                    <input type="checkbox" id="log_show_duration" checked>
+                    <label for="log_show_duration">⏱️ Mostrar duração</label>
+                </div>
+            </div>
+
+            <button class="save-button" onclick="saveAllConfig()">💾 Salvar Todas as Configurações</button>
+        </div>
+    </div>
+
+    <script>
+        let currentGuildId = 'YOUR_GUILD_ID_HERE'; // Será definido via backend
+
+        // Trocar abas
+        function openTab(tabName) {
+            const tabs = document.querySelectorAll('.tab-content');
+            const buttons = document.querySelectorAll('.tab-button');
+            
+            tabs.forEach(tab => tab.classList.remove('active'));
+            buttons.forEach(btn => btn.classList.remove('active'));
+            
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        // Carregar dados iniciais
+        async function loadInitialData() {
+            // Carregar categorias e canais
+            // TODO: Implementar
+        }
+
+        // Salvar configurações
+        async function saveAllConfig() {
+            const config = {
+                // Básico
+                category_id: document.getElementById('category_id').value,
+                staff_role_ids: Array.from(document.getElementById('staff_roles').selectedOptions).map(o => o.value),
+                log_channel_id: document.getElementById('log_channel_id').value,
+                
+                // Painel
+                panel_title: document.getElementById('panel_title').value,
+                panel_description: document.getElementById('panel_description').value,
+                panel_color: document.getElementById('panel_color').value,
+                button_text: document.getElementById('button_text').value,
+                
+                // Prioridades
+                priority_enabled: document.getElementById('priority_enabled').checked,
+                priority_colors: document.getElementById('priority_colors').checked,
+                
+                // Mensagens
+                message_welcome: document.getElementById('message_welcome').value,
+                message_embed_main: document.getElementById('message_embed_main').value,
+                message_closing: document.getElementById('message_closing').value,
+                modal_title: document.getElementById('modal_title').value,
+                
+                // Campos
+                field_subject_enabled: true,
+                field_description_enabled: true,
+                field_language_enabled: document.getElementById('field_language_enabled').checked,
+                field_additional_enabled: document.getElementById('field_additional_enabled').checked,
+                field_subject_max: parseInt(document.getElementById('field_subject_max').value),
+                field_description_max: parseInt(document.getElementById('field_description_max').value),
+                field_additional_max: parseInt(document.getElementById('field_additional_max').value),
+                
+                // Avançado
+                ticket_limit_per_user: parseInt(document.getElementById('ticket_limit_per_user').value),
+                ticket_cooldown_minutes: parseInt(document.getElementById('ticket_cooldown_minutes').value),
+                transcript_enabled: document.getElementById('transcript_enabled').checked,
+                statistics_enabled: document.getElementById('statistics_enabled').checked,
+                rating_enabled: document.getElementById('rating_enabled').checked,
+                mention_staff_on_create: document.getElementById('mention_staff_on_create').checked,
+                
+                // Logs
+                log_enabled: document.getElementById('log_enabled').checked,
+                log_include_stats: document.getElementById('log_include_stats').checked,
+                log_attach_transcript: document.getElementById('log_attach_transcript').checked,
+                log_show_participants: document.getElementById('log_show_participants').checked,
+                log_show_duration: document.getElementById('log_show_duration').checked
+            };
+
+            try {
+                const response = await fetch('/api/tickets/config', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ guild_id: currentGuildId, config: config })
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    alert('✅ Configurações salvas com sucesso!');
+                } else {
+                    alert('❌ Erro: ' + data.message);
+                }
+            } catch (error) {
+                alert('❌ Erro de conexão: ' + error);
+            }
+        }
+
+        // Enviar painel
+        async function sendPanel() {
+            const channelId = document.getElementById('send_channel_id').value;
+            
+            if (!channelId) {
+                alert('❌ Selecione um canal primeiro!');
+                return;
+            }
+
+            const data = {
+                channel_id: channelId,
+                title: document.getElementById('panel_title').value,
+                description: document.getElementById('panel_description').value,
+                color: document.getElementById('panel_color').value
+            };
+
+            try {
+                const response = await fetch('/api/tickets/panel/send', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+                
+                if (result.success) {
+                    alert('✅ Painel enviado com sucesso!');
+                } else {
+                    alert('❌ Erro: ' + result.message);
+                }
+            } catch (error) {
+                alert('❌ Erro de conexão: ' + error);
+            }
+        }
+
+        // Carregar ao iniciar
+        window.addEventListener('load', loadInitialData);
+    </script>
+</body>
+</html>

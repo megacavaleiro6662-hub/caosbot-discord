@@ -152,8 +152,8 @@ def dashboard():
             <img src="https://i.ibb.co/Fq5Lgzs5/Chat-GPT-Image-7-de-out-de-2025-00-25-49.png" alt="CAOS Hub">
         </div>
         <ul class="sidebar-nav">
-            <li><a href="#" class="active" onclick="showPage('dashboard')">📊 Dashboard</a></li>
-            <li><a href="#" onclick="showPage('tickets')">🎫 Tickets</a></li>
+            <li><a href="/dashboard" class="active">📊 Dashboard</a></li>
+            <li><a href="/tickets">🎫 Tickets</a></li>
             <li><a href="#" onclick="showPage('stats')">📈 Estatísticas</a></li>
         </ul>
     </div>
@@ -498,6 +498,15 @@ def get_config_status():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+@app.route('/tickets')
+def tickets_page():
+    """Página de configuração avançada de tickets"""
+    try:
+        from flask import render_template
+        return render_template('tickets.html')
+    except Exception as e:
+        return f"<h1>Erro ao carregar página de tickets</h1><p>{str(e)}</p><a href='/dashboard'>Voltar</a>", 500
+
 @app.route('/api/config/toggle', methods=['POST'])
 def toggle_config_api():
     """Alterna estado de uma configuração"""
@@ -613,6 +622,43 @@ def get_discord_categories():
             })
         
         return jsonify({'success': True, 'categories': categories})
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+@app.route('/api/tickets/config', methods=['GET'])
+def get_ticket_config_route():
+    """Retorna configuração completa de tickets"""
+    try:
+        guild_id = request.args.get('guild_id')
+        if not guild_id:
+            return jsonify({'success': False, 'message': 'Guild ID não especificado'}), 400
+        
+        # Se não existe config, retorna padrão
+        if guild_id not in ticket_config:
+            config = get_default_ticket_config(guild_id)
+        else:
+            config = ticket_config[guild_id]
+        
+        return jsonify({'success': True, 'config': config})
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+@app.route('/api/tickets/config', methods=['POST'])
+def save_ticket_config_route():
+    """Salva configuração completa de tickets"""
+    try:
+        data = request.json
+        guild_id = data.get('guild_id')
+        config = data.get('config')
+        
+        if not guild_id or not config:
+            return jsonify({'success': False, 'message': 'Dados incompletos'}), 400
+        
+        # Salvar configuração
+        ticket_config[guild_id] = config
+        save_ticket_config()
+        
+        return jsonify({'success': True, 'message': 'Configuração salva com sucesso!'})
     except Exception as e:
         return jsonify({'success': False, 'message': str(e)}), 500
 
@@ -5191,8 +5237,89 @@ async def on_message_old(message):
 # SISTEMA DE TICKETS
 # ========================================
 
-# Configurações de ticket (salvas em arquivo JSON)
+# Configurações de ticket COMPLETAS (salvas em arquivo JSON)
 ticket_config = {}
+
+def get_default_ticket_config(guild_id):
+    """Retorna configuração padrão de tickets"""
+    return {
+        'enabled': False,
+        'category_id': None,
+        'staff_role_ids': [],
+        'log_channel_id': None,
+        
+        # Personalização do Painel
+        'panel_title': '🎫 SISTEMA DE TICKETS',
+        'panel_description': 'Clique no botão abaixo para abrir um ticket e falar com a equipe!',
+        'panel_color': '0x5865F2',
+        'button_text': 'Abrir Ticket',
+        
+        # Categorias Ativas (8 categorias)
+        'categories_enabled': {
+            'geral': True,
+            'compras': True,
+            'suporte': True,
+            'denuncia': True,
+            'parceria': True,
+            'financeiro': True,
+            'moderacao': True,
+            'bug': True
+        },
+        
+        # Customização de Categorias
+        'categories_custom': {
+            'geral': {'emoji': '📁', 'name': 'Geral', 'description': 'Assuntos gerais'},
+            'compras': {'emoji': '🛒', 'name': 'Compras', 'description': 'Dúvidas sobre compras'},
+            'suporte': {'emoji': '🔧', 'name': 'Suporte Técnico', 'description': 'Problemas técnicos'},
+            'denuncia': {'emoji': '🚨', 'name': 'Denúncia', 'description': 'Reportar usuário/conteúdo'},
+            'parceria': {'emoji': '🤝', 'name': 'Parceria', 'description': 'Proposta de parceria'},
+            'financeiro': {'emoji': '💰', 'name': 'Financeiro', 'description': 'Questões de pagamento'},
+            'moderacao': {'emoji': '🛡️', 'name': 'Moderação', 'description': 'Questões de moderação'},
+            'bug': {'emoji': '🐛', 'name': 'Bug', 'description': 'Reportar bugs'}
+        },
+        
+        # Sistema de Prioridades
+        'priority_enabled': True,
+        'priority_colors': True,  # Cores do embed baseadas na prioridade
+        'priority_custom': {
+            'baixa': {'emoji': '🟢', 'name': 'Baixa', 'description': 'Não é urgente', 'color': '0x00ff00'},
+            'media': {'emoji': '🟡', 'name': 'Média', 'description': 'Prioridade normal', 'color': '0xffff00'},
+            'alta': {'emoji': '🟠', 'name': 'Alta', 'description': 'Precisa de atenção', 'color': '0xff8800'},
+            'urgente': {'emoji': '🔴', 'name': 'Urgente', 'description': 'Muito urgente!', 'color': '0xff0000'}
+        },
+        
+        # Mensagens Customizáveis
+        'message_welcome': 'Olá! Obrigado por abrir um ticket. Nossa equipe responderá em breve.',
+        'message_embed_main': 'Nossa equipe responderá o mais breve possível!',
+        'message_closing': '🔒 Fechando ticket em 3 segundos...',
+        'modal_title': '📋 Informações do Ticket',
+        
+        # Campos do Modal
+        'field_subject_enabled': True,
+        'field_description_enabled': True,
+        'field_language_enabled': True,
+        'field_additional_enabled': True,
+        
+        # Limites de caracteres
+        'field_subject_max': 100,
+        'field_description_max': 1000,
+        'field_additional_max': 500,
+        
+        # Configurações Avançadas
+        'ticket_limit_per_user': 1,
+        'ticket_cooldown_minutes': 0,
+        'transcript_enabled': True,
+        'statistics_enabled': True,
+        'rating_enabled': False,
+        'mention_staff_on_create': False,
+        
+        # Logs
+        'log_enabled': True,
+        'log_include_stats': True,
+        'log_attach_transcript': True,
+        'log_show_participants': True,
+        'log_show_duration': True
+    }
 
 def load_ticket_config():
     """Carrega configurações de ticket"""
