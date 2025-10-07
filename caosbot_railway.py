@@ -2514,7 +2514,7 @@ def load_welcome_config():
     global welcome_config
     try:
         # TENTAR BUSCAR DO DASHBOARD PRIMEIRO (prioritário!)
-        dashboard_url = os.getenv('DASHBOARD_URL', 'https://ticket-dashboard.onrender.com')
+        dashboard_url = os.getenv('DASHBOARD_URL', 'https://caosbot-discord.onrender.com')
         print(f"🔄 Tentando conectar ao dashboard: {dashboard_url}/api/config/status")
         
         try:
