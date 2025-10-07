@@ -1318,6 +1318,7 @@ class TicketConfigView(discord.ui.View):
         self.selected_category_emoji = None
         self.selected_priority = None
         self.selected_priority_emoji = None
+        self.original_message = None  # Referência à mensagem original
         
         # Dropdown 1: Categoria
         category_select = discord.ui.Select(
@@ -1383,12 +1384,13 @@ class TicketConfigView(discord.ui.View):
         # Habilitar botão se prioridade também foi selecionada
         if self.selected_priority:
             self.continue_button.disabled = False
-            # Responder e editar a mensagem para manter dropdowns
-            await interaction.response.defer()
-            await interaction.message.edit(view=self)
-            await interaction.followup.send(f"✅ Categoria selecionada: {self.selected_category_emoji} **{self.selected_category}**", ephemeral=True)
-        else:
-            await interaction.response.send_message(f"✅ Categoria selecionada: {self.selected_category_emoji} **{self.selected_category}**", ephemeral=True)
+        
+        # Responder ao usuário
+        await interaction.response.send_message(f"✅ Categoria selecionada: {self.selected_category_emoji} **{self.selected_category}**", ephemeral=True)
+        
+        # Atualizar mensagem original se ambos foram selecionados
+        if self.selected_priority and self.original_message:
+            await self.original_message.edit(view=self)
     
     async def priority_callback(self, interaction: discord.Interaction):
         priority_map = {
@@ -1404,12 +1406,13 @@ class TicketConfigView(discord.ui.View):
         # Habilitar botão se categoria também foi selecionada
         if self.selected_category:
             self.continue_button.disabled = False
-            # Responder e editar a mensagem para manter dropdowns
-            await interaction.response.defer()
-            await interaction.message.edit(view=self)
-            await interaction.followup.send(f"✅ Prioridade selecionada: {self.selected_priority_emoji} **{self.selected_priority}**", ephemeral=True)
-        else:
-            await interaction.response.send_message(f"✅ Prioridade selecionada: {self.selected_priority_emoji} **{self.selected_priority}**", ephemeral=True)
+        
+        # Responder ao usuário
+        await interaction.response.send_message(f"✅ Prioridade selecionada: {self.selected_priority_emoji} **{self.selected_priority}**", ephemeral=True)
+        
+        # Atualizar mensagem original se ambos foram selecionados
+        if self.selected_category and self.original_message:
+            await self.original_message.edit(view=self)
     
     async def continue_callback(self, interaction: discord.Interaction):
         # Abrir modal com 4 campos
@@ -1447,6 +1450,9 @@ async def send_ticket_config_message(interaction):
     
     view = TicketConfigView()
     await interaction.response.send_message(embed=embed, view=view, ephemeral=True)
+    
+    # Armazenar referência à mensagem original na view
+    view.original_message = await interaction.original_response()
 
 # View de gerenciamento do ticket
 class TicketManageView(discord.ui.View):
