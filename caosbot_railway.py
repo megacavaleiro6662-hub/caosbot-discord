@@ -274,10 +274,10 @@ def dashboard():
                         
                         <div class="form-group">
                             <label class="form-label">👥 4. Cargos da Staff (quem vê tickets)</label>
-                            <select id="ticket-staff-roles" class="form-select" multiple style="height: 120px;">
+                            <select id="ticket-staff-roles" class="form-select" multiple size="6" style="height: auto !important; min-height: 140px !important; overflow-y: auto !important;">
                                 <option value="">Carregando cargos...</option>
                             </select>
-                            <small style="color: #9ca3af; margin-top: 5px; display: block;">Segure Ctrl/Cmd para selecionar múltiplos cargos</small>
+                            <small style="color: #9ca3af; margin-top: 5px; display: block;">✅ Clique em múltiplos cargos (Ctrl/Cmd não é necessário)</small>
                         </div>
                         
                         <hr style="border: 1px solid rgba(255,255,255,0.1); margin: 20px 0;">
