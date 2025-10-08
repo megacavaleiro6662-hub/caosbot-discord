@@ -1326,7 +1326,10 @@ class TicketModalComplete(discord.ui.Modal):
         self.add_item(self.info_adicional)
     
     async def on_submit(self, interaction: discord.Interaction):
-        # Criar ticket e retornar o canal criado
+        # RESPONDER IMEDIATAMENTE (evita "algo deu errado")
+        await interaction.response.defer()
+        
+        # DEPOIS criar ticket (pode demorar)
         ticket_channel = await create_ticket_channel_complete(
             interaction,
             self.category_name,
@@ -1965,15 +1968,8 @@ async def create_ticket_channel_complete(interaction, category_name, category_em
         embed.add_field(name="ℹ️ Informações Adicionais", value=f"```\n{info_adicional}\n```", inline=False)
         embed.set_footer(text=f"Sistema de Tickets • Caos Hub • Hoje às {discord.utils.utcnow().strftime('%I:%M %p')}")
         
-        # Enviar
+        # Enviar mensagem no canal do ticket
         await ticket_channel.send(f"{member.mention}", embed=embed, view=TicketManageView(ticket_channel))
-        
-        # NÃO responder ao modal (sem mensagem ephemeral)
-        # O embed de sucesso (que substitui os dropdowns) já foi editado no on_submit do modal
-        try:
-            await interaction.response.defer()
-        except:
-            pass
         
         # LOG
         log_channel = discord.utils.get(guild.text_channels, name='ticket-logs')
