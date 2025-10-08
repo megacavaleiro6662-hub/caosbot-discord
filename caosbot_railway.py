@@ -104,14 +104,9 @@ def dashboard():
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         /* Fonte customizada - Ghoulish Fright */
-        @font-face {{
-            font-family: 'Ghoulish Fright';
-            src: url('https://www.fontspace.com/json/font/download/ghoulish-fright-aoe/MzQyMDA=/GhoulishFrightAOE.ttf') format('truetype');
-            font-weight: normal;
-            font-style: normal;
-        }}
+        @import url('https://fonts.cdnfonts.com/css/ghoulish-fright-aoe');
         
-        * {{ margin: 0; padding: 0; box-sizing: border-box; font-family: 'Ghoulish Fright', 'Inter', 'Roboto', sans-serif; }}
+        * {{ margin: 0; padding: 0; box-sizing: border-box; font-family: 'Ghoulish Fright AOE', 'Creepster', 'Metal Mania', sans-serif; }}
         
         /* Animação de fogo no fundo */
         @keyframes fireGlow {{
