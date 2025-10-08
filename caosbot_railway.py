@@ -1329,9 +1329,6 @@ class TicketModalComplete(discord.ui.Modal):
         # RESPONDER IMEDIATAMENTE (evita "algo deu errado")
         await interaction.response.defer()
         
-        # REMOVER do set (ticket sendo criado)
-        active_ticket_dropdowns.discard(interaction.user.id)
-        
         # DEPOIS criar ticket (pode demorar)
         ticket_channel = await create_ticket_channel_complete(
             interaction,
@@ -1405,16 +1402,25 @@ class TicketPanelView(discord.ui.View):
                 )
                 return
             
-            # VERIFICAR SE JÁ TEM DROPDOWNS ABERTOS (anti-spam)
-            if interaction.user.id in active_ticket_dropdowns:
-                await interaction.response.send_message(
-                    "❌ **Você já tem um painel de configuração aberto!**\n\n*Termine de configurar seu ticket atual ou aguarde o painel expirar (5 minutos).*",
-                    ephemeral=True
-                )
-                return
+            # VERIFICAR COOLDOWN (1 minuto)
+            import time
+            current_time = time.time()
+            user_id = interaction.user.id
             
-            # Adicionar ao set (marcar como "em configuração")
-            active_ticket_dropdowns.add(interaction.user.id)
+            if user_id in ticket_panel_cooldowns:
+                elapsed = current_time - ticket_panel_cooldowns[user_id]
+                cooldown_time = 60  # 1 minuto
+                
+                if elapsed < cooldown_time:
+                    remaining = int(cooldown_time - elapsed)
+                    await interaction.response.send_message(
+                        f"⏳ **Aguarde {remaining} segundo(s) para abrir outro painel!**\n\n*Cooldown para evitar spam.*",
+                        ephemeral=True
+                    )
+                    return
+            
+            # Adicionar timestamp (marcar cooldown)
+            ticket_panel_cooldowns[user_id] = current_time
             
             # Enviar configuração ephemeral (só o usuário vê)
             await send_ticket_config_message(interaction)
@@ -1432,9 +1438,8 @@ class TicketPanelView(discord.ui.View):
 
 # View de configuração - Categoria + Prioridade
 class TicketConfigView(discord.ui.View):
-    def __init__(self, user_id):
+    def __init__(self):
         super().__init__(timeout=300)  # 5 minutos
-        self.user_id = user_id
         self.selected_category = None
         self.selected_category_emoji = None
         self.selected_priority = None
@@ -1597,10 +1602,6 @@ class TicketConfigView(discord.ui.View):
             self.original_message  # Passar a mensagem original
         )
         await interaction.response.send_modal(modal)
-    
-    async def on_timeout(self):
-        """Remove do set quando a view expirar (5 minutos)"""
-        active_ticket_dropdowns.discard(self.user_id)
 
 async def send_ticket_config_message(interaction):
     """Envia mensagem de configuração ephemeral"""
@@ -1626,7 +1627,7 @@ async def send_ticket_config_message(interaction):
     )
     embed.set_footer(text="Sistema de Tickets • Caos Hub")
     
-    view = TicketConfigView(interaction.user.id)  # Passar user_id
+    view = TicketConfigView()
     await interaction.response.send_message(embed=embed, view=view, ephemeral=True)
     
     # Armazenar referência à mensagem original na view
@@ -5753,8 +5754,8 @@ async def on_message_old(message):
 # Configurações de ticket COMPLETAS (salvas em arquivo JSON)
 ticket_config = {}
 
-# Rastrear usuários com dropdowns abertos (anti-spam)
-active_ticket_dropdowns = set()  # Set de user_ids
+# Rastrear cooldown de criação de painel (anti-spam)
+ticket_panel_cooldowns = {}  # {user_id: timestamp}
 
 def get_default_ticket_config(guild_id):
     """Retorna configuração padrão de tickets"""
