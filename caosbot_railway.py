@@ -125,28 +125,13 @@ def dashboard():
         
         body {{ 
             font-family: 'Inter', 'Roboto', sans-serif; 
-            background: 
-                url('https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExeWhhbW5mdGRtZnhwZGt0cTlpd2R3aDNoNzBoZm1kZWFvMmJ4NGNsZCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/xWMPYx55WNhX136T0V/giphy.gif') center/cover fixed,
-                linear-gradient(135deg, #000000 0%, #1a0000 25%, #330000 50%, #1a0000 75%, #000000 100%);
-            background-size: cover, 400% 400%;
-            background-blend-mode: screen;
+            background: linear-gradient(135deg, #000000 0%, #1a0000 25%, #330000 50%, #1a0000 75%, #000000 100%);
+            background-size: 400% 400%;
             animation: fireGlow 20s ease infinite;
             min-height: 100vh; 
             color: #fff; 
             overflow: hidden;
             position: relative;
-        }}
-        
-        body::after {{
-            content: '';
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.97);
-            z-index: 0;
-            pointer-events: none;
         }}
         
         /* Partículas de fogo animadas */
@@ -207,6 +192,34 @@ def dashboard():
             box-shadow: 0 0 10px #ff6600, 0 0 20px #ff3300;
         }}
         
+        /* Partículas vermelhas */
+        .particle:nth-child(3n) {{
+            background: radial-gradient(circle, #ff3300, #cc0000, transparent);
+            box-shadow: 0 0 10px #ff3300, 0 0 20px #ff0000;
+        }}
+        
+        /* Partículas amarelas */
+        .particle:nth-child(5n) {{
+            background: radial-gradient(circle, #ffff00, #ffcc00, transparent);
+            box-shadow: 0 0 15px #ffcc00, 0 0 25px #ffaa00;
+        }}
+        
+        /* Estrelas (forma diferente) */
+        .particle:nth-child(7n) {{
+            width: 8px;
+            height: 8px;
+            background: linear-gradient(45deg, transparent 40%, #fff 40%, #fff 60%, transparent 60%),
+                        linear-gradient(-45deg, transparent 40%, #fff 40%, #fff 60%, transparent 60%);
+            border-radius: 0;
+            box-shadow: 0 0 15px #fff, 0 0 30px #ffcc00;
+        }}
+        
+        /* Partículas maiores */
+        .particle:nth-child(11n) {{
+            width: 8px;
+            height: 8px;
+        }}
+        
         @keyframes rise {{
             0% {{ transform: translateY(0) translateX(0) scale(0.5); opacity: 0; }}
             10% {{ opacity: 0.8; }}
@@ -235,6 +248,36 @@ def dashboard():
         .particle:nth-child(18) {{ left: 95%; animation-delay: 3.8s; animation-duration: 13s; --drift: -45px; }}
         .particle:nth-child(19) {{ left: 5%; animation-delay: 5.2s; animation-duration: 15s; --drift: 25px; }}
         .particle:nth-child(20) {{ left: 12%; animation-delay: 0.8s; animation-duration: 17s; --drift: -30px; }}
+        .particle:nth-child(21) {{ left: 18%; animation-delay: 7s; animation-duration: 14s; --drift: 35px; }}
+        .particle:nth-child(22) {{ left: 28%; animation-delay: 1.8s; animation-duration: 16s; --drift: -25px; }}
+        .particle:nth-child(23) {{ left: 38%; animation-delay: 4.8s; animation-duration: 12s; --drift: 40px; }}
+        .particle:nth-child(24) {{ left: 48%; animation-delay: 2.2s; animation-duration: 15s; --drift: -35px; }}
+        .particle:nth-child(25) {{ left: 58%; animation-delay: 6.2s; animation-duration: 13s; --drift: 30px; }}
+        .particle:nth-child(26) {{ left: 68%; animation-delay: 3.2s; animation-duration: 17s; --drift: -40px; }}
+        .particle:nth-child(27) {{ left: 78%; animation-delay: 5.8s; animation-duration: 11s; --drift: 45px; }}
+        .particle:nth-child(28) {{ left: 88%; animation-delay: 0.3s; animation-duration: 14s; --drift: -20px; }}
+        .particle:nth-child(29) {{ left: 8%; animation-delay: 4.3s; animation-duration: 16s; --drift: 35px; }}
+        .particle:nth-child(30) {{ left: 22%; animation-delay: 7.3s; animation-duration: 13s; --drift: -30px; }}
+        .particle:nth-child(31) {{ left: 32%; animation-delay: 2.7s; animation-duration: 15s; --drift: 40px; }}
+        .particle:nth-child(32) {{ left: 42%; animation-delay: 5.3s; animation-duration: 12s; --drift: -25px; }}
+        .particle:nth-child(33) {{ left: 52%; animation-delay: 1.3s; animation-duration: 17s; --drift: 30px; }}
+        .particle:nth-child(34) {{ left: 62%; animation-delay: 6.7s; animation-duration: 14s; --drift: -35px; }}
+        .particle:nth-child(35) {{ left: 72%; animation-delay: 3.7s; animation-duration: 11s; --drift: 45px; }}
+        .particle:nth-child(36) {{ left: 82%; animation-delay: 0.7s; animation-duration: 16s; --drift: -40px; }}
+        .particle:nth-child(37) {{ left: 92%; animation-delay: 4.7s; animation-duration: 13s; --drift: 35px; }}
+        .particle:nth-child(38) {{ left: 6%; animation-delay: 2.3s; animation-duration: 15s; --drift: -30px; }}
+        .particle:nth-child(39) {{ left: 16%; animation-delay: 5.7s; animation-duration: 12s; --drift: 40px; }}
+        .particle:nth-child(40) {{ left: 26%; animation-delay: 1.7s; animation-duration: 17s; --drift: -25px; }}
+        .particle:nth-child(41) {{ left: 36%; animation-delay: 6.3s; animation-duration: 14s; --drift: 35px; }}
+        .particle:nth-child(42) {{ left: 46%; animation-delay: 3.3s; animation-duration: 11s; --drift: -40px; }}
+        .particle:nth-child(43) {{ left: 56%; animation-delay: 7.7s; animation-duration: 16s; --drift: 45px; }}
+        .particle:nth-child(44) {{ left: 66%; animation-delay: 0.4s; animation-duration: 13s; --drift: -35px; }}
+        .particle:nth-child(45) {{ left: 76%; animation-delay: 4.4s; animation-duration: 15s; --drift: 30px; }}
+        .particle:nth-child(46) {{ left: 86%; animation-delay: 2.4s; animation-duration: 12s; --drift: -25px; }}
+        .particle:nth-child(47) {{ left: 96%; animation-delay: 5.4s; animation-duration: 17s; --drift: 40px; }}
+        .particle:nth-child(48) {{ left: 11%; animation-delay: 1.4s; animation-duration: 14s; --drift: -30px; }}
+        .particle:nth-child(49) {{ left: 21%; animation-delay: 6.4s; animation-duration: 11s; --drift: 35px; }}
+        .particle:nth-child(50) {{ left: 31%; animation-delay: 3.4s; animation-duration: 16s; --drift: -45px; }}
         .sidebar {{ 
             position: fixed; 
             left: 0; 
@@ -316,8 +359,38 @@ def dashboard():
     </style>
 </head>
 <body>
-    <!-- Partículas de fogo animadas -->
+    <!-- Partículas de fogo animadas (50 partículas variadas) -->
     <div class="fire-particles">
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
         <div class="particle"></div>
         <div class="particle"></div>
         <div class="particle"></div>
