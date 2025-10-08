@@ -223,7 +223,7 @@ def login_page():
 
 @app.route('/callback')
 def callback():
-    """Callback do Discord OAuth2"""
+    """Callback do Discord OAuth2 - VERIFICAÇÃO PERFEITA DE CARGOS"""
     code = request.args.get('code')
     if not code:
         return redirect(url_for('login_page'))
@@ -246,39 +246,74 @@ def callback():
         # Pegar informações do usuário
         headers = {'Authorization': f'Bearer {access_token}'}
         user_data = requests.get('https://discord.com/api/users/@me', headers=headers).json()
-        guilds_data = requests.get('https://discord.com/api/users/@me/guilds', headers=headers).json()
         
-        # Verificar se usuário tem permissão de administrador ou gerenciar servidor
-        is_admin = False
+        print(f"🔐 [LOGIN] Usuário tentando login: {user_data.get('username')} (ID: {user_data.get('id')})")
         
-        # Verifica permissões: ADMINISTRATOR (0x8) ou MANAGE_GUILD (0x20)
-        for guild in guilds_data:
-            permissions = int(guild.get('permissions', 0))
-            if (permissions & 0x8) or (permissions & 0x20):  # ADMINISTRATOR ou MANAGE_GUILD
-                is_admin = True
-                break
+        # VERIFICAÇÃO PERFEITA: Usar Bot Token para pegar cargos do servidor CAOS Hub
+        bot_token = os.getenv('DISCORD_TOKEN')
+        if not bot_token:
+            print("❌ [LOGIN] Bot Token não configurado!")
+            raise Exception("Bot Token não configurado")
         
-        # DEBUG: Log para ver o que está acontecendo
-        print(f"🔐 [LOGIN] Usuário: {user_data.get('username')}")
-        print(f"🔐 [LOGIN] Servidores: {len(guilds_data)}")
-        print(f"🔐 [LOGIN] Admin: {is_admin}")
-        for guild in guilds_data:
-            perms = int(guild.get('permissions', 0))
-            print(f"   - {guild.get('name')}: Permissões = {perms} (Admin: {bool(perms & 0x8)}, Manage: {bool(perms & 0x20)})")
+        # Buscar cargos do usuário no servidor CAOS Hub usando BOT TOKEN (sempre atualizado)
+        bot_headers = {'Authorization': f'Bot {bot_token}'}
+        member_url = f'https://discord.com/api/guilds/{SERVER_ID}/members/{user_data["id"]}'
         
-        if not is_admin:
+        member_response = requests.get(member_url, headers=bot_headers)
+        
+        if member_response.status_code == 404:
+            print(f"❌ [LOGIN] Usuário não está no servidor CAOS Hub")
             return """
             <html>
             <head><title>Acesso Negado</title><link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&display=swap" rel="stylesheet"></head>
             <body style="background:#000;color:#ff3300;text-align:center;padding-top:100px;font-family:Orbitron,sans-serif;">
                 <h1 style="font-size:48px;text-shadow:0 0 20px #ff0000;">❌ ACESSO NEGADO</h1>
-                <p style="color:#ff6666;font-size:18px;">Você não possui permissões de administrador.</p>
+                <p style="color:#ff6666;font-size:18px;">Você não é membro do servidor CAOS Hub.</p>
                 <a href="/login" style="color:#ff6600;font-size:16px;text-decoration:none;">← Voltar ao Login</a>
             </body>
             </html>
             """
         
-        # Salvar na sessão
+        member_response.raise_for_status()
+        member_data = member_response.json()
+        user_roles = member_data.get('roles', [])
+        
+        print(f"🔐 [LOGIN] Cargos do usuário: {user_roles}")
+        print(f"🔐 [LOGIN] Cargos permitidos: {ALLOWED_ROLE_IDS}")
+        
+        # Verificar se tem algum cargo permitido (Founder, Sub-Dono ou Administrador)
+        has_permission = False
+        role_encontrado = None
+        
+        for role_id in user_roles:
+            if role_id in ALLOWED_ROLE_IDS:
+                has_permission = True
+                # Descobrir qual cargo
+                if role_id == '1365636960651051069':
+                    role_encontrado = 'Founder'
+                elif role_id == '1365636456386789437':
+                    role_encontrado = 'Sub-Dono'
+                elif role_id == '1365633918593794079':
+                    role_encontrado = 'Administrador'
+                break
+        
+        if not has_permission:
+            print(f"❌ [LOGIN] Usuário NÃO tem cargo permitido (Founder/Sub-Dono/Administrador)")
+            return """
+            <html>
+            <head><title>Acesso Negado</title><link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&display=swap" rel="stylesheet"></head>
+            <body style="background:#000;color:#ff3300;text-align:center;padding-top:100px;font-family:Orbitron,sans-serif;">
+                <h1 style="font-size:48px;text-shadow:0 0 20px #ff0000;">❌ ACESSO NEGADO</h1>
+                <p style="color:#ff6666;font-size:18px;">Você precisa ter cargo de <strong>Founder</strong>, <strong>Sub-Dono</strong> ou <strong>Administrador</strong>.</p>
+                <a href="/login" style="color:#ff6600;font-size:16px;text-decoration:none;">← Voltar ao Login</a>
+            </body>
+            </html>
+            """
+        
+        print(f"✅ [LOGIN] Usuário autorizado com cargo: {role_encontrado}")
+        
+        # Salvar na sessão (com access_token para verificação contínua)
+        session['access_token'] = access_token
         session['user'] = {
             'id': user_data['id'],
             'username': user_data['username'],
@@ -288,6 +323,7 @@ def callback():
         return redirect(url_for('dashboard'))
     
     except Exception as e:
+        print(f"❌ [LOGIN] Erro: {e}")
         return f"<html><body style='background:#000;color:#ff3300;text-align:center;padding:50px;font-family:Orbitron;'><h1>❌ Erro no login</h1><p>{str(e)}</p><a href='/login' style='color:#ff6600;'>← Voltar</a></body></html>", 500
 
 @app.route('/logout')
