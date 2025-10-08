@@ -167,6 +167,59 @@ def dashboard():
             pointer-events: none;
             z-index: 0;
         }}
+        
+        /* Camada extra de partículas */
+        .fire-particles {{
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            pointer-events: none;
+            z-index: 0;
+        }}
+        
+        .particle {{
+            position: absolute;
+            bottom: -50px;
+            width: 5px;
+            height: 5px;
+            background: radial-gradient(circle, #ffcc00, #ff6600, transparent);
+            border-radius: 50%;
+            opacity: 0;
+            animation: rise 15s linear infinite;
+            box-shadow: 0 0 10px #ff6600, 0 0 20px #ff3300;
+        }}
+        
+        @keyframes rise {{
+            0% {{ transform: translateY(0) translateX(0) scale(0.5); opacity: 0; }}
+            10% {{ opacity: 0.8; }}
+            50% {{ opacity: 1; }}
+            90% {{ opacity: 0.5; }}
+            100% {{ transform: translateY(-100vh) translateX(var(--drift)) scale(1.5); opacity: 0; }}
+        }}
+        
+        .particle:nth-child(1) {{ left: 10%; animation-delay: 0s; animation-duration: 12s; --drift: 30px; }}
+        .particle:nth-child(2) {{ left: 20%; animation-delay: 2s; animation-duration: 15s; --drift: -20px; }}
+        .particle:nth-child(3) {{ left: 30%; animation-delay: 4s; animation-duration: 13s; --drift: 40px; }}
+        .particle:nth-child(4) {{ left: 40%; animation-delay: 1s; animation-duration: 14s; --drift: -30px; }}
+        .particle:nth-child(5) {{ left: 50%; animation-delay: 3s; animation-duration: 16s; --drift: 25px; }}
+        .particle:nth-child(6) {{ left: 60%; animation-delay: 5s; animation-duration: 12s; --drift: -40px; }}
+        .particle:nth-child(7) {{ left: 70%; animation-delay: 2.5s; animation-duration: 15s; --drift: 35px; }}
+        .particle:nth-child(8) {{ left: 80%; animation-delay: 4.5s; animation-duration: 13s; --drift: -25px; }}
+        .particle:nth-child(9) {{ left: 90%; animation-delay: 1.5s; animation-duration: 14s; --drift: 20px; }}
+        .particle:nth-child(10) {{ left: 15%; animation-delay: 6s; animation-duration: 17s; --drift: -35px; }}
+        .particle:nth-child(11) {{ left: 25%; animation-delay: 3.5s; animation-duration: 11s; --drift: 45px; }}
+        .particle:nth-child(12) {{ left: 35%; animation-delay: 5.5s; animation-duration: 16s; --drift: -15px; }}
+        .particle:nth-child(13) {{ left: 45%; animation-delay: 0.5s; animation-duration: 13s; --drift: 30px; }}
+        .particle:nth-child(14) {{ left: 55%; animation-delay: 4.2s; animation-duration: 15s; --drift: -40px; }}
+        .particle:nth-child(15) {{ left: 65%; animation-delay: 2.8s; animation-duration: 12s; --drift: 50px; }}
+        .particle:nth-child(16) {{ left: 75%; animation-delay: 6.5s; animation-duration: 14s; --drift: -20px; }}
+        .particle:nth-child(17) {{ left: 85%; animation-delay: 1.2s; animation-duration: 16s; --drift: 35px; }}
+        .particle:nth-child(18) {{ left: 95%; animation-delay: 3.8s; animation-duration: 13s; --drift: -45px; }}
+        .particle:nth-child(19) {{ left: 5%; animation-delay: 5.2s; animation-duration: 15s; --drift: 25px; }}
+        .particle:nth-child(20) {{ left: 12%; animation-delay: 0.8s; animation-duration: 17s; --drift: -30px; }}
         .sidebar {{ position: fixed; left: 0; top: 0; width: 280px; height: 100vh; background: linear-gradient(180deg, #000000 0%, #1a0000 100%); backdrop-filter: blur(10px); border-right: 3px solid #ff3300; padding: 32px 24px; z-index: 10; box-shadow: 5px 0 30px rgba(255, 50, 0, 0.3); }}
         .sidebar-logo {{ display: flex; align-items: center; justify-content: center; margin-bottom: 40px; }}
         .sidebar-logo img {{ width: 180px; height: auto; filter: drop-shadow(0 0 20px rgba(255, 100, 0, 0.8)); }}
@@ -214,6 +267,30 @@ def dashboard():
     </style>
 </head>
 <body>
+    <!-- Partículas de fogo animadas -->
+    <div class="fire-particles">
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+    </div>
+    
     <!-- Sidebar -->
     <div class="sidebar">
         <div class="sidebar-logo">
