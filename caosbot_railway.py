@@ -700,11 +700,24 @@ def dashboard():
             
             // Validar campos
             const channelId = document.getElementById('ticket-channel').value;
+            const categoryId = document.getElementById('ticket-category').value;
+            const logChannelId = document.getElementById('ticket-log-channel').value;
             const title = document.getElementById('ticket-title').value;
             const description = document.getElementById('ticket-description').value;
             
+            // Coletar MÚLTIPLOS cargos de staff selecionados
+            const staffSelect = document.getElementById('ticket-staff-roles');
+            const staffRoles = Array.from(staffSelect.selectedOptions).map(opt => opt.value);
+            
             if (!channelId) {{
                 showToast('❌ Selecione um canal para enviar o painel!', 'error');
+                btn.disabled = false;
+                btn.textContent = originalText;
+                return;
+            }}
+            
+            if (staffRoles.length === 0) {{
+                showToast('❌ Selecione pelo menos 1 cargo de staff!', 'error');
                 btn.disabled = false;
                 btn.textContent = originalText;
                 return;
@@ -720,6 +733,9 @@ def dashboard():
                     headers: {{ 'Content-Type': 'application/json' }},
                     body: JSON.stringify({{
                         channel_id: channelId,
+                        category_id: categoryId,
+                        log_channel_id: logChannelId,
+                        staff_roles: staffRoles,  // Array de IDs
                         title: title,
                         description: description,
                         color: '0x' + hexColor
@@ -728,7 +744,7 @@ def dashboard():
                 
                 const data = await response.json();
                 if (data.success) {{
-                    showToast('🎉 Painel enviado com sucesso!');
+                    showToast('🎉 Painel enviado e configurações salvas com sucesso!');
                 }} else {{
                     showToast(data.message || 'Erro ao enviar painel', 'error');
                 }}
@@ -943,12 +959,27 @@ def send_ticket_panel():
     try:
         data = request.get_json()
         channel_id = data.get('channel_id')
+        category_id = data.get('category_id')
+        log_channel_id = data.get('log_channel_id')
+        staff_roles = data.get('staff_roles', [])  # Array de IDs de staff
         title = data.get('title', '🎫 SISTEMA DE TICKETS')
         description = data.get('description', 'Selecione uma categoria abaixo para abrir um ticket!')
         color = data.get('color', '0x5865F2')
         
         if not channel_id:
             return jsonify({'success': False, 'message': 'Canal não especificado'}), 400
+        
+        # SALVAR CONFIGURAÇÃO (category_id, log_channel_id, staff_roles)
+        if bot.guilds:
+            guild_id = str(bot.guilds[0].id)
+            ticket_config[guild_id] = {
+                'category_id': category_id,
+                'log_channel_id': log_channel_id,
+                'staff_roles': staff_roles,
+                'max_tickets_per_user': ticket_config.get(guild_id, {}).get('max_tickets_per_user', 1)
+            }
+            # Salvar no arquivo
+            save_ticket_config()
         
         # Agendar envio do painel
         async def send_panel():
