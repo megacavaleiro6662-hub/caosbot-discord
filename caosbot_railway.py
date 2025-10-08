@@ -101,12 +101,9 @@ def dashboard():
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CAOS Hub - Dashboard</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <style>
-        /* Fonte customizada - Ghoulish Fright */
-        @import url('https://fonts.cdnfonts.com/css/ghoulish-fright-aoe');
-        
-        * {{ margin: 0; padding: 0; box-sizing: border-box; font-family: 'Ghoulish Fright AOE', 'Creepster', 'Metal Mania', sans-serif; }}
+        * {{ margin: 0; padding: 0; box-sizing: border-box; font-family: 'Orbitron', 'Rajdhani', sans-serif; }}
         
         /* Animação de fogo no fundo */
         @keyframes fireGlow {{
