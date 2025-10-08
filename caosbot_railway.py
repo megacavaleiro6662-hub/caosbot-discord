@@ -274,10 +274,10 @@ def dashboard():
                         
                         <div class="form-group">
                             <label class="form-label">👥 4. Cargos da Staff (quem vê tickets)</label>
-                            <select id="ticket-staff-roles" class="form-select" multiple size="6" style="height: auto !important; min-height: 140px !important; overflow-y: auto !important;">
-                                <option value="">Carregando cargos...</option>
-                            </select>
-                            <small style="color: #9ca3af; margin-top: 5px; display: block;">✅ Clique em múltiplos cargos (Ctrl/Cmd não é necessário)</small>
+                            <div id="ticket-staff-roles" style="display: grid; gap: 8px; padding: 12px; background: rgba(255,255,255,0.05); border-radius: 8px; max-height: 200px; overflow-y: auto;">
+                                <div style="color: #9ca3af;">Carregando cargos...</div>
+                            </div>
+                            <small style="color: #9ca3af; margin-top: 5px; display: block;">✅ Selecione os cargos que poderão ver os tickets</small>
                         </div>
                         
                         <hr style="border: 1px solid rgba(255,255,255,0.1); margin: 20px 0;">
@@ -620,16 +620,29 @@ def dashboard():
             try {{
                 const response = await fetch('/api/discord/roles');
                 const data = await response.json();
-                const select = document.getElementById('ticket-staff-roles');
+                const container = document.getElementById('ticket-staff-roles');
                 
-                select.innerHTML = '';
+                container.innerHTML = '';
                 
                 if (data.success && data.roles) {{
                     data.roles.forEach(role => {{
-                        const opt = document.createElement('option');
-                        opt.value = role.id;
-                        opt.textContent = role.name;
-                        select.appendChild(opt);
+                        const label = document.createElement('label');
+                        label.style.cssText = 'display: flex; align-items: center; gap: 8px; padding: 8px; background: rgba(255,255,255,0.05); border-radius: 6px; cursor: pointer; transition: all 0.2s;';
+                        label.onmouseover = () => label.style.background = 'rgba(255,255,255,0.1)';
+                        label.onmouseout = () => label.style.background = 'rgba(255,255,255,0.05)';
+                        
+                        const checkbox = document.createElement('input');
+                        checkbox.type = 'checkbox';
+                        checkbox.value = role.id;
+                        checkbox.className = 'staff-role-checkbox';
+                        checkbox.checked = true; // Todos selecionados por padrão
+                        
+                        const text = document.createElement('span');
+                        text.textContent = role.name;
+                        
+                        label.appendChild(checkbox);
+                        label.appendChild(text);
+                        container.appendChild(label);
                     }});
                 }}
             }} catch (error) {{
@@ -705,9 +718,9 @@ def dashboard():
             const title = document.getElementById('ticket-title').value;
             const description = document.getElementById('ticket-description').value;
             
-            // Coletar MÚLTIPLOS cargos de staff selecionados
-            const staffSelect = document.getElementById('ticket-staff-roles');
-            const staffRoles = Array.from(staffSelect.selectedOptions).map(opt => opt.value);
+            // Coletar CHECKBOXES marcados (cargos de staff)
+            const staffCheckboxes = document.querySelectorAll('.staff-role-checkbox:checked');
+            const staffRoles = Array.from(staffCheckboxes).map(cb => cb.value);
             
             if (!channelId) {{
                 showToast('❌ Selecione um canal para enviar o painel!', 'error');
@@ -1908,18 +1921,34 @@ async def create_ticket_channel_complete(interaction, category_name, category_em
             topic=f'Ticket de {member.id} | {category_name} #{ticket_number}'
         )
         
-        # Permissões: BLOQUEAR @everyone
+        # ===== PERMISSÕES CORRETAS =====
+        # 1. BLOQUEAR @everyone
         await ticket_channel.set_permissions(guild.default_role, view_channel=False)
         
-        # PERMITIR: Usuário que criou
+        # 2. PERMITIR: Usuário que criou
         await ticket_channel.set_permissions(member, view_channel=True, send_messages=True)
         
-        # PERMITIR: APENAS os staff roles selecionados no dashboard
+        # 3. BLOQUEAR EXPLICITAMENTE TODOS os 6 cargos de staff (evita herança)
+        ALL_STAFF_ROLE_IDS = [
+            1365636960651051069,  # Founder
+            1365636456386789437,  # Sub-Dono
+            1365633918593794079,  # Administrador
+            1365634226254254150,  # Staff
+            1365633102973763595,  # Moderador
+            1365631940434333748,  # Sub-Moderador
+        ]
+        
+        for role_id in ALL_STAFF_ROLE_IDS:
+            role = guild.get_role(role_id)
+            if role:
+                await ticket_channel.set_permissions(role, view_channel=False)
+        
+        # 4. LIBERAR: APENAS os staff roles SELECIONADOS no dashboard
         guild_id = str(guild.id)
         config = ticket_config.get(guild_id, {})
-        staff_roles = config.get('staff_roles', [])
+        selected_staff_roles = config.get('staff_roles', [])
         
-        for role_id in staff_roles:
+        for role_id in selected_staff_roles:
             role = guild.get_role(int(role_id))
             if role:
                 await ticket_channel.set_permissions(role, view_channel=True, send_messages=True, manage_messages=True)
