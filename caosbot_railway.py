@@ -1672,12 +1672,8 @@ async def create_ticket_channel(interaction, category_name, assunto, descricao):
             )
             return
         
-        # Obter categoria do dashboard
-        category_id = ticket_config.get('category_id')
-        if category_id:
-            ticket_category = guild.get_channel(int(category_id))
-        else:
-            ticket_category = None
+        # Categoria STUFF (hardcoded)
+        ticket_category = guild.get_channel(1365692340651556894)
         
         # Se não encontrou, usar padrão
         if not ticket_category:
@@ -1788,12 +1784,8 @@ async def create_ticket_channel_complete(interaction, category_name, category_em
             )
             return
         
-        # Obter categoria do dashboard
-        category_id = ticket_config.get('category_id')
-        if category_id:
-            ticket_category = guild.get_channel(int(category_id))
-        else:
-            ticket_category = None
+        # Categoria STUFF (hardcoded)
+        ticket_category = guild.get_channel(1365692340651556894)
         
         # Se não encontrou, usar padrão
         if not ticket_category:
