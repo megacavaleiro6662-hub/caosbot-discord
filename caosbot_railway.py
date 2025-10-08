@@ -118,16 +118,16 @@ def home():
 def ping():
     """Rota para keep-alive (evitar sleep do Render)"""
     return {"status": "alive", "bot": "online", "uptime": "running"}, 200
-
-# ========================================
 # SISTEMA DE LOGIN COM DISCORD OAUTH2
 # ========================================
 @app.route('/login')
 def login_page():
-    """Página de login profissional"""
+    """Página de login"""
+    # Limpa sessão ao acessar página de login
+    session.clear()
+    
     html = f"""
-<!DOCTYPE html>
-<html lang="pt-BR">
+<html>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -224,6 +224,9 @@ def login_page():
 @app.route('/callback')
 def callback():
     """Callback do Discord OAuth2 - VERIFICAÇÃO PERFEITA DE CARGOS"""
+    # Limpa qualquer sessão antiga antes de começar
+    session.clear()
+    
     code = request.args.get('code')
     if not code:
         return redirect(url_for('login_page'))
