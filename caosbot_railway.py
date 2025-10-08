@@ -1390,7 +1390,29 @@ class TicketConfigView(discord.ui.View):
         
         # Atualizar mensagem original se ambos foram selecionados
         if self.selected_priority and self.original_message:
-            await self.original_message.edit(view=self)
+            # Atualizar embed mostrando as escolhas
+            updated_embed = discord.Embed(
+                title="🎫 CONFIGURAR SEU TICKET",
+                description="Selecione as opções abaixo antes de continuar:",
+                color=0x00aaff
+            )
+            updated_embed.add_field(
+                name="🗂️ Categoria",
+                value=f"{self.selected_category_emoji} **{self.selected_category}**",
+                inline=True
+            )
+            updated_embed.add_field(
+                name="⚡ Prioridade",
+                value=f"{self.selected_priority_emoji} **{self.selected_priority}**",
+                inline=True
+            )
+            updated_embed.add_field(
+                name="\u200b",
+                value="*Clique em* ✅ *Continuar para prosseguir*",
+                inline=False
+            )
+            updated_embed.set_footer(text="Sistema de Tickets • Caos Hub")
+            await self.original_message.edit(embed=updated_embed, view=self)
     
     async def priority_callback(self, interaction: discord.Interaction):
         priority_map = {
@@ -1412,7 +1434,29 @@ class TicketConfigView(discord.ui.View):
         
         # Atualizar mensagem original se ambos foram selecionados
         if self.selected_category and self.original_message:
-            await self.original_message.edit(view=self)
+            # Atualizar embed mostrando as escolhas
+            updated_embed = discord.Embed(
+                title="🎫 CONFIGURAR SEU TICKET",
+                description="Selecione as opções abaixo antes de continuar:",
+                color=0x00aaff
+            )
+            updated_embed.add_field(
+                name="🗂️ Categoria",
+                value=f"{self.selected_category_emoji} **{self.selected_category}**",
+                inline=True
+            )
+            updated_embed.add_field(
+                name="⚡ Prioridade",
+                value=f"{self.selected_priority_emoji} **{self.selected_priority}**",
+                inline=True
+            )
+            updated_embed.add_field(
+                name="\u200b",
+                value="*Clique em* ✅ *Continuar para prosseguir*",
+                inline=False
+            )
+            updated_embed.set_footer(text="Sistema de Tickets • Caos Hub")
+            await self.original_message.edit(embed=updated_embed, view=self)
     
     async def continue_callback(self, interaction: discord.Interaction):
         # Abrir modal com 4 campos
@@ -1777,7 +1821,11 @@ async def create_ticket_channel_complete(interaction, category_name, category_em
         # Enviar
         await ticket_channel.send(f"{member.mention}", embed=embed, view=TicketManageView(ticket_channel))
         
-        await interaction.followup.send(f'✅ Ticket criado! {ticket_channel.mention}', ephemeral=True)
+        # Responder ao modal
+        try:
+            await interaction.response.send_message(f'✅ Ticket criado! {ticket_channel.mention}', ephemeral=True)
+        except:
+            await interaction.followup.send(f'✅ Ticket criado! {ticket_channel.mention}', ephemeral=True)
         
         # LOG
         log_channel = discord.utils.get(guild.text_channels, name='ticket-logs')
