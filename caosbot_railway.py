@@ -1220,9 +1220,10 @@ async def handle_close_ticket(interaction: discord.Interaction):
 
 # Modal COMPLETO com 4 campos
 class TicketModalComplete(discord.ui.Modal):
-    def __init__(self, category_name, category_emoji, priority_name, priority_emoji):
+    def __init__(self, category_name, category_emoji, priority_name, priority_emoji, original_message=None):
         super().__init__(title=f"📋 Informações do Ticket")
         self.category_name = category_name
+        self.original_message = original_message  # Guardar referência da mensagem original
         self.category_emoji = category_emoji
         self.priority_name = priority_name
         self.priority_emoji = priority_emoji
@@ -1476,7 +1477,8 @@ class TicketConfigView(discord.ui.View):
             self.selected_category,
             self.selected_category_emoji,
             self.selected_priority,
-            self.selected_priority_emoji
+            self.selected_priority_emoji,
+            self.original_message  # Passar a mensagem original
         )
         await interaction.response.send_modal(modal)
 
@@ -1879,16 +1881,13 @@ async def create_ticket_channel_complete(interaction, category_name, category_em
         
         # Responder ao modal
         try:
-            # Enviar mensagem de sucesso
             await interaction.response.send_message(
-                f'✅ **Ticket criado com sucesso!**\n{ticket_channel.mention}\n\n*Esta mensagem será deletada em 5 segundos...*',
+                f'✅ **Ticket criado!** {ticket_channel.mention}',
                 ephemeral=True
             )
-            # Deletar a mensagem original de configuração (se existir)
-            # Isso evita que o usuário fique clicando e criando tickets infinitos
         except:
             await interaction.followup.send(
-                f'✅ **Ticket criado com sucesso!**\n{ticket_channel.mention}\n\n*Esta mensagem será deletada em 5 segundos...*',
+                f'✅ **Ticket criado!** {ticket_channel.mention}',
                 ephemeral=True
             )
         
