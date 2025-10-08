@@ -192,13 +192,46 @@ def callback():
         user_data = requests.get('https://discord.com/api/users/@me', headers=headers).json()
         guilds_data = requests.get('https://discord.com/api/users/@me/guilds', headers=headers).json()
         
-        # Verificar se usuário tem permissão de administrador
+        # Verificar se usuário tem permissão de administrador ou cargos específicos
         is_admin = False
+        allowed_roles = ['administrador', 'subdono', 'founder', 'admin', 'adm']
+        
+        # Verifica permissão ADMINISTRATOR no Discord
         for guild in guilds_data:
             permissions = int(guild.get('permissions', 0))
-            if permissions & 0x8:  # ADMINISTRATOR
+            if permissions & 0x8:  # ADMINISTRATOR permission
                 is_admin = True
                 break
+        
+        # Se não tiver permissão, verifica cargos específicos
+        if not is_admin:
+            # Busca ID do servidor (primeiro servidor do bot)
+            SERVER_ID = os.getenv('DISCORD_SERVER_ID')
+            if SERVER_ID:
+                try:
+                    member_data = requests.get(
+                        f'https://discord.com/api/guilds/{SERVER_ID}/members/{user_data["id"]}',
+                        headers=headers
+                    ).json()
+                    
+                    # Pega todos os cargos do usuário
+                    user_role_ids = member_data.get('roles', [])
+                    
+                    # Busca informações dos cargos do servidor
+                    roles_data = requests.get(
+                        f'https://discord.com/api/guilds/{SERVER_ID}/roles',
+                        headers={'Authorization': f'Bot {os.getenv("DISCORD_TOKEN")}'}
+                    ).json()
+                    
+                    # Verifica se algum cargo do usuário está na lista permitida
+                    for role in roles_data:
+                        if role['id'] in user_role_ids:
+                            role_name = role['name'].lower()
+                            if any(allowed in role_name for allowed in allowed_roles):
+                                is_admin = True
+                                break
+                except:
+                    pass
         
         if not is_admin:
             return """
