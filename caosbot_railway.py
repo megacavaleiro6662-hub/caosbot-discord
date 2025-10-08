@@ -1605,6 +1605,21 @@ class TicketConfigView(discord.ui.View):
             self.original_message  # Passar a mensagem original
         )
         await interaction.response.send_modal(modal)
+    
+    async def on_timeout(self):
+        """Edita mensagem quando o painel expirar (1 minuto sem usar)"""
+        try:
+            if self.original_message:
+                expired_embed = discord.Embed(
+                    title="⏰ Painel Expirado",
+                    description="Este painel de configuração expirou após 1 minuto sem uso.\n\nClique novamente no botão **🎫 Abrir Ticket** para criar um novo.",
+                    color=0xff9900
+                )
+                expired_embed.set_footer(text="Sistema de Tickets • Caos Hub")
+                
+                await self.original_message.edit(embed=expired_embed, view=None)
+        except:
+            pass  # Mensagem já foi deletada ou outro erro
 
 async def send_ticket_config_message(interaction):
     """Envia mensagem de configuração ephemeral"""
