@@ -1442,41 +1442,10 @@ class TicketConfigView(discord.ui.View):
         # Responder ao usuário
         await interaction.response.send_message(f"✅ Categoria selecionada: {self.selected_category_emoji} **{self.selected_category}**", ephemeral=True)
         
-        # Atualizar mensagem original SEMPRE
+        # Atualizar dropdowns para mostrar o selecionado
         if self.original_message:
-            # Atualizar embed mostrando as escolhas
-            updated_embed = discord.Embed(
-                title="🎫 CONFIGURAR SEU TICKET",
-                description="Selecione as opções abaixo antes de continuar:",
-                color=0x00aaff
-            )
-            updated_embed.add_field(
-                name="🗂️ Categoria",
-                value=f"**{self.selected_category}**",
-                inline=True
-            )
-            if self.selected_priority:
-                updated_embed.add_field(
-                    name="⚡ Prioridade",
-                    value=f"**{self.selected_priority}**",
-                    inline=True
-                )
-            else:
-                updated_embed.add_field(
-                    name="⚡ Prioridade",
-                    value="Urgência do atendimento",
-                    inline=True
-                )
-            updated_embed.add_field(
-                name="\u200b",
-                value="*Clique em* ✅ *Continuar para prosseguir*",
-                inline=False
-            )
-            updated_embed.set_footer(text="Sistema de Tickets • Caos Hub")
-            
-            # Atualizar dropdowns para mostrar o selecionado
             self.update_dropdowns()
-            await self.original_message.edit(embed=updated_embed, view=self)
+            await self.original_message.edit(view=self)
     
     async def priority_callback(self, interaction: discord.Interaction):
         priority_map = {
@@ -1496,41 +1465,10 @@ class TicketConfigView(discord.ui.View):
         # Responder ao usuário
         await interaction.response.send_message(f"✅ Prioridade selecionada: {self.selected_priority_emoji} **{self.selected_priority}**", ephemeral=True)
         
-        # Atualizar mensagem original SEMPRE
+        # Atualizar dropdowns para mostrar o selecionado
         if self.original_message:
-            # Atualizar embed mostrando as escolhas
-            updated_embed = discord.Embed(
-                title="🎫 CONFIGURAR SEU TICKET",
-                description="Selecione as opções abaixo antes de continuar:",
-                color=0x00aaff
-            )
-            updated_embed.add_field(
-                name="🗂️ Categoria",
-                value=f"**{self.selected_category}**",
-                inline=True
-            )
-            if self.selected_priority:
-                updated_embed.add_field(
-                    name="⚡ Prioridade",
-                    value=f"**{self.selected_priority}**",
-                    inline=True
-                )
-            else:
-                updated_embed.add_field(
-                    name="⚡ Prioridade",
-                    value="Urgência do atendimento",
-                    inline=True
-                )
-            updated_embed.add_field(
-                name="\u200b",
-                value="*Clique em* ✅ *Continuar para prosseguir*",
-                inline=False
-            )
-            updated_embed.set_footer(text="Sistema de Tickets • Caos Hub")
-            
-            # Atualizar dropdowns para mostrar o selecionado
             self.update_dropdowns()
-            await self.original_message.edit(embed=updated_embed, view=self)
+            await self.original_message.edit(view=self)
     
     async def continue_callback(self, interaction: discord.Interaction):
         # Abrir modal com 4 campos
