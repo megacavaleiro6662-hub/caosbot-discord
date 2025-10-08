@@ -3209,62 +3209,228 @@ async def tchau_command(ctx):
     await ctx.reply(embed=embed)
 
 # ========================================
-# COMANDOS DE INTERAÇÃO
+# COMANDOS DE INTERAÇÃO SOCIAL COM GIFS
 # ========================================
 
-@bot.command(name='abraco')
-async def abraco_command(ctx, usuario: discord.Member = None):
-    abracos = [
-        '🤗 *abraço apertado*',
-        '🫂 *abraço carinhoso*',
-        '🤗 *abraço virtual*',
-        '🫂 *abraço de urso*',
-        '🤗 *abraço reconfortante*'
+# GIFs de anime (URLs diretas)
+INTERACTION_GIFS = {
+    'kiss': [
+        'https://media.tenor.com/W89cAX4VbYMAAAAM/anime-kiss.gif',
+        'https://media.tenor.com/oAne0J6lj8MAAAAM/anime-kiss.gif',
+        'https://media.tenor.com/pLDXlz1gN3gAAAAM/kiss-anime.gif',
+        'https://media.tenor.com/jZVd4NKtw9UAAAAM/anime-kiss.gif',
+        'https://media.tenor.com/0J5CXK5VvPcAAAAM/kiss-anime.gif'
+    ],
+    'hug': [
+        'https://media.tenor.com/KZLA62pS29gAAAAM/hug-anime.gif',
+        'https://media.tenor.com/tKj2V0C4o_AAAAAM/anime-hug.gif',
+        'https://media.tenor.com/Kry0v9GAGzsAAAAM/hug-anime.gif',
+        'https://media.tenor.com/MJjV9h94xkIAAAAM/anime-hug.gif',
+        'https://media.tenor.com/J4mHTDPaGFQAAAAM/anime-hug.gif'
+    ],
+    'pat': [
+        'https://media.tenor.com/FfEFgdPyCiYAAAAM/anime-pat.gif',
+        'https://media.tenor.com/0Vj7hAId-KAAAAAC/anime-head-pat.gif',
+        'https://media.tenor.com/5BIdXYCQqoMAAAAM/anime-head-pat.gif',
+        'https://media.tenor.com/Q_sRzVhk52oAAAAM/anime-pat.gif',
+        'https://media.tenor.com/r7RmEPHqyYwAAAAM/anime-pat.gif'
+    ],
+    'slap': [
+        'https://media.tenor.com/BL8rTuNo_PMAAAAM/anime-slap.gif',
+        'https://media.tenor.com/3Z8qVUHYZsoAAAAM/slap-anime.gif',
+        'https://media.tenor.com/KNVh7dVgZhwAAAAM/anime-slap.gif',
+        'https://media.tenor.com/xuMDM4tVuzAAAAAM/slap.gif',
+        'https://media.tenor.com/yzHM6lBABd4AAAAM/bofetada-tapa.gif'
+    ],
+    'dance': [
+        'https://media.tenor.com/ZdA1pYcKVe0AAAAM/anime-dance.gif',
+        'https://media.tenor.com/EqQu9kXqLU0AAAAM/anime-dancing.gif',
+        'https://media.tenor.com/7M-f2D_1KBAAAM/dance-anime.gif',
+        'https://media.tenor.com/TpG8XnG8sHIAAAAM/anime-dance.gif',
+        'https://media.tenor.com/BcvbWdzCFw0AAAAM/anime-dance.gif'
+    ],
+    'cry': [
+        'https://media.tenor.com/8BaUXZUWnL4AAAAM/anime-cry.gif',
+        'https://media.tenor.com/uNb8A2me1gUAAAAM/cry-anime.gif',
+        'https://media.tenor.com/M4bsP1-8cfsAAAAM/cry-anime.gif',
+        'https://media.tenor.com/YnCOBP2M3EQAAAAM/anime-crying.gif',
+        'https://media.tenor.com/2X8LLmZMAnUAAAAM/anime-cry.gif'
     ]
-    abraco = random.choice(abracos)
+}
+
+@bot.command(name='beijar')
+async def beijar_command(ctx, usuario: discord.Member = None):
+    if not usuario:
+        await ctx.reply('❌ Você precisa mencionar alguém para beijar! Exemplo: `.beijar @user`')
+        return
+    
+    if usuario.id == ctx.author.id:
+        await ctx.reply('😅 Você não pode se beijar!')
+        return
+    
+    gif = random.choice(INTERACTION_GIFS['kiss'])
+    embed = discord.Embed(
+        description=f'💋 **{ctx.author.mention}** beijou **{usuario.mention}**!',
+        color=0xff69b4
+    )
+    embed.set_image(url=gif)
+    embed.set_footer(text=f'Comando usado por {ctx.author.name}', icon_url=ctx.author.display_avatar.url)
+    
+    await ctx.reply(embed=embed)
+
+@bot.command(name='abracar')
+async def abracar_command(ctx, usuario: discord.Member = None):
+    if not usuario:
+        await ctx.reply('❌ Você precisa mencionar alguém para abraçar! Exemplo: `.abracar @user`')
+        return
+    
+    if usuario.id == ctx.author.id:
+        await ctx.reply('🤗 *Você se abraça sozinho...*')
+        return
+    
+    gif = random.choice(INTERACTION_GIFS['hug'])
+    embed = discord.Embed(
+        description=f'🤗 **{ctx.author.mention}** abraçou **{usuario.mention}**!',
+        color=0xffd700
+    )
+    embed.set_image(url=gif)
+    embed.set_footer(text=f'Comando usado por {ctx.author.name}', icon_url=ctx.author.display_avatar.url)
+    
+    await ctx.reply(embed=embed)
+
+@bot.command(name='acariciar')
+async def acariciar_command(ctx, usuario: discord.Member = None):
+    if not usuario:
+        await ctx.reply('❌ Você precisa mencionar alguém para acariciar! Exemplo: `.acariciar @user`')
+        return
+    
+    if usuario.id == ctx.author.id:
+        await ctx.reply('😌 *Você faz carinho em si mesmo...*')
+        return
+    
+    gif = random.choice(INTERACTION_GIFS['pat'])
+    embed = discord.Embed(
+        description=f'😊 **{ctx.author.mention}** acariciou **{usuario.mention}**!',
+        color=0x87ceeb
+    )
+    embed.set_image(url=gif)
+    embed.set_footer(text=f'Comando usado por {ctx.author.name}', icon_url=ctx.author.display_avatar.url)
+    
+    await ctx.reply(embed=embed)
+
+@bot.command(name='tapa')
+async def tapa_command(ctx, usuario: discord.Member = None):
+    if not usuario:
+        await ctx.reply('❌ Você precisa mencionar alguém para dar um tapa! Exemplo: `.tapa @user`')
+        return
+    
+    if usuario.id == ctx.author.id:
+        await ctx.reply('🤕 Você se deu um tapa... Por quê?!')
+        return
+    
+    gif = random.choice(INTERACTION_GIFS['slap'])
+    embed = discord.Embed(
+        description=f'👋 **{ctx.author.mention}** deu um tapa em **{usuario.mention}**!',
+        color=0xff4444
+    )
+    embed.set_image(url=gif)
+    embed.set_footer(text=f'Comando usado por {ctx.author.name}', icon_url=ctx.author.display_avatar.url)
+    
+    await ctx.reply(embed=embed)
+
+@bot.command(name='dancar')
+async def dancar_command(ctx, usuario: discord.Member = None):
+    gif = random.choice(INTERACTION_GIFS['dance'])
     
     if usuario:
-        await ctx.reply(f'{abraco} para {usuario.mention}!')
+        embed = discord.Embed(
+            description=f'💃 **{ctx.author.mention}** está dançando com **{usuario.mention}**!',
+            color=0x9b59b6
+        )
     else:
-        await ctx.reply(f'{abraco} para você!')
-
-@bot.command(name='elogio')
-async def elogio_command(ctx, usuario: discord.Member = None):
-    elogios = [
-        'Você é uma pessoa incrível! ✨',
-        'Seu sorriso ilumina o dia de todo mundo! 😊',
-        'Você tem uma energia muito positiva! 🌟',
-        'Você é super inteligente! 🧠',
-        'Sua presença sempre deixa tudo melhor! 💫',
-        'Você é muito especial! 💖',
-        'Você tem um coração gigante! ❤️',
-        'Sua criatividade é inspiradora! 🎨',
-        'Você sempre sabe o que dizer! 💬',
-        'Você é uma pessoa única e especial! 🦄'
-    ]
-    elogio = random.choice(elogios)
+        embed = discord.Embed(
+            description=f'💃 **{ctx.author.mention}** está dançando!',
+            color=0x9b59b6
+        )
     
-    if usuario:
-        await ctx.reply(f'{usuario.mention}, {elogio.lower()}')
-    else:
-        await ctx.reply(elogio)
+    embed.set_image(url=gif)
+    embed.set_footer(text=f'Comando usado por {ctx.author.name}', icon_url=ctx.author.display_avatar.url)
+    
+    await ctx.reply(embed=embed)
 
-@bot.command(name='motivacao')
-async def motivacao_command(ctx):
-    frases = [
-        'Você é capaz de coisas incríveis! 💪',
-        'Cada dia é uma nova oportunidade! 🌅',
-        'Acredite em você mesmo! ⭐',
-        'Você está indo muito bem! 👏',
-        'Continue seguindo seus sonhos! 🌈',
-        'Você é mais forte do que imagina! 💎',
-        'Grandes coisas estão por vir! 🚀',
-        'Você faz a diferença! 🌟',
-        'Nunca desista dos seus objetivos! 🎯',
-        'Você tem tudo para dar certo! 🍀'
-    ]
-    frase = random.choice(frases)
-    await ctx.reply(f'🌟 {frase}')
+@bot.command(name='chorar')
+async def chorar_command(ctx):
+    gif = random.choice(INTERACTION_GIFS['cry'])
+    embed = discord.Embed(
+        description=f'😭 **{ctx.author.mention}** está chorando...',
+        color=0x5865f2
+    )
+    embed.set_image(url=gif)
+    embed.set_footer(text=f'Comando usado por {ctx.author.name}', icon_url=ctx.author.display_avatar.url)
+    
+    await ctx.reply(embed=embed)
+
+@bot.command(name='ship')
+async def ship_command(ctx, user1: discord.Member = None, user2: discord.Member = None):
+    if not user1 or not user2:
+        await ctx.reply('❌ Você precisa mencionar 2 pessoas! Exemplo: `.ship @user1 @user2`')
+        return
+    
+    # Calcula porcentagem de ship (baseado em IDs para ser consistente)
+    ship_value = (user1.id + user2.id) % 101
+    
+    # Nome do ship (junção dos nomes)
+    name1 = user1.display_name[:len(user1.display_name)//2]
+    name2 = user2.display_name[len(user2.display_name)//2:]
+    ship_name = f"{name1}{name2}"
+    
+    # Barra de progresso
+    filled = '❤️' * (ship_value // 10)
+    empty = '🖤' * (10 - ship_value // 10)
+    bar = filled + empty
+    
+    # Mensagem baseada na porcentagem
+    if ship_value >= 80:
+        message = "💕 Perfeito! Casal do ano!"
+    elif ship_value >= 60:
+        message = "💖 Muito compatíveis!"
+    elif ship_value >= 40:
+        message = "💛 Pode dar certo!"
+    elif ship_value >= 20:
+        message = "💙 Quem sabe..."
+    else:
+        message = "💔 Melhor não..."
+    
+    embed = discord.Embed(
+        title=f'💘 SHIPAGEM: {ship_name.upper()}',
+        description=f'{user1.mention} + {user2.mention}',
+        color=0xff1493
+    )
+    embed.add_field(name='Compatibilidade', value=f'{bar}\n**{ship_value}%**', inline=False)
+    embed.add_field(name='Resultado', value=message, inline=False)
+    embed.set_footer(text=f'Ship by {ctx.author.name}', icon_url=ctx.author.display_avatar.url)
+    
+    await ctx.reply(embed=embed)
+
+@bot.command(name='cafune')
+async def cafune_command(ctx, usuario: discord.Member = None):
+    if not usuario:
+        await ctx.reply('❌ Você precisa mencionar alguém para fazer cafuné! Exemplo: `.cafune @user`')
+        return
+    
+    if usuario.id == ctx.author.id:
+        await ctx.reply('😌 Você faz cafuné em si mesmo... Relaxante!')
+        return
+    
+    gif = random.choice(INTERACTION_GIFS['pat'])
+    embed = discord.Embed(
+        description=f'😌 **{ctx.author.mention}** está fazendo cafuné em **{usuario.mention}**!',
+        color=0xffc0cb
+    )
+    embed.set_image(url=gif)
+    embed.set_footer(text=f'Comando usado por {ctx.author.name}', icon_url=ctx.author.display_avatar.url)
+    
+    await ctx.reply(embed=embed)
 
 # ========================================
 # COMANDOS DE CONTROLE - BOAS-VINDAS/SAÍDA/BAN
