@@ -144,7 +144,7 @@ def dashboard():
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.92);
+            background: rgba(0, 0, 0, 0.97);
             z-index: 0;
             pointer-events: none;
         }}
