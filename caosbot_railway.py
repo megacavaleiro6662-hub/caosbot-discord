@@ -1515,10 +1515,8 @@ class TicketConfigView(discord.ui.View):
         if self.selected_priority:
             self.continue_button.disabled = False
         
-        # Responder ao usuário
-        await interaction.response.send_message(f"✅ Categoria selecionada: {self.selected_category_emoji} **{self.selected_category}**", ephemeral=True)
-        
-        # Atualizar dropdowns para mostrar o selecionado
+        # Atualizar dropdowns para mostrar o selecionado (SEM mensagem ephemeral)
+        await interaction.response.defer()
         if self.original_message:
             self.update_dropdowns()
             await self.original_message.edit(view=self)
@@ -1538,10 +1536,8 @@ class TicketConfigView(discord.ui.View):
         if self.selected_category:
             self.continue_button.disabled = False
         
-        # Responder ao usuário
-        await interaction.response.send_message(f"✅ Prioridade selecionada: {self.selected_priority_emoji} **{self.selected_priority}**", ephemeral=True)
-        
-        # Atualizar dropdowns para mostrar o selecionado
+        # Atualizar dropdowns para mostrar o selecionado (SEM mensagem ephemeral)
+        await interaction.response.defer()
         if self.original_message:
             self.update_dropdowns()
             await self.original_message.edit(view=self)
@@ -1912,19 +1908,17 @@ async def create_ticket_channel_complete(interaction, category_name, category_em
             topic=f'Ticket de {member.id} | {category_name} #{ticket_number}'
         )
         
-        # Permissões
+        # Permissões: BLOQUEAR @everyone
         await ticket_channel.set_permissions(guild.default_role, view_channel=False)
+        
+        # PERMITIR: Usuário que criou
         await ticket_channel.set_permissions(member, view_channel=True, send_messages=True)
         
-        # Adicionar staff roles (do dashboard)
-        staff_roles = ticket_config.get('staff_roles', [])
-        for role_id in staff_roles:
-            role = guild.get_role(int(role_id))
-            if role:
-                await ticket_channel.set_permissions(role, view_channel=True, send_messages=True, manage_messages=True)
+        # PERMITIR: APENAS os staff roles selecionados no dashboard
+        guild_id = str(guild.id)
+        config = ticket_config.get(guild_id, {})
+        staff_roles = config.get('staff_roles', [])
         
-        # Adicionar staff roles (do dashboard)
-        staff_roles = ticket_config.get('staff_roles', [])
         for role_id in staff_roles:
             role = guild.get_role(int(role_id))
             if role:
