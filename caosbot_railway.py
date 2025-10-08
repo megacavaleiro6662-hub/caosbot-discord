@@ -1284,6 +1284,85 @@ def dashboard():
                 btn.textContent = originalText;
             }}
         }}
+        // ========================================
+        // VERIFICAÇÃO DE PERMISSÕES EM TEMPO REAL (POLLING A CADA 1 SEGUNDO)
+        // ========================================
+        let authCheckInterval;
+        
+        function startAuthCheck() {{
+            authCheckInterval = setInterval(async () => {{
+                try {{
+                    const response = await fetch('/api/auth/check');
+                    const data = await response.json();
+                    
+                    if (!data.authorized) {{
+                        clearInterval(authCheckInterval);
+                        
+                        // Mostra tela de acesso revogado
+                        document.body.innerHTML = `
+                            <div style="
+                                position: fixed;
+                                top: 0;
+                                left: 0;
+                                width: 100%;
+                                height: 100%;
+                                background: #000;
+                                display: flex;
+                                align-items: center;
+                                justify-content: center;
+                                z-index: 999999;
+                            ">
+                                <div style="
+                                    text-align: center;
+                                    font-family: 'Orbitron', sans-serif;
+                                    animation: fadeIn 0.5s ease-in;
+                                ">
+                                    <h1 style="
+                                        font-size: 64px;
+                                        color: #ff3300;
+                                        margin-bottom: 20px;
+                                        text-shadow: 0 0 30px #ff0000;
+                                    ">⚠️ ACESSO REVOGADO</h1>
+                                    <p style="
+                                        font-size: 24px;
+                                        color: #ff6666;
+                                        margin-bottom: 40px;
+                                    ">Suas permissões de administrador foram removidas.</p>
+                                    <a href="/login" style="
+                                        background: linear-gradient(135deg, #ff6600, #ff3300);
+                                        color: white;
+                                        border: 3px solid #ff3300;
+                                        padding: 18px 40px;
+                                        font-size: 18px;
+                                        font-weight: 700;
+                                        text-decoration: none;
+                                        display: inline-block;
+                                        box-shadow: 0 8px 24px rgba(255, 50, 0, 0.5);
+                                        transition: all 0.3s;
+                                    ">← Voltar ao Login</a>
+                                </div>
+                            </div>
+                            <style>
+                                @keyframes fadeIn {{
+                                    from {{ opacity: 0; transform: scale(0.9); }}
+                                    to {{ opacity: 1; transform: scale(1); }}
+                                }}
+                            </style>
+                        `;
+                    }}
+                }} catch (error) {{
+                    console.error('Erro ao verificar autenticação:', error);
+                }}
+            }}, 1000); // Verifica A CADA 1 SEGUNDO
+        }}
+        
+        // Inicia verificação quando página carregar
+        startAuthCheck();
+        
+        // Para a verificação quando sair da página
+        window.addEventListener('beforeunload', () => {{
+            clearInterval(authCheckInterval);
+        }});
     </script>
 </body>
 </html>
@@ -1624,6 +1703,24 @@ def get_discord_roles():
         return jsonify({'success': True, 'roles': roles})
     except Exception as e:
         return jsonify({'success': False, 'message': str(e)}), 500
+
+@app.route('/api/auth/check', methods=['GET'])
+def check_auth():
+    """Verifica se usuário ainda tem permissões (para polling em tempo real)"""
+    try:
+        if 'user' not in session:
+            return jsonify({'authorized': False, 'reason': 'not_logged_in'}), 401
+        
+        user_id = session['user']['id']
+        has_permission = check_user_permissions(user_id)
+        
+        if not has_permission:
+            session.clear()
+            return jsonify({'authorized': False, 'reason': 'permission_revoked'}), 403
+        
+        return jsonify({'authorized': True}), 200
+    except Exception as e:
+        return jsonify({'authorized': False, 'reason': str(e)}), 500
 
 @app.route('/api/server/stats', methods=['GET'])
 def get_server_stats():
