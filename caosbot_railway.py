@@ -1293,6 +1293,37 @@ class TicketModalComplete(discord.ui.Modal):
             self.idioma.value,
             self.info_adicional.value if self.info_adicional.value else "Nenhuma"
         )
+        
+        # Editar mensagem original para substituir dropdowns por confirmação
+        if self.original_message:
+            try:
+                success_embed = discord.Embed(
+                    title="✅ Ticket Criado com Sucesso!",
+                    description=f"Seu ticket foi criado e nossa equipe será notificada.",
+                    color=0x00ff00
+                )
+                success_embed.add_field(
+                    name="📋 Categoria",
+                    value=f"{self.category_emoji} {self.category_name}",
+                    inline=True
+                )
+                success_embed.add_field(
+                    name="⚡ Prioridade",
+                    value=f"{self.priority_emoji} {self.priority_name}",
+                    inline=True
+                )
+                success_embed.add_field(
+                    name="🎫 Canal do Ticket",
+                    value=f"Vá para o canal do seu ticket e aguarde nossa equipe!",
+                    inline=False
+                )
+                success_embed.set_footer(text="Sistema de Tickets • Caos Hub")
+                
+                # Editar mensagem (remove dropdowns e botão)
+                await self.original_message.edit(embed=success_embed, view=None)
+            except Exception as e:
+                print(f"Erro ao editar mensagem original: {e}")
+                pass  # Se der erro, não problema
 
 # View inicial - Botão "Abrir Ticket"
 class TicketPanelView(discord.ui.View):
