@@ -1452,13 +1452,13 @@ class TicketConfigView(discord.ui.View):
             )
             updated_embed.add_field(
                 name="🗂️ Categoria",
-                value=f"{self.selected_category_emoji} **{self.selected_category}**",
+                value=f"**{self.selected_category}**",
                 inline=True
             )
             if self.selected_priority:
                 updated_embed.add_field(
                     name="⚡ Prioridade",
-                    value=f"{self.selected_priority_emoji} **{self.selected_priority}**",
+                    value=f"**{self.selected_priority}**",
                     inline=True
                 )
             else:
@@ -1506,13 +1506,13 @@ class TicketConfigView(discord.ui.View):
             )
             updated_embed.add_field(
                 name="🗂️ Categoria",
-                value=f"{self.selected_category_emoji} **{self.selected_category}**",
+                value=f"**{self.selected_category}**",
                 inline=True
             )
             if self.selected_priority:
                 updated_embed.add_field(
                     name="⚡ Prioridade",
-                    value=f"{self.selected_priority_emoji} **{self.selected_priority}**",
+                    value=f"**{self.selected_priority}**",
                     inline=True
                 )
             else:
