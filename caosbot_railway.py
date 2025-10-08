@@ -1921,27 +1921,17 @@ async def create_ticket_channel_complete(interaction, category_name, category_em
             topic=f'Ticket de {member.id} | {category_name} #{ticket_number}'
         )
         
-        # ===== PERMISSÕES CORRETAS =====
+        # ===== PERMISSÕES ULTRA RESTRITAS =====
         # 1. BLOQUEAR @everyone
         await ticket_channel.set_permissions(guild.default_role, view_channel=False)
         
-        # 2. PERMITIR: Usuário que criou
-        await ticket_channel.set_permissions(member, view_channel=True, send_messages=True)
-        
-        # 3. BLOQUEAR EXPLICITAMENTE TODOS os 6 cargos de staff (evita herança)
-        ALL_STAFF_ROLE_IDS = [
-            1365636960651051069,  # Founder
-            1365636456386789437,  # Sub-Dono
-            1365633918593794079,  # Administrador
-            1365634226254254150,  # Staff
-            1365633102973763595,  # Moderador
-            1365631940434333748,  # Sub-Moderador
-        ]
-        
-        for role_id in ALL_STAFF_ROLE_IDS:
-            role = guild.get_role(role_id)
-            if role:
+        # 2. BLOQUEAR **TODOS** OS CARGOS DO SERVIDOR (sem exceção)
+        for role in guild.roles:
+            if role != guild.default_role:  # Já bloqueamos @everyone
                 await ticket_channel.set_permissions(role, view_channel=False)
+        
+        # 3. PERMITIR: Usuário que criou
+        await ticket_channel.set_permissions(member, view_channel=True, send_messages=True)
         
         # 4. LIBERAR: APENAS os staff roles SELECIONADOS no dashboard
         guild_id = str(guild.id)
