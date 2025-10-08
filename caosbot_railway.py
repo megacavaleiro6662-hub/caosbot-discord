@@ -174,21 +174,21 @@ def callback():
     
     try:
         # Trocar código por token
-        data = {{
+        data = {
             'client_id': DISCORD_CLIENT_ID,
             'client_secret': DISCORD_CLIENT_SECRET,
             'grant_type': 'authorization_code',
             'code': code,
             'redirect_uri': DISCORD_REDIRECT_URI
-        }}
-        headers = {{'Content-Type': 'application/x-www-form-urlencoded'}}
+        }
+        headers = {'Content-Type': 'application/x-www-form-urlencoded'}
         r = requests.post('https://discord.com/api/oauth2/token', data=data, headers=headers)
         r.raise_for_status()
         token_data = r.json()
         access_token = token_data['access_token']
         
         # Pegar informações do usuário
-        headers = {{'Authorization': f'Bearer {{access_token}}'}}
+        headers = {'Authorization': f'Bearer {access_token}'}
         user_data = requests.get('https://discord.com/api/users/@me', headers=headers).json()
         guilds_data = requests.get('https://discord.com/api/users/@me/guilds', headers=headers).json()
         
@@ -213,16 +213,16 @@ def callback():
             """
         
         # Salvar na sessão
-        session['user'] = {{
+        session['user'] = {
             'id': user_data['id'],
             'username': user_data['username'],
-            'avatar': f"https://cdn.discordapp.com/avatars/{{user_data['id']}}/{{user_data['avatar']}}.png" if user_data.get('avatar') else None
-        }}
+            'avatar': f"https://cdn.discordapp.com/avatars/{user_data['id']}/{user_data['avatar']}.png" if user_data.get('avatar') else None
+        }
         
         return redirect(url_for('dashboard'))
     
     except Exception as e:
-        return f"<html><body style='background:#000;color:#ff3300;text-align:center;padding:50px;font-family:Orbitron;'><h1>❌ Erro no login</h1><p>{{str(e)}}</p><a href='/login' style='color:#ff6600;'>← Voltar</a></body></html>", 500
+        return f"<html><body style='background:#000;color:#ff3300;text-align:center;padding:50px;font-family:Orbitron;'><h1>❌ Erro no login</h1><p>{str(e)}</p><a href='/login' style='color:#ff6600;'>← Voltar</a></body></html>", 500
 
 @app.route('/logout')
 def logout():
