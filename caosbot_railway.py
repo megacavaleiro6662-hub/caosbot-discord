@@ -1675,11 +1675,15 @@ async def create_ticket_channel(interaction, category_name, assunto, descricao):
         guild = interaction.guild
         member = interaction.user
         
-        # Verificar se já tem ticket aberto
-        existing_ticket = discord.utils.get(guild.text_channels, topic=f'Ticket de {member.id}')
-        if existing_ticket:
-            await interaction.followup.send(
-                f'❌ Você já possui um ticket aberto: {existing_ticket.mention}',
+        # Verificar quantos tickets o usuário já tem abertos
+        user_tickets = [ch for ch in guild.text_channels if f'Ticket de {member.id}' in (ch.topic or '')]
+        max_tickets = ticket_config.get('max_tickets_per_user', 1)  # Padrão: 1 ticket
+        
+        if len(user_tickets) >= max_tickets:
+            await interaction.response.send_message(
+                f'❌ Você já possui {len(user_tickets)} ticket(s) aberto(s). Limite: {max_tickets}\n' +
+                (f'Ticket: {user_tickets[0].mention}' if len(user_tickets) == 1 else 
+                 f'Tickets: {", ".join([t.mention for t in user_tickets])}'),
                 ephemeral=True
             )
             return
@@ -1787,11 +1791,15 @@ async def create_ticket_channel_complete(interaction, category_name, category_em
         guild = interaction.guild
         member = interaction.user
         
-        # Verificar se já tem ticket aberto
-        existing_ticket = discord.utils.get(guild.text_channels, topic=f'Ticket de {member.id}')
-        if existing_ticket:
-            await interaction.followup.send(
-                f'❌ Você já possui um ticket aberto: {existing_ticket.mention}',
+        # Verificar quantos tickets o usuário já tem abertos
+        user_tickets = [ch for ch in guild.text_channels if f'Ticket de {member.id}' in (ch.topic or '')]
+        max_tickets = ticket_config.get('max_tickets_per_user', 1)  # Padrão: 1 ticket
+        
+        if len(user_tickets) >= max_tickets:
+            await interaction.response.send_message(
+                f'❌ Você já possui {len(user_tickets)} ticket(s) aberto(s). Limite: {max_tickets}\n' +
+                (f'Ticket: {user_tickets[0].mention}' if len(user_tickets) == 1 else 
+                 f'Tickets: {", ".join([t.mention for t in user_tickets])}'),
                 ephemeral=True
             )
             return
@@ -1871,9 +1879,18 @@ async def create_ticket_channel_complete(interaction, category_name, category_em
         
         # Responder ao modal
         try:
-            await interaction.response.send_message(f'✅ Ticket criado! {ticket_channel.mention}', ephemeral=True)
+            # Enviar mensagem de sucesso
+            await interaction.response.send_message(
+                f'✅ **Ticket criado com sucesso!**\n{ticket_channel.mention}\n\n*Esta mensagem será deletada em 5 segundos...*',
+                ephemeral=True
+            )
+            # Deletar a mensagem original de configuração (se existir)
+            # Isso evita que o usuário fique clicando e criando tickets infinitos
         except:
-            await interaction.followup.send(f'✅ Ticket criado! {ticket_channel.mention}', ephemeral=True)
+            await interaction.followup.send(
+                f'✅ **Ticket criado com sucesso!**\n{ticket_channel.mention}\n\n*Esta mensagem será deletada em 5 segundos...*',
+                ephemeral=True
+            )
         
         # LOG
         log_channel = discord.utils.get(guild.text_channels, name='ticket-logs')
