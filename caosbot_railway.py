@@ -1914,34 +1914,34 @@ async def create_ticket_channel_complete(interaction, category_name, category_em
         # Nome: emoji-categoria-numero
         ticket_name = f'{category_emoji}-{category_short}-{ticket_number}'
         
-        # Criar canal
-        ticket_channel = await guild.create_text_channel(
-            name=ticket_name,
-            category=ticket_category,
-            topic=f'Ticket de {member.id} | {category_name} #{ticket_number}'
-        )
-        
-        # ===== PERMISSÕES ULTRA RESTRITAS =====
-        # 1. BLOQUEAR @everyone
-        await ticket_channel.set_permissions(guild.default_role, view_channel=False)
-        
-        # 2. BLOQUEAR **TODOS** OS CARGOS DO SERVIDOR (sem exceção)
-        for role in guild.roles:
-            if role != guild.default_role:  # Já bloqueamos @everyone
-                await ticket_channel.set_permissions(role, view_channel=False)
-        
-        # 3. PERMITIR: Usuário que criou
-        await ticket_channel.set_permissions(member, view_channel=True, send_messages=True)
-        
-        # 4. LIBERAR: APENAS os staff roles SELECIONADOS no dashboard
+        # ===== CONFIGURAR PERMISSÕES NA CRIAÇÃO =====
         guild_id = str(guild.id)
         config = ticket_config.get(guild_id, {})
         selected_staff_roles = config.get('staff_roles', [])
         
+        # Criar overwrites (permissões do canal)
+        overwrites = {
+            guild.default_role: discord.PermissionOverwrite(view_channel=False),  # Bloquear @everyone
+            member: discord.PermissionOverwrite(view_channel=True, send_messages=True)  # Liberar usuário
+        }
+        
+        # Adicionar APENAS os staff roles SELECIONADOS
         for role_id in selected_staff_roles:
             role = guild.get_role(int(role_id))
             if role:
-                await ticket_channel.set_permissions(role, view_channel=True, send_messages=True, manage_messages=True)
+                overwrites[role] = discord.PermissionOverwrite(
+                    view_channel=True,
+                    send_messages=True,
+                    manage_messages=True
+                )
+        
+        # Criar canal COM as permissões já definidas (não herda da categoria)
+        ticket_channel = await guild.create_text_channel(
+            name=ticket_name,
+            category=ticket_category,
+            topic=f'Ticket de {member.id} | {category_name} #{ticket_number}',
+            overwrites=overwrites  # ← ISSO É CRUCIAL!
+        )
         
         # Cor baseada na prioridade
         priority_colors = {"Baixa": 0x00ff00, "Média": 0xffff00, "Alta": 0xff8800, "Urgente": 0xff0000}
