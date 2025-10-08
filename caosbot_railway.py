@@ -1326,7 +1326,8 @@ class TicketModalComplete(discord.ui.Modal):
         self.add_item(self.info_adicional)
     
     async def on_submit(self, interaction: discord.Interaction):
-        await create_ticket_channel_complete(
+        # Criar ticket e retornar o canal criado
+        ticket_channel = await create_ticket_channel_complete(
             interaction,
             self.category_name,
             self.category_emoji,
@@ -1339,7 +1340,7 @@ class TicketModalComplete(discord.ui.Modal):
         )
         
         # Editar mensagem original para substituir dropdowns por confirmação
-        if self.original_message:
+        if self.original_message and ticket_channel:
             try:
                 success_embed = discord.Embed(
                     title="✅ Ticket Criado com Sucesso!",
@@ -1358,7 +1359,7 @@ class TicketModalComplete(discord.ui.Modal):
                 )
                 success_embed.add_field(
                     name="🎫 Canal do Ticket",
-                    value=f"Vá para o canal do seu ticket e aguarde nossa equipe!",
+                    value=f"{ticket_channel.mention}\nVá para o canal do seu ticket e aguarde nossa equipe!",
                     inline=False
                 )
                 success_embed.set_footer(text="Sistema de Tickets • Caos Hub")
@@ -1967,17 +1968,12 @@ async def create_ticket_channel_complete(interaction, category_name, category_em
         # Enviar
         await ticket_channel.send(f"{member.mention}", embed=embed, view=TicketManageView(ticket_channel))
         
-        # Responder ao modal
+        # NÃO responder ao modal (sem mensagem ephemeral)
+        # O embed de sucesso (que substitui os dropdowns) já foi editado no on_submit do modal
         try:
-            await interaction.response.send_message(
-                f'✅ **Ticket criado!** {ticket_channel.mention}',
-                ephemeral=True
-            )
+            await interaction.response.defer()
         except:
-            await interaction.followup.send(
-                f'✅ **Ticket criado!** {ticket_channel.mention}',
-                ephemeral=True
-            )
+            pass
         
         # LOG
         log_channel = discord.utils.get(guild.text_channels, name='ticket-logs')
@@ -1989,10 +1985,14 @@ async def create_ticket_channel_complete(interaction, category_name, category_em
             log_embed.add_field(name="Prioridade", value=f"{priority_emoji} {priority_name}", inline=True)
             await log_channel.send(embed=log_embed)
         
+        # RETORNAR o canal criado
+        return ticket_channel
+        
     except Exception as e:
         print(f'❌ Erro: {e}')
         import traceback
         traceback.print_exc()
+        return None
 
 # ========================================
 # EVENTOS DE BOAS-VINDAS/SAÍDA/BAN
