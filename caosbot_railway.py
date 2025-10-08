@@ -1440,10 +1440,6 @@ class TicketConfigView(discord.ui.View):
         self.selected_priority = None
         self.selected_priority_emoji = None
         self.original_message = None  # Referência à mensagem original
-    
-    async def on_timeout(self):
-        """Remove do set quando expirar"""
-        active_ticket_dropdowns.discard(self.user_id)
         
         # Dropdown 1: Categoria
         category_select = discord.ui.Select(
@@ -1601,6 +1597,10 @@ class TicketConfigView(discord.ui.View):
             self.original_message  # Passar a mensagem original
         )
         await interaction.response.send_modal(modal)
+    
+    async def on_timeout(self):
+        """Remove do set quando a view expirar (5 minutos)"""
+        active_ticket_dropdowns.discard(self.user_id)
 
 async def send_ticket_config_message(interaction):
     """Envia mensagem de configuração ephemeral"""
