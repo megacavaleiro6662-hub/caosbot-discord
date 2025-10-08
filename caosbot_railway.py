@@ -128,13 +128,28 @@ def dashboard():
         
         body {{ 
             font-family: 'Inter', 'Roboto', sans-serif; 
-            background: linear-gradient(135deg, #000000 0%, #1a0000 25%, #330000 50%, #1a0000 75%, #000000 100%);
-            background-size: 400% 400%;
+            background: 
+                url('https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExeWhhbW5mdGRtZnhwZGt0cTlpd2R3aDNoNzBoZm1kZWFvMmJ4NGNsZCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/xWMPYx55WNhX136T0V/giphy.gif') center/cover fixed,
+                linear-gradient(135deg, #000000 0%, #1a0000 25%, #330000 50%, #1a0000 75%, #000000 100%);
+            background-size: cover, 400% 400%;
+            background-blend-mode: screen;
             animation: fireGlow 20s ease infinite;
             min-height: 100vh; 
             color: #fff; 
             overflow: hidden;
             position: relative;
+        }}
+        
+        body::after {{
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 0;
+            pointer-events: none;
         }}
         
         /* Partículas de fogo animadas */
