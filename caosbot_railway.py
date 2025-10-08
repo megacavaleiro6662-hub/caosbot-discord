@@ -1388,8 +1388,8 @@ class TicketConfigView(discord.ui.View):
         # Responder ao usuário
         await interaction.response.send_message(f"✅ Categoria selecionada: {self.selected_category_emoji} **{self.selected_category}**", ephemeral=True)
         
-        # Atualizar mensagem original se ambos foram selecionados
-        if self.selected_priority and self.original_message:
+        # Atualizar mensagem original SEMPRE
+        if self.original_message:
             # Atualizar embed mostrando as escolhas
             updated_embed = discord.Embed(
                 title="🎫 CONFIGURAR SEU TICKET",
@@ -1401,11 +1401,18 @@ class TicketConfigView(discord.ui.View):
                 value=f"{self.selected_category_emoji} **{self.selected_category}**",
                 inline=True
             )
-            updated_embed.add_field(
-                name="⚡ Prioridade",
-                value=f"{self.selected_priority_emoji} **{self.selected_priority}**",
-                inline=True
-            )
+            if self.selected_priority:
+                updated_embed.add_field(
+                    name="⚡ Prioridade",
+                    value=f"{self.selected_priority_emoji} **{self.selected_priority}**",
+                    inline=True
+                )
+            else:
+                updated_embed.add_field(
+                    name="⚡ Prioridade",
+                    value="Urgência do atendimento",
+                    inline=True
+                )
             updated_embed.add_field(
                 name="\u200b",
                 value="*Clique em* ✅ *Continuar para prosseguir*",
@@ -1432,8 +1439,8 @@ class TicketConfigView(discord.ui.View):
         # Responder ao usuário
         await interaction.response.send_message(f"✅ Prioridade selecionada: {self.selected_priority_emoji} **{self.selected_priority}**", ephemeral=True)
         
-        # Atualizar mensagem original se ambos foram selecionados
-        if self.selected_category and self.original_message:
+        # Atualizar mensagem original SEMPRE
+        if self.original_message:
             # Atualizar embed mostrando as escolhas
             updated_embed = discord.Embed(
                 title="🎫 CONFIGURAR SEU TICKET",
@@ -1445,11 +1452,18 @@ class TicketConfigView(discord.ui.View):
                 value=f"{self.selected_category_emoji} **{self.selected_category}**",
                 inline=True
             )
-            updated_embed.add_field(
-                name="⚡ Prioridade",
-                value=f"{self.selected_priority_emoji} **{self.selected_priority}**",
-                inline=True
-            )
+            if self.selected_priority:
+                updated_embed.add_field(
+                    name="⚡ Prioridade",
+                    value=f"{self.selected_priority_emoji} **{self.selected_priority}**",
+                    inline=True
+                )
+            else:
+                updated_embed.add_field(
+                    name="⚡ Prioridade",
+                    value="Urgência do atendimento",
+                    inline=True
+                )
             updated_embed.add_field(
                 name="\u200b",
                 value="*Clique em* ✅ *Continuar para prosseguir*",
