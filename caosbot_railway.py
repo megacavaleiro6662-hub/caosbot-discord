@@ -40,12 +40,62 @@ DISCORD_CLIENT_SECRET = os.getenv('DISCORD_CLIENT_SECRET', 'YOUR_CLIENT_SECRET')
 DISCORD_REDIRECT_URI = os.getenv('DISCORD_REDIRECT_URI', 'https://caosbot-discord-foxc.onrender.com/callback')
 DISCORD_OAUTH_URL = f"https://discord.com/api/oauth2/authorize?client_id={DISCORD_CLIENT_ID}&redirect_uri={DISCORD_REDIRECT_URI}&response_type=code&scope=identify%20guilds%20guilds.members.read"
 
-# Decorator para verificar login
+# IDs dos cargos PERMITIDOS (apenas Founder, Sub-Dono, Administrador)
+ALLOWED_ROLE_IDS = [
+    '1365636960651051069',  # Founder
+    '1365636456386789437',  # Sub-Dono
+    '1365633918593794079'   # Administrador
+]
+
+SERVER_ID = '1365510151884378214'  # CAOS Hub
+
+# Função para verificar permissões do usuário
+def check_user_permissions(user_id):
+    """Verifica se usuário tem cargo de Administrador ou superior EM TEMPO REAL"""
+    try:
+        if 'access_token' not in session:
+            return False
+        
+        headers = {'Authorization': f'Bearer {session["access_token"]}'}
+        
+        # Busca os cargos do usuário no servidor CAOS Hub
+        member_data = requests.get(
+            f'https://discord.com/api/guilds/{SERVER_ID}/members/{user_id}',
+            headers=headers
+        ).json()
+        
+        # Verifica se tem algum dos cargos permitidos
+        user_roles = member_data.get('roles', [])
+        for role_id in user_roles:
+            if role_id in ALLOWED_ROLE_IDS:
+                return True
+        
+        return False
+    except Exception as e:
+        print(f"❌ Erro ao verificar permissões: {e}")
+        return False
+
+# Decorator para verificar login E permissões em tempo real
 def login_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
         if 'user' not in session:
             return redirect(url_for('login_page'))
+        
+        # Verifica permissões em TEMPO REAL
+        if not check_user_permissions(session['user']['id']):
+            session.clear()
+            return """
+            <html>
+            <head><title>Sessão Expirada</title><link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&display=swap" rel="stylesheet"></head>
+            <body style="background:#000;color:#ff3300;text-align:center;padding-top:100px;font-family:Orbitron,sans-serif;">
+                <h1 style="font-size:48px;text-shadow:0 0 20px #ff0000;">⚠️ ACESSO REVOGADO</h1>
+                <p style="color:#ff6666;font-size:18px;">Suas permissões de administrador foram removidas.</p>
+                <a href="/login" style="color:#ff6600;font-size:16px;text-decoration:none;">← Fazer Login Novamente</a>
+            </body>
+            </html>
+            """
+        
         return f(*args, **kwargs)
     return decorated_function
 
