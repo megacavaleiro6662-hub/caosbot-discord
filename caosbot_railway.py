@@ -18,7 +18,9 @@ from datetime import datetime
 from discord.ui import Button, View
 import math
 import threading
-from flask import Flask, request, jsonify, render_template
+from flask import Flask, request, jsonify, render_template, session, redirect, url_for
+from functools import wraps
+import secrets
 
 # ========================================
 # SISTEMA DE MÚSICA REMOVIDO
@@ -27,21 +29,206 @@ from flask import Flask, request, jsonify, render_template
 # Sistema de música foi removido para maior estabilidade e foco em vendas.
 
 # ========================================
-# INICIALIZAR FLASK
+# INICIALIZAR FLASK COM OAUTH2
 # ========================================
 app = Flask(__name__)
+app.secret_key = secrets.token_hex(32)
+
+# Discord OAuth2
+DISCORD_CLIENT_ID = os.getenv('DISCORD_CLIENT_ID', 'YOUR_CLIENT_ID')
+DISCORD_CLIENT_SECRET = os.getenv('DISCORD_CLIENT_SECRET', 'YOUR_CLIENT_SECRET')
+DISCORD_REDIRECT_URI = os.getenv('DISCORD_REDIRECT_URI', 'https://caosbot-discord-foxc.onrender.com/callback')
+DISCORD_OAUTH_URL = f"https://discord.com/api/oauth2/authorize?client_id={DISCORD_CLIENT_ID}&redirect_uri={DISCORD_REDIRECT_URI}&response_type=code&scope=identify%20guilds%20guilds.members.read"
+
+# Decorator para verificar login
+def login_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if 'user' not in session:
+            return redirect(url_for('login_page'))
+        return f(*args, **kwargs)
+    return decorated_function
 
 # ========================================
 # SERVIDOR HTTP PARA RENDER (DETECTAR PORTA)
 # ========================================
 @app.route('/')
 def home():
-    return "✅ CAOSBot está rodando!"
+    if 'user' in session:
+        return redirect(url_for('dashboard'))
+    return redirect(url_for('login_page'))
 
 @app.route('/ping')
 def ping():
     """Rota para keep-alive (evitar sleep do Render)"""
     return {"status": "alive", "bot": "online", "uptime": "running"}, 200
+
+# ========================================
+# SISTEMA DE LOGIN COM DISCORD OAUTH2
+# ========================================
+@app.route('/login')
+def login_page():
+    """Página de login profissional"""
+    html = f"""
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CAOS Hub - Login</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        * {{ margin: 0; padding: 0; box-sizing: border-box; font-family: 'Orbitron', sans-serif; }}
+        body {{
+            background: linear-gradient(135deg, #000000 0%, #1a0000 25%, #330000 50%, #1a0000 75%, #000000 100%);
+            background-size: 400% 400%;
+            animation: fireGlow 20s ease infinite;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }}
+        @keyframes fireGlow {{
+            0%, 100% {{ background-position: 0% 50%; }}
+            50% {{ background-position: 100% 50%; }}
+        }}
+        .login-container {{
+            background: linear-gradient(135deg, rgba(0, 0, 0, 0.9) 0%, rgba(50, 0, 0, 0.8) 100%);
+            border: 3px solid #ff6600;
+            padding: 60px 50px;
+            text-align: center;
+            box-shadow: 0 16px 64px rgba(255, 50, 0, 0.6), 0 0 40px rgba(255, 100, 0, 0.4);
+            max-width: 500px;
+            width: 90%;
+        }}
+        .logo {{
+            width: 200px;
+            margin-bottom: 30px;
+            filter: drop-shadow(0 0 20px rgba(255, 100, 0, 0.8));
+        }}
+        h1 {{
+            font-size: 42px;
+            color: #ffcc00;
+            margin-bottom: 15px;
+            text-shadow: 0 0 15px rgba(255, 200, 0, 0.6);
+            letter-spacing: 3px;
+        }}
+        p {{
+            color: #ffaa66;
+            font-size: 16px;
+            margin-bottom: 40px;
+            letter-spacing: 1px;
+        }}
+        .login-btn {{
+            background: linear-gradient(135deg, #ff6600, #ff3300);
+            color: white;
+            border: 3px solid #ff3300;
+            padding: 18px 40px;
+            font-size: 18px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            letter-spacing: 2px;
+            text-decoration: none;
+            display: inline-block;
+            box-shadow: 0 8px 24px rgba(255, 50, 0, 0.5);
+        }}
+        .login-btn:hover {{
+            background: linear-gradient(135deg, #ff3300, #cc0000);
+            box-shadow: 0 12px 32px rgba(255, 50, 0, 0.8);
+            transform: translateY(-3px);
+        }}
+        .warning {{
+            margin-top: 30px;
+            padding: 15px;
+            background: rgba(255, 50, 0, 0.1);
+            border: 2px solid #ff3300;
+            color: #ff6666;
+            font-size: 14px;
+        }}
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <img src="https://i.ibb.co/Fq5Lgzs5/Chat-GPT-Image-7-de-out-de-2025-00-25-49.png" alt="CAOS Logo" class="logo">
+        <h1>CAOS HUB</h1>
+        <p>Sistema Administrativo Avançado</p>
+        <a href="{DISCORD_OAUTH_URL}" class="login-btn">🔐 LOGIN COM DISCORD</a>
+        <div class="warning">
+            ⚠️ <strong>ACESSO RESTRITO</strong><br>
+            Apenas administradores podem acessar este painel.
+        </div>
+    </div>
+</body>
+</html>
+    """
+    return html
+
+@app.route('/callback')
+def callback():
+    """Callback do Discord OAuth2"""
+    code = request.args.get('code')
+    if not code:
+        return redirect(url_for('login_page'))
+    
+    try:
+        # Trocar código por token
+        data = {{
+            'client_id': DISCORD_CLIENT_ID,
+            'client_secret': DISCORD_CLIENT_SECRET,
+            'grant_type': 'authorization_code',
+            'code': code,
+            'redirect_uri': DISCORD_REDIRECT_URI
+        }}
+        headers = {{'Content-Type': 'application/x-www-form-urlencoded'}}
+        r = requests.post('https://discord.com/api/oauth2/token', data=data, headers=headers)
+        r.raise_for_status()
+        token_data = r.json()
+        access_token = token_data['access_token']
+        
+        # Pegar informações do usuário
+        headers = {{'Authorization': f'Bearer {{access_token}}'}}
+        user_data = requests.get('https://discord.com/api/users/@me', headers=headers).json()
+        guilds_data = requests.get('https://discord.com/api/users/@me/guilds', headers=headers).json()
+        
+        # Verificar se usuário tem permissão de administrador
+        is_admin = False
+        for guild in guilds_data:
+            permissions = int(guild.get('permissions', 0))
+            if permissions & 0x8:  # ADMINISTRATOR
+                is_admin = True
+                break
+        
+        if not is_admin:
+            return """
+            <html>
+            <head><title>Acesso Negado</title><link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&display=swap" rel="stylesheet"></head>
+            <body style="background:#000;color:#ff3300;text-align:center;padding-top:100px;font-family:Orbitron,sans-serif;">
+                <h1 style="font-size:48px;text-shadow:0 0 20px #ff0000;">❌ ACESSO NEGADO</h1>
+                <p style="color:#ff6666;font-size:18px;">Você não possui permissões de administrador.</p>
+                <a href="/login" style="color:#ff6600;font-size:16px;text-decoration:none;">← Voltar ao Login</a>
+            </body>
+            </html>
+            """
+        
+        # Salvar na sessão
+        session['user'] = {{
+            'id': user_data['id'],
+            'username': user_data['username'],
+            'avatar': f"https://cdn.discordapp.com/avatars/{{user_data['id']}}/{{user_data['avatar']}}.png" if user_data.get('avatar') else None
+        }}
+        
+        return redirect(url_for('dashboard'))
+    
+    except Exception as e:
+        return f"<html><body style='background:#000;color:#ff3300;text-align:center;padding:50px;font-family:Orbitron;'><h1>❌ Erro no login</h1><p>{{str(e)}}</p><a href='/login' style='color:#ff6600;'>← Voltar</a></body></html>", 500
+
+@app.route('/logout')
+def logout():
+    """Fazer logout"""
+    session.clear()
+    return redirect(url_for('login_page'))
 
 # CARREGAMENTO DE CONFIGURAÇÕES
 @app.route('/health')
@@ -88,6 +275,7 @@ def health():
 # ========================================
 
 @app.route('/dashboard')
+@login_required
 def dashboard():
     """Página principal do dashboard"""
     try:
