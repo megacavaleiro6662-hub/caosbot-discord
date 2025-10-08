@@ -51,25 +51,31 @@ SERVER_ID = '1365510151884378214'  # CAOS Hub
 
 # Função para verificar permissões do usuário
 def check_user_permissions(user_id):
-    """Verifica se usuário tem cargo de Administrador ou superior EM TEMPO REAL"""
+    """Verifica se usuário tem cargo de Administrador ou superior EM TEMPO REAL usando BOT TOKEN"""
     try:
-        if 'access_token' not in session:
+        # USA O BOT TOKEN para garantir informações atualizadas
+        bot_token = os.getenv('DISCORD_TOKEN')
+        if not bot_token:
             return False
         
-        headers = {'Authorization': f'Bearer {session["access_token"]}'}
+        headers = {'Authorization': f'Bot {bot_token}'}
         
-        # Busca os cargos do usuário no servidor CAOS Hub
+        # Busca os cargos do usuário no servidor CAOS Hub (SEMPRE ATUALIZADO)
         member_data = requests.get(
             f'https://discord.com/api/guilds/{SERVER_ID}/members/{user_id}',
             headers=headers
         ).json()
         
+        print(f"🔐 [CHECK] Usuário {user_id} - Cargos: {member_data.get('roles', [])}")
+        
         # Verifica se tem algum dos cargos permitidos
         user_roles = member_data.get('roles', [])
         for role_id in user_roles:
             if role_id in ALLOWED_ROLE_IDS:
+                print(f"✅ [CHECK] Usuário {user_id} tem cargo permitido: {role_id}")
                 return True
         
+        print(f"❌ [CHECK] Usuário {user_id} NÃO tem cargo permitido")
         return False
     except Exception as e:
         print(f"❌ Erro ao verificar permissões: {e}")
