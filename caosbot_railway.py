@@ -111,18 +111,30 @@ def dashboard():
             50% {{ background-position: 100% 50%; }}
         }}
         
+        @keyframes fireFloat {{
+            0% {{ transform: translateY(100vh) scale(0); opacity: 0; }}
+            10% {{ opacity: 1; }}
+            90% {{ opacity: 1; }}
+            100% {{ transform: translateY(-100vh) scale(1.5); opacity: 0; }}
+        }}
+        
+        @keyframes fireFlicker {{
+            0%, 100% {{ opacity: 0.6; }}
+            50% {{ opacity: 1; }}
+        }}
+        
         body {{ 
             font-family: 'Inter', 'Roboto', sans-serif; 
-            background: linear-gradient(135deg, #1a0000 0%, #330000 25%, #4d0000 50%, #660000 75%, #1a0000 100%);
+            background: linear-gradient(135deg, #000000 0%, #1a0000 25%, #330000 50%, #1a0000 75%, #000000 100%);
             background-size: 400% 400%;
-            animation: fireGlow 15s ease infinite;
+            animation: fireGlow 20s ease infinite;
             min-height: 100vh; 
             color: #fff; 
-            overflow-x: hidden;
+            overflow: hidden;
             position: relative;
         }}
         
-        /* Partículas de fogo */
+        /* Partículas de fogo animadas */
         body::before {{
             content: '';
             position: fixed;
@@ -131,9 +143,27 @@ def dashboard():
             width: 100%;
             height: 100%;
             background: 
-                radial-gradient(circle at 20% 80%, rgba(255, 100, 0, 0.1) 0%, transparent 50%),
-                radial-gradient(circle at 80% 20%, rgba(255, 150, 0, 0.1) 0%, transparent 50%),
-                radial-gradient(circle at 40% 40%, rgba(255, 200, 0, 0.05) 0%, transparent 50%);
+                radial-gradient(circle at 10% 90%, rgba(255, 50, 0, 0.15) 0%, transparent 30%),
+                radial-gradient(circle at 90% 10%, rgba(255, 100, 0, 0.12) 0%, transparent 35%),
+                radial-gradient(circle at 50% 50%, rgba(255, 150, 0, 0.08) 0%, transparent 40%),
+                radial-gradient(circle at 30% 20%, rgba(255, 200, 0, 0.06) 0%, transparent 25%);
+            animation: fireFlicker 3s ease-in-out infinite;
+            pointer-events: none;
+            z-index: 0;
+        }}
+        
+        body::after {{
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle 150px at 15% 80%, rgba(255, 100, 0, 0.2) 0%, transparent 100%),
+                radial-gradient(circle 200px at 85% 20%, rgba(255, 150, 0, 0.15) 0%, transparent 100%),
+                radial-gradient(circle 100px at 50% 60%, rgba(255, 200, 0, 0.1) 0%, transparent 100%);
+            animation: fireFloat 25s linear infinite;
             pointer-events: none;
             z-index: 0;
         }}
