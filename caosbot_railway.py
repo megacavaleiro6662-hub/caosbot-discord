@@ -1672,10 +1672,18 @@ async def create_ticket_channel(interaction, category_name, assunto, descricao):
             )
             return
         
-        # Obter ou criar categoria
-        ticket_category = discord.utils.get(guild.categories, name='📂 TICKETS')
+        # Obter categoria do dashboard
+        category_id = ticket_config.get('category_id')
+        if category_id:
+            ticket_category = guild.get_channel(int(category_id))
+        else:
+            ticket_category = None
+        
+        # Se não encontrou, usar padrão
         if not ticket_category:
-            ticket_category = await guild.create_category('📂 TICKETS')
+            ticket_category = discord.utils.get(guild.categories, name='📂 TICKETS')
+            if not ticket_category:
+                ticket_category = await guild.create_category('📂 TICKETS')
         
         # Mapear emojis e nomes curtos por categoria (15 categorias!)
         category_map = {
@@ -1715,6 +1723,20 @@ async def create_ticket_channel(interaction, category_name, assunto, descricao):
         # Permissões
         await ticket_channel.set_permissions(guild.default_role, view_channel=False)
         await ticket_channel.set_permissions(member, view_channel=True, send_messages=True)
+        
+        # Adicionar staff roles (do dashboard)
+        staff_roles = ticket_config.get('staff_roles', [])
+        for role_id in staff_roles:
+            role = guild.get_role(int(role_id))
+            if role:
+                await ticket_channel.set_permissions(role, view_channel=True, send_messages=True, manage_messages=True)
+        
+        # Adicionar staff roles (do dashboard)
+        staff_roles = ticket_config.get('staff_roles', [])
+        for role_id in staff_roles:
+            role = guild.get_role(int(role_id))
+            if role:
+                await ticket_channel.set_permissions(role, view_channel=True, send_messages=True, manage_messages=True)
         
         # Embed com informações
         embed = discord.Embed(
@@ -1766,10 +1788,18 @@ async def create_ticket_channel_complete(interaction, category_name, category_em
             )
             return
         
-        # Obter ou criar categoria
-        ticket_category = discord.utils.get(guild.categories, name='📂 TICKETS')
+        # Obter categoria do dashboard
+        category_id = ticket_config.get('category_id')
+        if category_id:
+            ticket_category = guild.get_channel(int(category_id))
+        else:
+            ticket_category = None
+        
+        # Se não encontrou, usar padrão
         if not ticket_category:
-            ticket_category = await guild.create_category('📂 TICKETS')
+            ticket_category = discord.utils.get(guild.categories, name='📂 TICKETS')
+            if not ticket_category:
+                ticket_category = await guild.create_category('📂 TICKETS')
         
         # Mapear nomes curtos
         category_map = {
@@ -1796,6 +1826,20 @@ async def create_ticket_channel_complete(interaction, category_name, category_em
         # Permissões
         await ticket_channel.set_permissions(guild.default_role, view_channel=False)
         await ticket_channel.set_permissions(member, view_channel=True, send_messages=True)
+        
+        # Adicionar staff roles (do dashboard)
+        staff_roles = ticket_config.get('staff_roles', [])
+        for role_id in staff_roles:
+            role = guild.get_role(int(role_id))
+            if role:
+                await ticket_channel.set_permissions(role, view_channel=True, send_messages=True, manage_messages=True)
+        
+        # Adicionar staff roles (do dashboard)
+        staff_roles = ticket_config.get('staff_roles', [])
+        for role_id in staff_roles:
+            role = guild.get_role(int(role_id))
+            if role:
+                await ticket_channel.set_permissions(role, view_channel=True, send_messages=True, manage_messages=True)
         
         # Cor baseada na prioridade
         priority_colors = {"Baixa": 0x00ff00, "Média": 0xffff00, "Alta": 0xff8800, "Urgente": 0xff0000}
