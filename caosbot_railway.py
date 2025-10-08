@@ -1366,6 +1366,60 @@ class TicketConfigView(discord.ui.View):
         self.continue_button.callback = self.continue_callback
         self.add_item(self.continue_button)
     
+
+    def update_dropdowns(self):
+        """Recria os dropdowns com placeholders atualizados"""
+        # Limpar items
+        self.clear_items()
+        
+        # Dropdown 1: Categoria (com placeholder atualizado)
+        category_placeholder = f"✅ {self.selected_category}" if self.selected_category else "🗂️ Selecione a Categoria do Ticket"
+        category_select = discord.ui.Select(
+            placeholder=category_placeholder,
+            custom_id="category_dropdown",
+            options=[
+                discord.SelectOption(label="Geral", description="Assuntos gerais", emoji="📁", value="geral"),
+                discord.SelectOption(label="Compras", description="Dúvidas sobre compras", emoji="🛒", value="compras"),
+                discord.SelectOption(label="Suporte Técnico", description="Problemas técnicos", emoji="🔧", value="suporte"),
+                discord.SelectOption(label="Denúncia", description="Reportar usuário/conteúdo", emoji="🚨", value="denuncia"),
+                discord.SelectOption(label="Parceria", description="Proposta de parceria", emoji="🤝", value="parceria"),
+                discord.SelectOption(label="Financeiro", description="Questões de pagamento", emoji="💰", value="financeiro"),
+                discord.SelectOption(label="Moderação", description="Questões de moderação", emoji="🛡️", value="moderacao"),
+                discord.SelectOption(label="Bug", description="Reportar bugs", emoji="🐛", value="bug"),
+            ],
+            row=0
+        )
+        category_select.callback = self.category_callback
+        self.add_item(category_select)
+        
+        # Dropdown 2: Prioridade (com placeholder atualizado)
+        priority_placeholder = f"✅ {self.selected_priority}" if self.selected_priority else "⚡ Selecione a Prioridade"
+        priority_select = discord.ui.Select(
+            placeholder=priority_placeholder,
+            custom_id="priority_dropdown",
+            options=[
+                discord.SelectOption(label="Baixa", description="Não é urgente", emoji="🟢", value="baixa"),
+                discord.SelectOption(label="Média", description="Prioridade normal", emoji="🟡", value="media"),
+                discord.SelectOption(label="Alta", description="Precisa de atenção", emoji="🟠", value="alta"),
+                discord.SelectOption(label="Urgente", description="Muito urgente!", emoji="🔴", value="urgente"),
+            ],
+            row=1
+        )
+        priority_select.callback = self.priority_callback
+        self.add_item(priority_select)
+        
+        # Botão Continuar (habilitado se ambos selecionados)
+        self.continue_button = discord.ui.Button(
+            label="Continuar",
+            emoji="✅",
+            style=discord.ButtonStyle.success,
+            custom_id="continue_button",
+            row=2,
+            disabled=not (self.selected_category and self.selected_priority)
+        )
+        self.continue_button.callback = self.continue_callback
+        self.add_item(self.continue_button)
+
     async def category_callback(self, interaction: discord.Interaction):
         category_map = {
             "geral": ("Geral", "📁"),
@@ -1419,6 +1473,9 @@ class TicketConfigView(discord.ui.View):
                 inline=False
             )
             updated_embed.set_footer(text="Sistema de Tickets • Caos Hub")
+            
+            # Atualizar dropdowns para mostrar o selecionado
+            self.update_dropdowns()
             await self.original_message.edit(embed=updated_embed, view=self)
     
     async def priority_callback(self, interaction: discord.Interaction):
@@ -1470,6 +1527,9 @@ class TicketConfigView(discord.ui.View):
                 inline=False
             )
             updated_embed.set_footer(text="Sistema de Tickets • Caos Hub")
+            
+            # Atualizar dropdowns para mostrar o selecionado
+            self.update_dropdowns()
             await self.original_message.edit(embed=updated_embed, view=self)
     
     async def continue_callback(self, interaction: discord.Interaction):
@@ -5791,6 +5851,60 @@ class PlaceholderOldTicketConfigView_REMOVED(discord.ui.View):
             self.role_select.callback = self.role_callback
             self.add_item(self.role_select)
     
+
+    def update_dropdowns(self):
+        """Recria os dropdowns com placeholders atualizados"""
+        # Limpar items
+        self.clear_items()
+        
+        # Dropdown 1: Categoria (com placeholder atualizado)
+        category_placeholder = f"✅ {self.selected_category}" if self.selected_category else "🗂️ Selecione a Categoria do Ticket"
+        category_select = discord.ui.Select(
+            placeholder=category_placeholder,
+            custom_id="category_dropdown",
+            options=[
+                discord.SelectOption(label="Geral", description="Assuntos gerais", emoji="📁", value="geral"),
+                discord.SelectOption(label="Compras", description="Dúvidas sobre compras", emoji="🛒", value="compras"),
+                discord.SelectOption(label="Suporte Técnico", description="Problemas técnicos", emoji="🔧", value="suporte"),
+                discord.SelectOption(label="Denúncia", description="Reportar usuário/conteúdo", emoji="🚨", value="denuncia"),
+                discord.SelectOption(label="Parceria", description="Proposta de parceria", emoji="🤝", value="parceria"),
+                discord.SelectOption(label="Financeiro", description="Questões de pagamento", emoji="💰", value="financeiro"),
+                discord.SelectOption(label="Moderação", description="Questões de moderação", emoji="🛡️", value="moderacao"),
+                discord.SelectOption(label="Bug", description="Reportar bugs", emoji="🐛", value="bug"),
+            ],
+            row=0
+        )
+        category_select.callback = self.category_callback
+        self.add_item(category_select)
+        
+        # Dropdown 2: Prioridade (com placeholder atualizado)
+        priority_placeholder = f"✅ {self.selected_priority}" if self.selected_priority else "⚡ Selecione a Prioridade"
+        priority_select = discord.ui.Select(
+            placeholder=priority_placeholder,
+            custom_id="priority_dropdown",
+            options=[
+                discord.SelectOption(label="Baixa", description="Não é urgente", emoji="🟢", value="baixa"),
+                discord.SelectOption(label="Média", description="Prioridade normal", emoji="🟡", value="media"),
+                discord.SelectOption(label="Alta", description="Precisa de atenção", emoji="🟠", value="alta"),
+                discord.SelectOption(label="Urgente", description="Muito urgente!", emoji="🔴", value="urgente"),
+            ],
+            row=1
+        )
+        priority_select.callback = self.priority_callback
+        self.add_item(priority_select)
+        
+        # Botão Continuar (habilitado se ambos selecionados)
+        self.continue_button = discord.ui.Button(
+            label="Continuar",
+            emoji="✅",
+            style=discord.ButtonStyle.success,
+            custom_id="continue_button",
+            row=2,
+            disabled=not (self.selected_category and self.selected_priority)
+        )
+        self.continue_button.callback = self.continue_callback
+        self.add_item(self.continue_button)
+
     async def category_callback(self, interaction: discord.Interaction):
         self.selected_category = int(self.category_select.values[0])
         category = self.guild.get_channel(self.selected_category)
