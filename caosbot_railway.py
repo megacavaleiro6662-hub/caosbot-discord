@@ -1389,6 +1389,19 @@ class TicketPanelView(discord.ui.View):
                 )
                 return
             
+            # VERIFICAR SE JÁ TEM TICKET ABERTO (evita duplicatas)
+            guild = interaction.guild
+            member = interaction.user
+            user_tickets = [ch for ch in guild.text_channels if f'Ticket de {member.id}' in (ch.topic or '')]
+            
+            if len(user_tickets) > 0:
+                tickets_list = ', '.join([ch.mention for ch in user_tickets])
+                await interaction.response.send_message(
+                    f"❌ **Você já possui ticket(s) aberto(s)!**\n\n{tickets_list}\n\n*Feche seu ticket atual antes de abrir um novo.*",
+                    ephemeral=True
+                )
+                return
+            
             # Enviar configuração ephemeral (só o usuário vê)
             await send_ticket_config_message(interaction)
         except Exception as e:
