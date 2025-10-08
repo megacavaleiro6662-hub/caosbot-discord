@@ -220,8 +220,36 @@ def dashboard():
         .particle:nth-child(18) {{ left: 95%; animation-delay: 3.8s; animation-duration: 13s; --drift: -45px; }}
         .particle:nth-child(19) {{ left: 5%; animation-delay: 5.2s; animation-duration: 15s; --drift: 25px; }}
         .particle:nth-child(20) {{ left: 12%; animation-delay: 0.8s; animation-duration: 17s; --drift: -30px; }}
-        .sidebar {{ position: fixed; left: 0; top: 0; width: 280px; height: 100vh; background: linear-gradient(180deg, #000000 0%, #1a0000 100%); backdrop-filter: blur(10px); border-right: 3px solid #ff3300; padding: 32px 24px; z-index: 10; box-shadow: 5px 0 30px rgba(255, 50, 0, 0.3); }}
-        .sidebar-logo {{ display: flex; align-items: center; justify-content: center; margin-bottom: 40px; }}
+        .sidebar {{ 
+            position: fixed; 
+            left: 0; 
+            top: 0; 
+            width: 280px; 
+            height: 100vh; 
+            background: linear-gradient(180deg, #000000 0%, #1a0000 100%); 
+            backdrop-filter: blur(10px); 
+            border-right: 3px solid #ff3300; 
+            padding: 32px 24px; 
+            z-index: 10; 
+            box-shadow: 5px 0 30px rgba(255, 50, 0, 0.3);
+            overflow: hidden;
+        }}
+        
+        .sidebar::before {{
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExZm9oNzBoaDFrbzh5OTZiMXZ0eTF0Zms0bWE5Z3pveXQ5NGJuNWY4eCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/L6VKg3ruTIfFFiKWpw/giphy.gif') center/cover;
+            opacity: 0.15;
+            z-index: -1;
+            pointer-events: none;
+            filter: blur(2px);
+        }}
+        
+        .sidebar-logo {{ display: flex; align-items: center; justify-content: center; margin-bottom: 40px; position: relative; z-index: 1; }}
         .sidebar-logo img {{ width: 180px; height: auto; filter: drop-shadow(0 0 20px rgba(255, 100, 0, 0.8)); }}
         .sidebar-nav {{ list-style: none; }}
         .sidebar-nav li {{ margin-bottom: 12px; }}
