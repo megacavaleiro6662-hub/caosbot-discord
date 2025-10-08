@@ -104,51 +104,83 @@ def dashboard():
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         * {{ margin: 0; padding: 0; box-sizing: border-box; }}
-        body {{ font-family: 'Poppins', sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; color: #fff; overflow-x: hidden; }}
-        .sidebar {{ position: fixed; left: 0; top: 0; width: 280px; height: 100vh; background: rgba(26, 26, 46, 0.95); backdrop-filter: blur(10px); border-right: 2px solid rgba(139, 92, 246, 0.2); padding: 32px 24px; }}
+        
+        /* Animação de fogo no fundo */
+        @keyframes fireGlow {{
+            0%, 100% {{ background-position: 0% 50%; }}
+            50% {{ background-position: 100% 50%; }}
+        }}
+        
+        body {{ 
+            font-family: 'Inter', 'Roboto', sans-serif; 
+            background: linear-gradient(135deg, #1a0000 0%, #330000 25%, #4d0000 50%, #660000 75%, #1a0000 100%);
+            background-size: 400% 400%;
+            animation: fireGlow 15s ease infinite;
+            min-height: 100vh; 
+            color: #fff; 
+            overflow-x: hidden;
+            position: relative;
+        }}
+        
+        /* Partículas de fogo */
+        body::before {{
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 80%, rgba(255, 100, 0, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(255, 150, 0, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, rgba(255, 200, 0, 0.05) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }}
+        .sidebar {{ position: fixed; left: 0; top: 0; width: 280px; height: 100vh; background: linear-gradient(180deg, #000000 0%, #1a0000 100%); backdrop-filter: blur(10px); border-right: 3px solid #ff3300; padding: 32px 24px; z-index: 10; box-shadow: 5px 0 30px rgba(255, 50, 0, 0.3); }}
         .sidebar-logo {{ display: flex; align-items: center; justify-content: center; margin-bottom: 40px; }}
-        .sidebar-logo img {{ width: 180px; height: auto; filter: drop-shadow(0 0 20px rgba(139, 92, 246, 0.4)); }}
+        .sidebar-logo img {{ width: 180px; height: auto; filter: drop-shadow(0 0 20px rgba(255, 100, 0, 0.8)); }}
         .sidebar-nav {{ list-style: none; }}
         .sidebar-nav li {{ margin-bottom: 12px; }}
-        .sidebar-nav a {{ display: flex; align-items: center; padding: 14px 18px; color: #9ca3af; text-decoration: none; border-radius: 2px; border-left: 3px solid transparent; transition: all 0.3s; font-weight: 500; }}
-        .sidebar-nav a:hover {{ background: rgba(139, 92, 246, 0.1); color: #fff; border-left-color: #8b5cf6; }}
-        .sidebar-nav a.active {{ background: rgba(139, 92, 246, 0.15); color: #fff; border-left-color: #8b5cf6; }}
-        .main {{ margin-left: 280px; padding: 32px; }}
-        .header {{ background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); border: 2px solid rgba(255, 255, 255, 0.1); border-radius: 2px; padding: 32px; margin-bottom: 32px; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2); }}
-        .header h1 {{ font-size: 32px; font-weight: 800; margin-bottom: 8px; text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3); }}
-        .header p {{ color: #e5e7eb; font-size: 16px; }}
+        .sidebar-nav a {{ display: flex; align-items: center; padding: 14px 18px; color: #ffaa66; text-decoration: none; border-radius: 0; border-left: 4px solid transparent; transition: all 0.3s; font-weight: 600; letter-spacing: 0.5px; }}
+        .sidebar-nav a:hover {{ background: rgba(255, 100, 0, 0.15); color: #ffcc00; border-left-color: #ff6600; box-shadow: inset 0 0 10px rgba(255, 100, 0, 0.2); }}
+        .sidebar-nav a.active {{ background: rgba(255, 50, 0, 0.25); color: #ffffff; border-left-color: #ff3300; box-shadow: inset 0 0 15px rgba(255, 50, 0, 0.3); }}
+        .main {{ margin-left: 280px; padding: 32px; position: relative; z-index: 1; }}
+        .header {{ background: linear-gradient(135deg, rgba(255, 50, 0, 0.15) 0%, rgba(255, 100, 0, 0.1) 100%); backdrop-filter: blur(10px); border: 2px solid #ff6600; border-radius: 0; padding: 32px; margin-bottom: 32px; box-shadow: 0 8px 32px rgba(255, 50, 0, 0.4); }}
+        .header h1 {{ font-size: 32px; font-weight: 800; margin-bottom: 8px; text-shadow: 0 0 10px rgba(255, 100, 0, 0.5), 0 0 20px rgba(255, 50, 0, 0.3); color: #ffcc00; }}
+        .header p {{ color: #ffaa66; font-size: 16px; }}
         .grid {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 24px; }}
-        .card {{ background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); border: 2px solid rgba(255, 255, 255, 0.1); border-radius: 2px; padding: 24px; transition: all 0.3s; box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1); }}
-        .card:hover {{ border-color: rgba(139, 92, 246, 0.5); transform: translateY(-4px); box-shadow: 0 8px 24px rgba(139, 92, 246, 0.2); }}
+        .card {{ background: linear-gradient(135deg, rgba(0, 0, 0, 0.6) 0%, rgba(50, 0, 0, 0.4) 100%); backdrop-filter: blur(10px); border: 2px solid #ff6600; border-radius: 0; padding: 24px; transition: all 0.3s; box-shadow: 0 4px 16px rgba(255, 50, 0, 0.3); }}
+        .card:hover {{ border-color: #ff3300; transform: translateY(-4px); box-shadow: 0 8px 24px rgba(255, 100, 0, 0.5), 0 0 30px rgba(255, 50, 0, 0.3); }}
         .card-header {{ display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }}
-        .card-header h2 {{ font-size: 18px; font-weight: 700; }}
+        .card-header h2 {{ font-size: 18px; font-weight: 700; color: #ffcc00; text-shadow: 0 0 5px rgba(255, 200, 0, 0.4); }}
         .toggle {{ position: relative; width: 48px; height: 24px; }}
         .toggle input {{ opacity: 0; width: 0; height: 0; }}
-        .toggle label {{ position: absolute; cursor: pointer; inset: 0; background: #374151; transition: 0.3s; border-radius: 24px; }}
-        .toggle label:before {{ content: ""; position: absolute; height: 18px; width: 18px; left: 3px; bottom: 3px; background: white; transition: 0.3s; border-radius: 50%; }}
-        .toggle input:checked + label {{ background: #8b5cf6; }}
-        .toggle input:checked + label:before {{ transform: translateX(24px); }}
-        .status {{ display: inline-block; padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: 500; }}
-        .status-on {{ background: #22c55e20; color: #22c55e; }}
-        .status-off {{ background: #ef444420; color: #ef4444; }}
-        .btn {{ padding: 12px 24px; border: none; border-radius: 6px; font-size: 14px; font-weight: 500; cursor: pointer; transition: all 0.2s; }}
-        .btn-primary {{ background: #8b5cf6; color: white; }}
-        .btn-primary:hover {{ background: #7c3aed; }}
-        .btn-danger {{ background: #ef4444; color: white; }}
-        .btn-danger:hover {{ background: #dc2626; }}
+        .toggle label {{ position: absolute; cursor: pointer; inset: 0; background: #330000; transition: 0.3s; border-radius: 0; border: 1px solid #ff6600; }}
+        .toggle label:before {{ content: ""; position: absolute; height: 18px; width: 18px; left: 3px; bottom: 3px; background: linear-gradient(135deg, #ff6600, #ffcc00); transition: 0.3s; border-radius: 0; box-shadow: 0 0 5px rgba(255, 200, 0, 0.5); }}
+        .toggle input:checked + label {{ background: linear-gradient(135deg, #ff3300, #ff6600); box-shadow: 0 0 10px rgba(255, 50, 0, 0.6); }}
+        .toggle input:checked + label:before {{ transform: translateX(24px); background: linear-gradient(135deg, #ffcc00, #ffffff); }}
+        .status {{ display: inline-block; padding: 4px 12px; border-radius: 0; font-size: 12px; font-weight: 600; border: 1px solid; }}
+        .status-on {{ background: rgba(255, 200, 0, 0.15); color: #ffcc00; border-color: #ffaa00; text-shadow: 0 0 5px rgba(255, 200, 0, 0.4); }}
+        .status-off {{ background: rgba(100, 0, 0, 0.3); color: #ff6666; border-color: #ff3300; }}
+        .btn {{ padding: 12px 24px; border: 2px solid; border-radius: 0; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.3s; letter-spacing: 0.5px; }}
+        .btn-primary {{ background: linear-gradient(135deg, #ff6600, #ff3300); color: white; border-color: #ff3300; box-shadow: 0 4px 15px rgba(255, 50, 0, 0.4); }}
+        .btn-primary:hover {{ background: linear-gradient(135deg, #ff3300, #cc0000); box-shadow: 0 6px 20px rgba(255, 50, 0, 0.6), 0 0 20px rgba(255, 100, 0, 0.4); transform: translateY(-2px); }}
+        .btn-danger {{ background: linear-gradient(135deg, #cc0000, #990000); color: white; border-color: #cc0000; box-shadow: 0 4px 15px rgba(200, 0, 0, 0.4); }}
+        .btn-danger:hover {{ background: linear-gradient(135deg, #990000, #660000); box-shadow: 0 6px 20px rgba(200, 0, 0, 0.6); transform: translateY(-2px); }}
         .section {{ margin-bottom: 32px; }}
-        .section-title {{ font-size: 20px; font-weight: 600; margin-bottom: 16px; }}
+        .section-title {{ font-size: 20px; font-weight: 700; margin-bottom: 16px; color: #ffcc00; text-shadow: 0 0 8px rgba(255, 200, 0, 0.4); }}
         .page {{ display: none; }}
         .page.active {{ display: block; }}
         .form-group {{ margin-bottom: 16px; }}
-        .form-label {{ display: block; margin-bottom: 8px; font-size: 14px; font-weight: 500; color: #d1d5db; }}
-        .form-input, .form-select, .form-textarea {{ width: 100%; padding: 10px 14px; background: #0f0f23; border: 1px solid #2a2a3e; border-radius: 6px; color: white; font-family: 'Inter', sans-serif; font-size: 14px; }}
-        .form-input:focus, .form-select:focus, .form-textarea:focus {{ outline: none; border-color: #8b5cf6; }}
+        .form-label {{ display: block; margin-bottom: 8px; font-size: 14px; font-weight: 600; color: #ffaa66; }}
+        .form-input, .form-select, .form-textarea {{ width: 100%; padding: 10px 14px; background: rgba(0, 0, 0, 0.5); border: 2px solid #ff6600; border-radius: 0; color: #ffcc00; font-family: 'Inter', 'Roboto', sans-serif; font-size: 14px; transition: all 0.3s; }}
+        .form-input:focus, .form-select:focus, .form-textarea:focus {{ outline: none; border-color: #ff3300; box-shadow: 0 0 10px rgba(255, 50, 0, 0.4), inset 0 0 5px rgba(255, 100, 0, 0.2); background: rgba(20, 0, 0, 0.6); }}
         .form-textarea {{ resize: vertical; min-height: 100px; }}
-        .toast {{ position: fixed; top: 24px; right: 24px; background: #1a1a2e; border: 1px solid #8b5cf6; border-radius: 6px; padding: 16px; min-width: 300px; opacity: 0; transform: translateX(400px); transition: all 0.3s; z-index: 1000; }}
+        .toast {{ position: fixed; top: 24px; right: 24px; background: linear-gradient(135deg, rgba(0, 0, 0, 0.9), rgba(50, 0, 0, 0.9)); border: 2px solid #ff6600; border-radius: 0; padding: 16px; min-width: 300px; opacity: 0; transform: translateX(400px); transition: all 0.3s; z-index: 1000; box-shadow: 0 8px 32px rgba(255, 50, 0, 0.5), 0 0 20px rgba(255, 100, 0, 0.3); }}
         .toast.show {{ opacity: 1; transform: translateX(0); }}
-        .toast-success {{ border-color: #22c55e; }}
-        .toast-error {{ border-color: #ef4444; }}
+        .toast-success {{ border-color: #ffcc00; box-shadow: 0 8px 32px rgba(255, 200, 0, 0.5), 0 0 20px rgba(255, 200, 0, 0.3); }}
+        .toast-error {{ border-color: #ff3300; box-shadow: 0 8px 32px rgba(255, 50, 0, 0.6), 0 0 20px rgba(255, 0, 0, 0.4); }}
     </style>
 </head>
 <body>
@@ -464,9 +496,9 @@ def dashboard():
     <!-- Toast Notification -->
     <div id="toast" class="toast"></div>
     
-    <!-- Notification Sound -->
+    <!-- Notification Sound (som épico mais longo) -->
     <audio id="notif-sound" preload="auto">
-        <source src="data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBSuBzvLZiDYIGWi77eeeTRAMUKfl8LZiGwY5kdXyzX",>
+        <source src="https://cdn.pixabay.com/download/audio/2022/03/10/audio_c8c6c7c579.mp3" type="audio/mpeg">
     <script>
         // Navegação entre páginas
         function showPage(page) {{
