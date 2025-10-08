@@ -1329,6 +1329,9 @@ class TicketModalComplete(discord.ui.Modal):
         # RESPONDER IMEDIATAMENTE (evita "algo deu errado")
         await interaction.response.defer()
         
+        # LIMPAR cooldown (ticket sendo criado, pode abrir outro depois)
+        ticket_panel_cooldowns.pop(interaction.user.id, None)
+        
         # DEPOIS criar ticket (pode demorar)
         ticket_channel = await create_ticket_channel_complete(
             interaction,
@@ -1409,12 +1412,12 @@ class TicketPanelView(discord.ui.View):
             
             if user_id in ticket_panel_cooldowns:
                 elapsed = current_time - ticket_panel_cooldowns[user_id]
-                cooldown_time = 60  # 1 minuto
+                cooldown_time = 60  # 1 minuto (mesmo tempo que a View expira)
                 
                 if elapsed < cooldown_time:
                     remaining = int(cooldown_time - elapsed)
                     await interaction.response.send_message(
-                        f"⏳ **Aguarde {remaining} segundo(s) para abrir outro painel!**\n\n*Cooldown para evitar spam.*",
+                        f"⏳ **Aguarde {remaining} segundo(s) para abrir outro painel!**\n\n*Seu painel anterior ainda está ativo.*",
                         ephemeral=True
                     )
                     return
@@ -1439,7 +1442,7 @@ class TicketPanelView(discord.ui.View):
 # View de configuração - Categoria + Prioridade
 class TicketConfigView(discord.ui.View):
     def __init__(self):
-        super().__init__(timeout=300)  # 5 minutos
+        super().__init__(timeout=60)  # 1 minuto
         self.selected_category = None
         self.selected_category_emoji = None
         self.selected_priority = None
