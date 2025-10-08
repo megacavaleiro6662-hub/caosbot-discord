@@ -1373,7 +1373,7 @@ class TicketConfigView(discord.ui.View):
         self.clear_items()
         
         # Dropdown 1: Categoria (com placeholder atualizado)
-        category_placeholder = f"✅ {self.selected_category}" if self.selected_category else "🗂️ Selecione a Categoria do Ticket"
+        category_placeholder = f"{self.selected_category}" if self.selected_category else "🗂️ Selecione a Categoria do Ticket"
         category_select = discord.ui.Select(
             placeholder=category_placeholder,
             custom_id="category_dropdown",
@@ -1393,7 +1393,7 @@ class TicketConfigView(discord.ui.View):
         self.add_item(category_select)
         
         # Dropdown 2: Prioridade (com placeholder atualizado)
-        priority_placeholder = f"✅ {self.selected_priority}" if self.selected_priority else "⚡ Selecione a Prioridade"
+        priority_placeholder = f"{self.selected_priority}" if self.selected_priority else "⚡ Selecione a Prioridade"
         priority_select = discord.ui.Select(
             placeholder=priority_placeholder,
             custom_id="priority_dropdown",
@@ -5858,7 +5858,7 @@ class PlaceholderOldTicketConfigView_REMOVED(discord.ui.View):
         self.clear_items()
         
         # Dropdown 1: Categoria (com placeholder atualizado)
-        category_placeholder = f"✅ {self.selected_category}" if self.selected_category else "🗂️ Selecione a Categoria do Ticket"
+        category_placeholder = f"{self.selected_category}" if self.selected_category else "🗂️ Selecione a Categoria do Ticket"
         category_select = discord.ui.Select(
             placeholder=category_placeholder,
             custom_id="category_dropdown",
@@ -5878,7 +5878,7 @@ class PlaceholderOldTicketConfigView_REMOVED(discord.ui.View):
         self.add_item(category_select)
         
         # Dropdown 2: Prioridade (com placeholder atualizado)
-        priority_placeholder = f"✅ {self.selected_priority}" if self.selected_priority else "⚡ Selecione a Prioridade"
+        priority_placeholder = f"{self.selected_priority}" if self.selected_priority else "⚡ Selecione a Prioridade"
         priority_select = discord.ui.Select(
             placeholder=priority_placeholder,
             custom_id="priority_dropdown",
