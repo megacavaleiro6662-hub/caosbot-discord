@@ -1032,7 +1032,17 @@ def get_all_text_channels():
 
 @app.route('/api/discord/roles', methods=['GET'])
 def get_discord_roles():
-    """Retorna todos os cargos do servidor"""
+    """Retorna APENAS os cargos de STAFF (moderação)"""
+    # IDs dos cargos de staff (só esses aparecem no dropdown)
+    STAFF_ROLE_IDS = [
+        1365636960651051069,  # 🔥 Founder [FND]
+        1365636456386789437,  # 🌟 Sub Dono [SDN]
+        1365633918593794079,  # 👑 Administrador [ADM]
+        1365634226254254150,  # 🛠️ Staff [STF]
+        1365633102973763595,  # ⚔️ Moderador [MOD]
+        1365631940434333748,  # 🛡️ Sub Moderador [SBM]
+    ]
+    
     try:
         if not bot.guilds:
             return jsonify({'success': False, 'message': 'Bot não conectado'}), 500
@@ -1040,14 +1050,17 @@ def get_discord_roles():
         guild = bot.guilds[0]
         roles = []
         
+        # Filtrar APENAS os cargos de staff
         for role in guild.roles:
-            # Pular @everyone
-            if role.name != "@everyone":
+            if role.id in STAFF_ROLE_IDS:
                 roles.append({
                     'id': str(role.id),
                     'name': role.name,
                     'color': str(role.color)
                 })
+        
+        # Ordenar na hierarquia (mesma ordem do array STAFF_ROLE_IDS)
+        roles.sort(key=lambda r: STAFF_ROLE_IDS.index(int(r['id'])))
         
         return jsonify({'success': True, 'roles': roles})
     except Exception as e:
