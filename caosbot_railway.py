@@ -103,7 +103,15 @@ def dashboard():
     <title>CAOS Hub - Dashboard</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
-        * {{ margin: 0; padding: 0; box-sizing: border-box; }}
+        /* Fonte customizada - Ghoulish Fright */
+        @font-face {{
+            font-family: 'Ghoulish Fright';
+            src: url('https://www.fontspace.com/json/font/download/ghoulish-fright-aoe/MzQyMDA=/GhoulishFrightAOE.ttf') format('truetype');
+            font-weight: normal;
+            font-style: normal;
+        }}
+        
+        * {{ margin: 0; padding: 0; box-sizing: border-box; font-family: 'Ghoulish Fright', 'Inter', 'Roboto', sans-serif; }}
         
         /* Animação de fogo no fundo */
         @keyframes fireGlow {{
@@ -235,6 +243,12 @@ def dashboard():
             overflow: hidden;
         }}
         
+        @keyframes hueShift {{
+            0% {{ filter: blur(2px) hue-rotate(0deg); }}
+            50% {{ filter: blur(2px) hue-rotate(30deg); }}
+            100% {{ filter: blur(2px) hue-rotate(0deg); }}
+        }}
+        
         .sidebar::before {{
             content: '';
             position: absolute;
@@ -243,10 +257,10 @@ def dashboard():
             width: 100%;
             height: 100%;
             background: url('https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExZm9oNzBoaDFrbzh5OTZiMXZ0eTF0Zms0bWE5Z3pveXQ5NGJuNWY4eCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/L6VKg3ruTIfFFiKWpw/giphy.gif') center/cover;
-            opacity: 0.15;
+            opacity: 0.2;
             z-index: -1;
             pointer-events: none;
-            filter: blur(2px);
+            animation: hueShift 8s ease-in-out infinite;
         }}
         
         .sidebar-logo {{ display: flex; align-items: center; justify-content: center; margin-bottom: 40px; position: relative; z-index: 1; }}
