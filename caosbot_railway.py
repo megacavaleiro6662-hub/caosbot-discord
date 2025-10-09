@@ -205,35 +205,18 @@ def login_page():
             font-size: 14px;
         }}
         
-        /* GIF animado de fundo */
+        /* GIF de fundo tela toda */
         .animated-bg {{
             position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 500px;
-            height: 500px;
-            opacity: 0.15;
-            filter: hue-rotate(20deg) brightness(1.5) saturate(2);
-            animation: pulse 3s ease-in-out infinite, rotate 20s linear infinite;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            object-fit: cover;
+            opacity: 0.25;
+            filter: hue-rotate(20deg) brightness(1.6) saturate(2.5) drop-shadow(0 0 40px rgba(255, 120, 0, 0.9));
             z-index: 0;
             pointer-events: none;
-        }}
-        
-        @keyframes pulse {{
-            0%, 100% {{
-                transform: translate(-50%, -50%) scale(1);
-                filter: hue-rotate(20deg) brightness(1.5) saturate(2) drop-shadow(0 0 30px rgba(255, 100, 0, 0.8));
-            }}
-            50% {{
-                transform: translate(-50%, -50%) scale(1.1);
-                filter: hue-rotate(20deg) brightness(1.8) saturate(2.5) drop-shadow(0 0 50px rgba(255, 150, 0, 1));
-            }}
-        }}
-        
-        @keyframes rotate {{
-            from {{ transform: translate(-50%, -50%) rotate(0deg); }}
-            to {{ transform: translate(-50%, -50%) rotate(360deg); }}
         }}
         
         .login-container {{
@@ -3897,33 +3880,6 @@ async def chorar_command(ctx):
     await ctx.reply(embed=embed)
 
 
-# ========================================
-# FUNÇÃO PARA GERAR IMAGEM DE SHIP COM API EXTERNA
-# ========================================
-
-async def create_ship_image(user1, user2, ship_value, ship_name):
-    """Cria imagem de ship usando API externa some-random-api.com"""
-    try:
-        # URL da API com avatares dos usuários
-        avatar1_url = str(user1.display_avatar.url)
-        avatar2_url = str(user2.display_avatar.url)
-        
-        # API some-random-api.com para gerar ship
-        api_url = f"https://some-random-api.com/canvas/misc/ship?user1={avatar1_url}&user2={avatar2_url}"
-        
-        async with aiohttp.ClientSession() as session:
-            async with session.get(api_url) as resp:
-                if resp.status == 200:
-                    image_data = await resp.read()
-                    return BytesIO(image_data)
-                else:
-                    print(f"❌ Erro na API: Status {resp.status}")
-                    return None
-    
-    except Exception as e:
-        print(f"❌ Erro ao gerar imagem de ship: {e}")
-        return None
-
 @bot.command(name='ship')
 async def ship_command(ctx, user1: discord.Member = None, user2: discord.Member = None):
     if not user1 or not user2:
@@ -4044,17 +4000,8 @@ async def ship_command(ctx, user1: discord.Member = None, user2: discord.Member 
         icon_url=ctx.author.display_avatar.url
     )
     
-    # Gerar imagem de ship
-    ship_image = await create_ship_image(user1, user2, ship_value, ship_name)
-    
-    if ship_image:
-        # Enviar com imagem
-        file = discord.File(ship_image, filename='ship.png')
-        embed.set_image(url='attachment://ship.png')
-        await ctx.reply(embed=embed, file=file)
-    else:
-        # Se falhar, envia sem imagem
-        await ctx.reply(embed=embed)
+    # Enviar embed (sem imagem)
+    await ctx.reply(embed=embed)
 
 @bot.command(name='cafune')
 async def cafune_command(ctx, usuario: discord.Member = None):
