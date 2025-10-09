@@ -3430,16 +3430,41 @@ async def beijar_command(ctx, usuario: discord.Member = None):
         f'😍 **{ctx.author.mention}** beijou **{usuario.mention}** apaixonadamente!',
         f'❤️ **{ctx.author.mention}** deu um beijinho em **{usuario.mention}**!',
         f'💖 **{ctx.author.mention}** surpreendeu **{usuario.mention}** com um beijo!',
-        f'🌹 **{ctx.author.mention}** beijou os lábios de **{usuario.mention}**!'
+        f'🌹 **{ctx.author.mention}** beijou os lábios de **{usuario.mention}**!',
+        f'💝 **{ctx.author.mention}** selou os lábios de **{usuario.mention}** com um beijo!',
+        f'✨ **{ctx.author.mention}** deu um beijo mágico em **{usuario.mention}**!',
+        f'🎀 **{ctx.author.mention}** encheu **{usuario.mention}** de beijos!',
+        f'💐 **{ctx.author.mention}** presenteou **{usuario.mention}** com um beijo!',
+        f'🦋 **{ctx.author.mention}** deu um beijo delicado em **{usuario.mention}**!',
+        f'🌺 **{ctx.author.mention}** beijou **{usuario.mention}** com paixão!'
+    ]
+    
+    reacoes = [
+        "Que momento romântico! 💕",
+        "O amor está no ar! ❤️",
+        "Shippo muito! 💖",
+        "Que casal lindo! 😍",
+        "Ahhh que fofo! 🥰",
+        "Meu coração! 💗",
+        "Amo esse casal! 💝",
+        "Que beijo perfeito! 💋",
+        "Tô morrendo de amor! 💘",
+        "Casem logo! 💍"
     ]
     
     gif = random.choice(INTERACTION_GIFS['kiss'])
     mensagem = random.choice(mensagens)
+    reacao = random.choice(reacoes)
     
     embed = discord.Embed(
         title='💋 Beijo Romântico',
         description=mensagem,
         color=0xff1493
+    )
+    embed.add_field(
+        name='💕 Reação',
+        value=reacao,
+        inline=False
     )
     embed.set_image(url=gif)
     embed.set_footer(
@@ -3487,16 +3512,41 @@ async def abracar_command(ctx, usuario: discord.Member = None):
         f'💛 **{ctx.author.mention}** envolveu **{usuario.mention}** em um abraço caloroso!',
         f'🤗 **{ctx.author.mention}** deu um abraço de urso em **{usuario.mention}**!',
         f'✨ **{ctx.author.mention}** abraçou **{usuario.mention}** com muito carinho!',
-        f'💫 **{ctx.author.mention}** deu um abraço reconfortante em **{usuario.mention}**!'
+        f'💫 **{ctx.author.mention}** deu um abraço reconfortante em **{usuario.mention}**!',
+        f'🌟 **{ctx.author.mention}** abraçou **{usuario.mention}** com todo amor!',
+        f'💝 **{ctx.author.mention}** deu um abraço protetor em **{usuario.mention}**!',
+        f'🎀 **{ctx.author.mention}** abraçou **{usuario.mention}** fortemente!',
+        f'🌈 **{ctx.author.mention}** envolveu **{usuario.mention}** em um abraço acolhedor!',
+        f'🦋 **{ctx.author.mention}** abraçou **{usuario.mention}** com ternura!',
+        f'🌸 **{ctx.author.mention}** deu um super abraço em **{usuario.mention}**!'
+    ]
+    
+    sentimentos = [
+        "Que abraço aconchegante! 🥰",
+        "Abraço que aquece o coração! ❤️",
+        "Amizade verdadeira! 💛",
+        "Que momento lindo! ✨",
+        "Abraços curam tudo! 💫",
+        "Que carinho! 🤗",
+        "Energia positiva! ⚡",
+        "Abraço que reconforta! 💝",
+        "Que fofura! 🥺",
+        "Abraço perfeito! 🌟"
     ]
     
     gif = random.choice(INTERACTION_GIFS['hug'])
     mensagem = random.choice(mensagens)
+    sentimento = random.choice(sentimentos)
     
     embed = discord.Embed(
         title='🤗 Abraço Carinhoso',
         description=mensagem,
         color=0xffd700
+    )
+    embed.add_field(
+        name='💛 Sentimento',
+        value=sentimento,
+        inline=False
     )
     embed.set_image(url=gif)
     embed.set_footer(
@@ -3544,16 +3594,41 @@ async def acariciar_command(ctx, usuario: discord.Member = None):
         f'✨ **{ctx.author.mention}** deu head pat em **{usuario.mention}**!',
         f'💕 **{ctx.author.mention}** acariciou **{usuario.mention}** gentilmente!',
         f'🌸 **{ctx.author.mention}** fez cafuné em **{usuario.mention}**!',
-        f'😌 **{ctx.author.mention}** acariciou **{usuario.mention}** com carinho!'
+        f'😌 **{ctx.author.mention}** acariciou **{usuario.mention}** com carinho!',
+        f'🎀 **{ctx.author.mention}** passou a mão na cabeça de **{usuario.mention}**!',
+        f'💫 **{ctx.author.mention}** deu um carinho delicado em **{usuario.mention}**!',
+        f'🌺 **{ctx.author.mention}** acariciou **{usuario.mention}** suavemente!',
+        f'🦋 **{ctx.author.mention}** fez um carinho relaxante em **{usuario.mention}**!',
+        f'🌷 **{ctx.author.mention}** mimou **{usuario.mention}** com carinhos!',
+        f'🌼 **{ctx.author.mention}** deu head pats em **{usuario.mention}**!'
+    ]
+    
+    efeitos = [
+        "Que relaxante! 😌",
+        "Carinho gostoso! 🥰",
+        "Tão fofo! 💕",
+        "Que delícia! ✨",
+        "Carinho que acalma! 💫",
+        "Que mimo! 🌸",
+        "Terapêutico! 💆",
+        "Carinho perfeito! 🎀",
+        "Que gentileza! 🌺",
+        "Adorei! 😊"
     ]
     
     gif = random.choice(INTERACTION_GIFS['pat'])
     mensagem = random.choice(mensagens)
+    efeito = random.choice(efeitos)
     
     embed = discord.Embed(
         title='😊 Carinho Gentil',
         description=mensagem,
         color=0x87ceeb
+    )
+    embed.add_field(
+        name='💕 Efeito',
+        value=efeito,
+        inline=False
     )
     embed.set_image(url=gif)
     embed.set_footer(
@@ -3597,20 +3672,43 @@ async def tapa_command(ctx, usuario: discord.Member = None):
     
     mensagens = [
         f'👋 **{ctx.author.mention}** deu um tapa na cara de **{usuario.mention}**!',
-        f'💥 **{ctx.author.mention}** acertou um tapão em **{usuario.mention}**!',
+        f'💥 **{ctx.author.mention}** acertou um tapão monumental em **{usuario.mention}**!',
         f'✋ **{ctx.author.mention}** esfregou a mão na cara de **{usuario.mention}**!',
         f'😤 **{ctx.author.mention}** deu uma bela palmada em **{usuario.mention}**!',
         f'🔥 **{ctx.author.mention}** mandou um tapa épico em **{usuario.mention}**!',
-        f'💢 **{ctx.author.mention}** não perdoou e tapou **{usuario.mention}**!'
+        f'💢 **{ctx.author.mention}** não perdoou e tapou **{usuario.mention}**!',
+        f'⚡ **{ctx.author.mention}** deu um tapa que ecoou no servidor em **{usuario.mention}**!',
+        f'💫 **{ctx.author.mention}** acertou um super tapa em **{usuario.mention}**!',
+        f'🌪️ **{ctx.author.mention}** mandou ver na cara de **{usuario.mention}**!',
+        f'💪 **{ctx.author.mention}** mostrou quem manda com um tapa em **{usuario.mention}**!'
+    ]
+    
+    reacoes = [
+        "Isso deve ter doído!",
+        "Que tapa sonoro!",
+        "Ouvi o barulho daqui!",
+        "Eita! Sem dó nem piedade!",
+        "RIP a dignidade...",
+        "Marcou até!",
+        "Acho que acordou os vizinhos!",
+        "Alguém chame a ambulância!",
+        "Voou até!",
+        "Que pancada!"
     ]
     
     gif = random.choice(INTERACTION_GIFS['slap'])
     mensagem = random.choice(mensagens)
+    reacao = random.choice(reacoes)
     
     embed = discord.Embed(
         title='👋 Tapa Épico',
         description=mensagem,
         color=0xff4444
+    )
+    embed.add_field(
+        name='💥 Reação',
+        value=reacao,
+        inline=False
     )
     embed.set_image(url=gif)
     embed.set_footer(
@@ -3661,13 +3759,38 @@ async def dancar_command(ctx, usuario: discord.Member = None):
             f'✨ **{ctx.author.mention}** está arrasando na pista!',
             f'🎵 **{ctx.author.mention}** dançando como se ninguém estivesse olhando!',
             f'🌟 **{ctx.author.mention}** está fazendo um show solo!',
-            f'💫 Que performance! **{ctx.author.mention}** dançando demais!'
+            f'💫 Que performance! **{ctx.author.mention}** dançando demais!',
+            f'🎪 **{ctx.author.mention}** está quebrando tudo na pista!',
+            f'🔥 **{ctx.author.mention}** está dançando pra caramba!',
+            f'⚡ **{ctx.author.mention}** mostrando seus melhores passos!',
+            f'🌈 **{ctx.author.mention}** está se divertindo muito!'
         ]
+        
+        comentarios = [
+            "Que energia incrível!",
+            "Arrasou nos passos!",
+            "Tá pegando fogo!",
+            "Show de performance!",
+            "Que talento!",
+            "A pista é sua!",
+            "Que ritmo maravilhoso!",
+            "Está no flow!",
+            "Mandou muito bem!",
+            "Isso é arte!"
+        ]
+        
         mensagem = random.choice(mensagens_solo)
+        comentario = random.choice(comentarios)
+        
         embed = discord.Embed(
             title='💃 Dança Solo',
             description=mensagem,
             color=0x9b59b6
+        )
+        embed.add_field(
+            name='🎭 Performance',
+            value=comentario,
+            inline=False
         )
     
     embed.set_image(url=gif)
@@ -3686,16 +3809,44 @@ async def chorar_command(ctx):
         f'😢 As lágrimas de **{ctx.author.mention}** não param de cair...',
         f'😿 **{ctx.author.mention}** está chorando copiosamente...',
         f'💔 **{ctx.author.mention}** chora de tristeza...',
-        f'🥺 **{ctx.author.mention}** soltou as lágrimas...'
+        f'🥺 **{ctx.author.mention}** soltou as lágrimas...',
+        f'😭 **{ctx.author.mention}** está em prantos...',
+        f'💧 **{ctx.author.mention}** chora sem parar...',
+        f'😢 **{ctx.author.mention}** está muito emocionado...',
+        f'🌧️ **{ctx.author.mention}** derramou lágrimas...'
+    ]
+    
+    motivos = [
+        "Parece que está triste hoje...",
+        "Algo não está bem...",
+        "O dia está difícil...",
+        "Está precisando de apoio...",
+        "Momento de desabafo...",
+        "Deixa chorar, faz bem...",
+        "Às vezes precisamos extravasar...",
+        "Um abraço resolve...",
+        "Console essa pessoa!",
+        "Está precisando de carinho..."
     ]
     
     gif = random.choice(INTERACTION_GIFS['cry'])
     mensagem = random.choice(mensagens)
+    motivo = random.choice(motivos)
     
     embed = discord.Embed(
         title='😭 Momento Triste',
-        description=f'{mensagem}\n\n*Alguém console essa pessoa!*',
+        description=mensagem,
         color=0x5865f2
+    )
+    embed.add_field(
+        name='💭 Situação',
+        value=motivo,
+        inline=False
+    )
+    embed.add_field(
+        name='💝 Apoio',
+        value='Envie um abraço ou carinho para essa pessoa! Use `.abracar` ou `.acariciar`',
+        inline=False
     )
     embed.set_image(url=gif)
     embed.set_footer(
@@ -3862,16 +4013,46 @@ async def cafune_command(ctx, usuario: discord.Member = None):
         f'✨ **{ctx.author.mention}** faz um cafuné relaxante em **{usuario.mention}**!',
         f'🌸 **{ctx.author.mention}** passa a mão no cabelo de **{usuario.mention}**!',
         f'💤 **{ctx.author.mention}** está fazendo **{usuario.mention}** relaxar com cafuné!',
-        f'🥰 **{ctx.author.mention}** dá um cafuné carinhoso em **{usuario.mention}**!'
+        f'🥰 **{ctx.author.mention}** dá um cafuné carinhoso em **{usuario.mention}**!',
+        f'🎀 **{ctx.author.mention}** faz cafuné gostoso em **{usuario.mention}**!',
+        f'💫 **{ctx.author.mention}** está mimando **{usuario.mention}** com cafuné!',
+        f'🌺 **{ctx.author.mention}** dá um cafuné delicioso em **{usuario.mention}**!',
+        f'🦋 **{ctx.author.mention}** faz cafuné que dá sono em **{usuario.mention}**!',
+        f'🌷 **{ctx.author.mention}** está fazendo **{usuario.mention}** dormir com cafuné!',
+        f'🌼 **{ctx.author.mention}** dá o melhor cafuné em **{usuario.mention}**!'
+    ]
+    
+    beneficios = [
+        "Que paz! 😌",
+        "Puro relaxamento! 💆",
+        "Quase dormindo... 💤",
+        "Que delícia! 🥰",
+        "Terapêutico! ✨",
+        "Que carinho gostoso! 💕",
+        "Relaxa demais! 🌸",
+        "Melhor sensação! 💫",
+        "Tão bom! 🎀",
+        "Cafuné perfeito! 🌺"
     ]
     
     gif = random.choice(INTERACTION_GIFS['pat'])
     mensagem = random.choice(mensagens)
+    beneficio = random.choice(beneficios)
     
     embed = discord.Embed(
         title='😌 Cafuné Relaxante',
-        description=f'{mensagem}\n\n*Que momento de paz...*',
+        description=mensagem,
         color=0xffc0cb
+    )
+    embed.add_field(
+        name='💆 Benefício',
+        value=beneficio,
+        inline=False
+    )
+    embed.add_field(
+        name='✨ Momento',
+        value='Momento de paz e relaxamento...',
+        inline=False
     )
     embed.set_image(url=gif)
     embed.set_footer(
