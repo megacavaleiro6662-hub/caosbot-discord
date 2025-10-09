@@ -3254,11 +3254,14 @@ async def tchau_command(ctx):
 # GIFs de anime (URLs diretas)
 INTERACTION_GIFS = {
     'kiss': [
-        'https://media.tenor.com/W89cAX4VbYMAAAAM/anime-kiss.gif',
-        'https://media.tenor.com/oAne0J6lj8MAAAAM/anime-kiss.gif',
-        'https://media.tenor.com/pLDXlz1gN3gAAAAM/kiss-anime.gif',
-        'https://media.tenor.com/jZVd4NKtw9UAAAAM/anime-kiss.gif',
-        'https://media.tenor.com/0J5CXK5VvPcAAAAM/kiss-anime.gif'
+        'https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExMGduOG9wamdxanplenNxaG56dWQ3azdnaXlndGpoMnlndHBtYnE0MyZlcD12MV9naWZzX3NlYXJjaCZjdD1n/FqBTvSNjNzeZG/giphy.gif',
+        'https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExMGduOG9wamdxanplenNxaG56dWQ3azdnaXlndGpoMnlndHBtYnE0MyZlcD12MV9naWZzX3NlYXJjaCZjdD1n/MQVpBqASxSlFu/giphy.gif',
+        'https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExMGduOG9wamdxanplenNxaG56dWQ3azdnaXlndGpoMnlndHBtYnE0MyZlcD12MV9naWZzX3NlYXJjaCZjdD1n/f82EqBTeCEgcU/giphy.gif',
+        'https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExMGduOG9wamdxanplenNxaG56dWQ3azdnaXlndGpoMnlndHBtYnE0MyZlcD12MV9naWZzX3NlYXJjaCZjdD1n/jR22gdcPiOLaE/giphy.gif',
+        'https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExMGduOG9wamdxanplenNxaG56dWQ3azdnaXlndGpoMnlndHBtYnE0MyZlcD12MV9naWZzX3NlYXJjaCZjdD1n/gTLfgIRwAiWOc/giphy.gif',
+        'https://media.giphy.com/media/v1.Y2lkPWVjZjA1ZTQ3MTNoeG5oZmJxd3NxZXZ5Y3ZhNHJjM2NlaDV1dmIydGVtaDVidDdqcSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/kU586ictpGb0Q/giphy.gif',
+        'https://media.giphy.com/media/v1.Y2lkPWVjZjA1ZTQ3MTNoeG5oZmJxd3NxZXZ5Y3ZhNHJjM2NlaDV1dmIydGVtaDVidDdqcSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/12VXIxKaIEarL2/giphy.gif',
+        'https://media.giphy.com/media/v1.Y2lkPWVjZjA1ZTQ3MTNoeG5oZmJxd3NxZXZ5Y3ZhNHJjM2NlaDV1dmIydGVtaDVidDdqcSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/nyGFcsP0kAobm/giphy.gif'
     ],
     'hug': [
         'https://media.tenor.com/KZLA62pS29gAAAAM/hug-anime.gif',
@@ -3300,80 +3303,218 @@ INTERACTION_GIFS = {
 @bot.command(name='beijar')
 async def beijar_command(ctx, usuario: discord.Member = None):
     if not usuario:
-        await ctx.reply('❌ Você precisa mencionar alguém para beijar! Exemplo: `.beijar @user`')
+        embed = discord.Embed(
+            title='❌ Erro no Comando',
+            description='Você precisa mencionar alguém para beijar!\n\n**Exemplo:**\n`.beijar @user`',
+            color=0xff0000
+        )
+        await ctx.reply(embed=embed)
         return
     
     if usuario.id == ctx.author.id:
-        await ctx.reply('😅 Você não pode se beijar!')
+        embed = discord.Embed(
+            title='😅 Ops!',
+            description='Você não pode beijar a si mesmo!\n*Tente beijar outra pessoa...*',
+            color=0xffa500
+        )
+        await ctx.reply(embed=embed)
         return
     
+    if usuario.bot:
+        embed = discord.Embed(
+            title='🤖 Erro',
+            description='Você não pode beijar um bot!\n*Bots não têm sentimentos...*',
+            color=0xff0000
+        )
+        await ctx.reply(embed=embed)
+        return
+    
+    # Mensagens aleatórias
+    mensagens = [
+        f'💋 **{ctx.author.mention}** deu um beijo em **{usuario.mention}**!',
+        f'😘 **{ctx.author.mention}** beijou **{usuario.mention}** de forma romântica!',
+        f'💕 **{ctx.author.mention}** roubou um beijo de **{usuario.mention}**!',
+        f'😍 **{ctx.author.mention}** beijou **{usuario.mention}** apaixonadamente!',
+        f'❤️ **{ctx.author.mention}** deu um beijinho em **{usuario.mention}**!',
+        f'💖 **{ctx.author.mention}** surpreendeu **{usuario.mention}** com um beijo!',
+        f'🌹 **{ctx.author.mention}** beijou os lábios de **{usuario.mention}**!'
+    ]
+    
     gif = random.choice(INTERACTION_GIFS['kiss'])
+    mensagem = random.choice(mensagens)
+    
     embed = discord.Embed(
-        description=f'💋 **{ctx.author.mention}** beijou **{usuario.mention}**!',
-        color=0xff69b4
+        title='💋 Beijo Romântico',
+        description=mensagem,
+        color=0xff1493
     )
     embed.set_image(url=gif)
-    embed.set_footer(text=f'Comando usado por {ctx.author.name}', icon_url=ctx.author.display_avatar.url)
+    embed.set_footer(
+        text=f'Comando usado por {ctx.author.name} • {datetime.now().strftime("%H:%M")}',
+        icon_url=ctx.author.display_avatar.url
+    )
     
     await ctx.reply(embed=embed)
 
 @bot.command(name='abracar')
 async def abracar_command(ctx, usuario: discord.Member = None):
     if not usuario:
-        await ctx.reply('❌ Você precisa mencionar alguém para abraçar! Exemplo: `.abracar @user`')
+        embed = discord.Embed(
+            title='❌ Erro no Comando',
+            description='Você precisa mencionar alguém para abraçar!\n\n**Exemplo:**\n`.abracar @user`',
+            color=0xff0000
+        )
+        await ctx.reply(embed=embed)
         return
     
     if usuario.id == ctx.author.id:
-        await ctx.reply('🤗 *Você se abraça sozinho...*')
+        embed = discord.Embed(
+            title='🤗 Auto-Abraço',
+            description='Você se abraçou sozinho...\n*Às vezes precisamos de carinho próprio!*',
+            color=0xffa500
+        )
+        await ctx.reply(embed=embed)
         return
     
+    if usuario.bot:
+        embed = discord.Embed(
+            title='🤖 Erro',
+            description='Bots não podem ser abraçados!\n*Mas eles agradecem a intenção!*',
+            color=0xff0000
+        )
+        await ctx.reply(embed=embed)
+        return
+    
+    mensagens = [
+        f'🤗 **{ctx.author.mention}** deu um abraço apertado em **{usuario.mention}**!',
+        f'🫂 **{ctx.author.mention}** abraçou **{usuario.mention}** carinhosamente!',
+        f'💛 **{ctx.author.mention}** envolveu **{usuario.mention}** em um abraço caloroso!',
+        f'🤗 **{ctx.author.mention}** deu um abraço de urso em **{usuario.mention}**!',
+        f'✨ **{ctx.author.mention}** abraçou **{usuario.mention}** com muito carinho!',
+        f'💫 **{ctx.author.mention}** deu um abraço reconfortante em **{usuario.mention}**!'
+    ]
+    
     gif = random.choice(INTERACTION_GIFS['hug'])
+    mensagem = random.choice(mensagens)
+    
     embed = discord.Embed(
-        description=f'🤗 **{ctx.author.mention}** abraçou **{usuario.mention}**!',
+        title='🤗 Abraço Carinhoso',
+        description=mensagem,
         color=0xffd700
     )
     embed.set_image(url=gif)
-    embed.set_footer(text=f'Comando usado por {ctx.author.name}', icon_url=ctx.author.display_avatar.url)
+    embed.set_footer(
+        text=f'Comando usado por {ctx.author.name} • {datetime.now().strftime("%H:%M")}',
+        icon_url=ctx.author.display_avatar.url
+    )
     
     await ctx.reply(embed=embed)
 
 @bot.command(name='acariciar')
 async def acariciar_command(ctx, usuario: discord.Member = None):
     if not usuario:
-        await ctx.reply('❌ Você precisa mencionar alguém para acariciar! Exemplo: `.acariciar @user`')
+        embed = discord.Embed(
+            title='❌ Erro no Comando',
+            description='Você precisa mencionar alguém para acariciar!\n\n**Exemplo:**\n`.acariciar @user`',
+            color=0xff0000
+        )
+        await ctx.reply(embed=embed)
         return
     
     if usuario.id == ctx.author.id:
-        await ctx.reply('😌 *Você faz carinho em si mesmo...*')
+        embed = discord.Embed(
+            title='😌 Auto-Carinho',
+            description='Você faz carinho em si mesmo...\n*Self-care é importante!*',
+            color=0xffa500
+        )
+        await ctx.reply(embed=embed)
         return
     
+    if usuario.bot:
+        embed = discord.Embed(
+            title='🤖 Erro',
+            description='Bots não sentem carinhos!\n*Mas obrigado pela gentileza!*',
+            color=0xff0000
+        )
+        await ctx.reply(embed=embed)
+        return
+    
+    mensagens = [
+        f'😊 **{ctx.author.mention}** acariciou a cabeça de **{usuario.mention}**!',
+        f'🥰 **{ctx.author.mention}** fez um carinho em **{usuario.mention}**!',
+        f'✨ **{ctx.author.mention}** deu head pat em **{usuario.mention}**!',
+        f'💕 **{ctx.author.mention}** acariciou **{usuario.mention}** gentilmente!',
+        f'🌸 **{ctx.author.mention}** fez cafuné em **{usuario.mention}**!',
+        f'😌 **{ctx.author.mention}** acariciou **{usuario.mention}** com carinho!'
+    ]
+    
     gif = random.choice(INTERACTION_GIFS['pat'])
+    mensagem = random.choice(mensagens)
+    
     embed = discord.Embed(
-        description=f'😊 **{ctx.author.mention}** acariciou **{usuario.mention}**!',
+        title='😊 Carinho Gentil',
+        description=mensagem,
         color=0x87ceeb
     )
     embed.set_image(url=gif)
-    embed.set_footer(text=f'Comando usado por {ctx.author.name}', icon_url=ctx.author.display_avatar.url)
+    embed.set_footer(
+        text=f'Comando usado por {ctx.author.name} • {datetime.now().strftime("%H:%M")}',
+        icon_url=ctx.author.display_avatar.url
+    )
     
     await ctx.reply(embed=embed)
 
 @bot.command(name='tapa')
 async def tapa_command(ctx, usuario: discord.Member = None):
     if not usuario:
-        await ctx.reply('❌ Você precisa mencionar alguém para dar um tapa! Exemplo: `.tapa @user`')
+        embed = discord.Embed(
+            title='❌ Erro no Comando',
+            description='Você precisa mencionar alguém para dar um tapa!\n\n**Exemplo:**\n`.tapa @user`',
+            color=0xff0000
+        )
+        await ctx.reply(embed=embed)
         return
     
     if usuario.id == ctx.author.id:
-        await ctx.reply('🤕 Você se deu um tapa... Por quê?!')
+        embed = discord.Embed(
+            title='🤕 Auto-Tapa',
+            description='Você se deu um tapa... Por quê?!\n*Isso deve ter doído!*',
+            color=0xffa500
+        )
+        await ctx.reply(embed=embed)
         return
     
+    if usuario.bot:
+        embed = discord.Embed(
+            title='🤖 Erro',
+            description='Não bata em bots!\n*Eles são inocentes!*',
+            color=0xff0000
+        )
+        await ctx.reply(embed=embed)
+        return
+    
+    mensagens = [
+        f'👋 **{ctx.author.mention}** deu um tapa na cara de **{usuario.mention}**!',
+        f'💥 **{ctx.author.mention}** acertou um tapão em **{usuario.mention}**!',
+        f'✋ **{ctx.author.mention}** esfregou a mão na cara de **{usuario.mention}**!',
+        f'😤 **{ctx.author.mention}** deu uma bela palmada em **{usuario.mention}**!',
+        f'🔥 **{ctx.author.mention}** mandou um tapa épico em **{usuario.mention}**!',
+        f'💢 **{ctx.author.mention}** não perdoou e tapou **{usuario.mention}**!'
+    ]
+    
     gif = random.choice(INTERACTION_GIFS['slap'])
+    mensagem = random.choice(mensagens)
+    
     embed = discord.Embed(
-        description=f'👋 **{ctx.author.mention}** deu um tapa em **{usuario.mention}**!',
+        title='👋 Tapa Épico',
+        description=mensagem,
         color=0xff4444
     )
     embed.set_image(url=gif)
-    embed.set_footer(text=f'Comando usado por {ctx.author.name}', icon_url=ctx.author.display_avatar.url)
+    embed.set_footer(
+        text=f'Comando usado por {ctx.author.name} • {datetime.now().strftime("%H:%M")}',
+        icon_url=ctx.author.display_avatar.url
+    )
     
     await ctx.reply(embed=embed)
 
@@ -3382,37 +3523,113 @@ async def dancar_command(ctx, usuario: discord.Member = None):
     gif = random.choice(INTERACTION_GIFS['dance'])
     
     if usuario:
-        embed = discord.Embed(
-            description=f'💃 **{ctx.author.mention}** está dançando com **{usuario.mention}**!',
-            color=0x9b59b6
-        )
+        if usuario.id == ctx.author.id:
+            embed = discord.Embed(
+                title='💃 Dança Solo',
+                description=f'**{ctx.author.mention}** está dançando sozinho como se ninguém estivesse olhando!\n*Que show!*',
+                color=0x9b59b6
+            )
+        elif usuario.bot:
+            embed = discord.Embed(
+                title='🤖 Erro',
+                description='Bots não dançam!\n*Mas seria legal se dançassem...*',
+                color=0xff0000
+            )
+            await ctx.reply(embed=embed)
+            return
+        else:
+            mensagens = [
+                f'💃 **{ctx.author.mention}** está dançando com **{usuario.mention}**!',
+                f'🕺 **{ctx.author.mention}** e **{usuario.mention}** estão arrasando na pista!',
+                f'✨ **{ctx.author.mention}** chamou **{usuario.mention}** para dançar!',
+                f'🎵 **{ctx.author.mention}** e **{usuario.mention}** dançam sincronizados!',
+                f'🌟 Que dupla incrível! **{ctx.author.mention}** e **{usuario.mention}** mandando ver!',
+                f'💫 **{ctx.author.mention}** rodou **{usuario.mention}** na pista de dança!'
+            ]
+            mensagem = random.choice(mensagens)
+            embed = discord.Embed(
+                title='💃 Dança em Dupla',
+                description=mensagem,
+                color=0x9b59b6
+            )
     else:
+        mensagens_solo = [
+            f'💃 **{ctx.author.mention}** está dançando sozinho!',
+            f'🕺 **{ctx.author.mention}** mandou ver nos passos!',
+            f'✨ **{ctx.author.mention}** está arrasando na pista!',
+            f'🎵 **{ctx.author.mention}** dançando como se ninguém estivesse olhando!',
+            f'🌟 **{ctx.author.mention}** está fazendo um show solo!',
+            f'💫 Que performance! **{ctx.author.mention}** dançando demais!'
+        ]
+        mensagem = random.choice(mensagens_solo)
         embed = discord.Embed(
-            description=f'💃 **{ctx.author.mention}** está dançando!',
+            title='💃 Dança Solo',
+            description=mensagem,
             color=0x9b59b6
         )
     
     embed.set_image(url=gif)
-    embed.set_footer(text=f'Comando usado por {ctx.author.name}', icon_url=ctx.author.display_avatar.url)
+    embed.set_footer(
+        text=f'Comando usado por {ctx.author.name} • {datetime.now().strftime("%H:%M")}',
+        icon_url=ctx.author.display_avatar.url
+    )
     
     await ctx.reply(embed=embed)
 
 @bot.command(name='chorar')
 async def chorar_command(ctx):
+    mensagens = [
+        f'😭 **{ctx.author.mention}** está chorando muito...',
+        f'💧 **{ctx.author.mention}** não aguenta mais e chora...',
+        f'😢 As lágrimas de **{ctx.author.mention}** não param de cair...',
+        f'😿 **{ctx.author.mention}** está chorando copiosamente...',
+        f'💔 **{ctx.author.mention}** chora de tristeza...',
+        f'🥺 **{ctx.author.mention}** soltou as lágrimas...'
+    ]
+    
     gif = random.choice(INTERACTION_GIFS['cry'])
+    mensagem = random.choice(mensagens)
+    
     embed = discord.Embed(
-        description=f'😭 **{ctx.author.mention}** está chorando...',
+        title='😭 Momento Triste',
+        description=f'{mensagem}\n\n*Alguém console essa pessoa!*',
         color=0x5865f2
     )
     embed.set_image(url=gif)
-    embed.set_footer(text=f'Comando usado por {ctx.author.name}', icon_url=ctx.author.display_avatar.url)
+    embed.set_footer(
+        text=f'Comando usado por {ctx.author.name} • {datetime.now().strftime("%H:%M")}',
+        icon_url=ctx.author.display_avatar.url
+    )
     
     await ctx.reply(embed=embed)
 
 @bot.command(name='ship')
 async def ship_command(ctx, user1: discord.Member = None, user2: discord.Member = None):
     if not user1 or not user2:
-        await ctx.reply('❌ Você precisa mencionar 2 pessoas! Exemplo: `.ship @user1 @user2`')
+        embed = discord.Embed(
+            title='❌ Erro no Comando',
+            description='Você precisa mencionar 2 pessoas!\n\n**Exemplo:**\n`.ship @user1 @user2`',
+            color=0xff0000
+        )
+        await ctx.reply(embed=embed)
+        return
+    
+    if user1.bot or user2.bot:
+        embed = discord.Embed(
+            title='🤖 Erro',
+            description='Não dá pra shipar bots!\n*Eles não têm sentimentos românticos!*',
+            color=0xff0000
+        )
+        await ctx.reply(embed=embed)
+        return
+    
+    if user1.id == user2.id:
+        embed = discord.Embed(
+            title='😅 Narcisismo Detected',
+            description=f'**{user1.mention}** não pode ser shipado consigo mesmo!\n*Mas o amor próprio é importante!* ❤️',
+            color=0xffa500
+        )
+        await ctx.reply(embed=embed)
         return
     
     # Calcula porcentagem de ship (baseado em IDs para ser consistente)
@@ -3423,51 +3640,142 @@ async def ship_command(ctx, user1: discord.Member = None, user2: discord.Member 
     name2 = user2.display_name[len(user2.display_name)//2:]
     ship_name = f"{name1}{name2}"
     
-    # Barra de progresso
+    # Barra de progresso visual
     filled = '❤️' * (ship_value // 10)
     empty = '🖤' * (10 - ship_value // 10)
     bar = filled + empty
     
-    # Mensagem baseada na porcentagem
-    if ship_value >= 80:
-        message = "💕 Perfeito! Casal do ano!"
+    # Mensagem baseada na porcentagem com mais variedade
+    if ship_value >= 90:
+        emoji = "💕"
+        message = "PERFEIÇÃO ABSOLUTA! Casal do ano! Casem logo!"
+        cor = 0xff1493  # Pink forte
+    elif ship_value >= 75:
+        emoji = "💖"
+        message = "Extremamente compatíveis! Isso vai dar certo!"
+        cor = 0xff69b4  # Pink médio
     elif ship_value >= 60:
-        message = "💖 Muito compatíveis!"
-    elif ship_value >= 40:
-        message = "💛 Pode dar certo!"
-    elif ship_value >= 20:
-        message = "💙 Quem sabe..."
+        emoji = "💗"
+        message = "Muito compatíveis! Vale a pena tentar!"
+        cor = 0xffc0cb  # Pink claro
+    elif ship_value >= 45:
+        emoji = "💛"
+        message = "Pode dar certo! Precisam se conhecer melhor!"
+        cor = 0xffd700  # Dourado
+    elif ship_value >= 30:
+        emoji = "💙"
+        message = "Quem sabe com um pouco de esforço..."
+        cor = 0x87ceeb  # Azul claro
+    elif ship_value >= 15:
+        emoji = "💚"
+        message = "Improvável... Mas milagres acontecem!"
+        cor = 0x90ee90  # Verde claro
     else:
-        message = "💔 Melhor não..."
+        emoji = "💔"
+        message = "Péssimo! Melhor serem apenas amigos..."
+        cor = 0x808080  # Cinza
     
     embed = discord.Embed(
         title=f'💘 SHIPAGEM: {ship_name.upper()}',
-        description=f'{user1.mention} + {user2.mention}',
-        color=0xff1493
+        description=f'**{user1.display_name}** {emoji} **{user2.display_name}**',
+        color=cor
     )
-    embed.add_field(name='Compatibilidade', value=f'{bar}\n**{ship_value}%**', inline=False)
-    embed.add_field(name='Resultado', value=message, inline=False)
-    embed.set_footer(text=f'Ship by {ctx.author.name}', icon_url=ctx.author.display_avatar.url)
+    
+    embed.add_field(
+        name='📊 Compatibilidade',
+        value=f'{bar}\n**{ship_value}%**',
+        inline=False
+    )
+    
+    embed.add_field(
+        name='💬 Resultado',
+        value=message,
+        inline=False
+    )
+    
+    # Adiciona "curiosidades" aleatórias
+    curiosidades = [
+        "🎭 Opostos se atraem!",
+        "🌟 A química é evidente!",
+        "🔥 Que casal quente!",
+        "❄️ Clima de frieza...",
+        "⚡ A energia entre vocês é incrível!",
+        "🌈 Amor colorido!",
+        "💫 Conexão cósmica!",
+        "🎪 Que palhaçada seria esse relacionamento!",
+        "🎨 Vocês se complementam perfeitamente!",
+        "🎵 Em harmonia total!"
+    ]
+    
+    if ship_value >= 50:
+        curiosidade = random.choice([c for c in curiosidades if not "frieza" in c.lower() and not "palhaçada" in c.lower()])
+    else:
+        curiosidade = random.choice(curiosidades)
+    
+    embed.add_field(
+        name='✨ Análise',
+        value=curiosidade,
+        inline=False
+    )
+    
+    embed.set_footer(
+        text=f'Ship feito por {ctx.author.name} • {datetime.now().strftime("%H:%M")}',
+        icon_url=ctx.author.display_avatar.url
+    )
     
     await ctx.reply(embed=embed)
 
 @bot.command(name='cafune')
 async def cafune_command(ctx, usuario: discord.Member = None):
     if not usuario:
-        await ctx.reply('❌ Você precisa mencionar alguém para fazer cafuné! Exemplo: `.cafune @user`')
+        embed = discord.Embed(
+            title='❌ Erro no Comando',
+            description='Você precisa mencionar alguém para fazer cafuné!\n\n**Exemplo:**\n`.cafune @user`',
+            color=0xff0000
+        )
+        await ctx.reply(embed=embed)
         return
     
     if usuario.id == ctx.author.id:
-        await ctx.reply('😌 Você faz cafuné em si mesmo... Relaxante!')
+        embed = discord.Embed(
+            title='😌 Auto-Cafuné',
+            description='Você faz cafuné em si mesmo... Relaxante!\n*Self-care extremo!*',
+            color=0xffa500
+        )
+        await ctx.reply(embed=embed)
         return
     
+    if usuario.bot:
+        embed = discord.Embed(
+            title='🤖 Erro',
+            description='Bots não têm cabelo para fazer cafuné!\n*Mas agradecem pela intenção!*',
+            color=0xff0000
+        )
+        await ctx.reply(embed=embed)
+        return
+    
+    mensagens = [
+        f'😌 **{ctx.author.mention}** está fazendo cafuné em **{usuario.mention}**!',
+        f'💆 **{ctx.author.mention}** acaricia a cabeça de **{usuario.mention}** suavemente!',
+        f'✨ **{ctx.author.mention}** faz um cafuné relaxante em **{usuario.mention}**!',
+        f'🌸 **{ctx.author.mention}** passa a mão no cabelo de **{usuario.mention}**!',
+        f'💤 **{ctx.author.mention}** está fazendo **{usuario.mention}** relaxar com cafuné!',
+        f'🥰 **{ctx.author.mention}** dá um cafuné carinhoso em **{usuario.mention}**!'
+    ]
+    
     gif = random.choice(INTERACTION_GIFS['pat'])
+    mensagem = random.choice(mensagens)
+    
     embed = discord.Embed(
-        description=f'😌 **{ctx.author.mention}** está fazendo cafuné em **{usuario.mention}**!',
+        title='😌 Cafuné Relaxante',
+        description=f'{mensagem}\n\n*Que momento de paz...*',
         color=0xffc0cb
     )
     embed.set_image(url=gif)
-    embed.set_footer(text=f'Comando usado por {ctx.author.name}', icon_url=ctx.author.display_avatar.url)
+    embed.set_footer(
+        text=f'Comando usado por {ctx.author.name} • {datetime.now().strftime("%H:%M")}',
+        icon_url=ctx.author.display_avatar.url
+    )
     
     await ctx.reply(embed=embed)
 
