@@ -3264,11 +3264,12 @@ INTERACTION_GIFS = {
         'https://media.giphy.com/media/v1.Y2lkPWVjZjA1ZTQ3MTNoeG5oZmJxd3NxZXZ5Y3ZhNHJjM2NlaDV1dmIydGVtaDVidDdqcSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/nyGFcsP0kAobm/giphy.gif'
     ],
     'hug': [
-        'https://media.tenor.com/KZLA62pS29gAAAAM/hug-anime.gif',
-        'https://media.tenor.com/tKj2V0C4o_AAAAAM/anime-hug.gif',
-        'https://media.tenor.com/Kry0v9GAGzsAAAAM/hug-anime.gif',
-        'https://media.tenor.com/MJjV9h94xkIAAAAM/anime-hug.gif',
-        'https://media.tenor.com/J4mHTDPaGFQAAAAM/anime-hug.gif'
+        'https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExN2NocHBpNXA4enpkYWdpM21raGc3aTFoOTlwYW52aTE1bjVxbGNpNiZlcD12MV9naWZzX3NlYXJjaCZjdD1n/lrr9rHuoJOE0w/giphy.gif',
+        'https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExN2NocHBpNXA4enpkYWdpM21raGc3aTFoOTlwYW52aTE1bjVxbGNpNiZlcD12MV9naWZzX3NlYXJjaCZjdD1n/49mdjsMrH7oze/giphy.gif',
+        'https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExN2NocHBpNXA4enpkYWdpM21raGc3aTFoOTlwYW52aTE1bjVxbGNpNiZlcD12MV9naWZzX3NlYXJjaCZjdD1n/QFPoctlgZ5s0E/giphy.gif',
+        'https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExN2NocHBpNXA4enpkYWdpM21raGc3aTFoOTlwYW52aTE1bjVxbGNpNiZlcD12MV9naWZzX3NlYXJjaCZjdD1n/PHZ7v9tfQu0o0/giphy.gif',
+        'https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExN2NocHBpNXA4enpkYWdpM21raGc3aTFoOTlwYW52aTE1bjVxbGNpNiZlcD12MV9naWZzX3NlYXJjaCZjdD1n/lrr9rHuoJOE0w/giphy.gif',
+        'https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExN2NocHBpNXA4enpkYWdpM21raGc3aTFoOTlwYW52aTE1bjVxbGNpNiZlcD12MV9naWZzX3NlYXJjaCZjdD1n/3bqtLDeiDtwhq/giphy.gif'
     ],
     'pat': [
         'https://media.tenor.com/FfEFgdPyCiYAAAAM/anime-pat.gif',
@@ -3299,6 +3300,98 @@ INTERACTION_GIFS = {
         'https://media.tenor.com/2X8LLmZMAnUAAAAM/anime-cry.gif'
     ]
 }
+
+
+# ========================================
+# VIEWS COM BOTÕES DE RETRIBUIR
+# ========================================
+
+class RetribuirView(discord.ui.View):
+    def __init__(self, author, target, action_type, timeout=60):
+        super().__init__(timeout=timeout)
+        self.author = author  # Quem enviou o comando
+        self.target = target  # Quem recebeu
+        self.action_type = action_type  # 'kiss', 'hug', 'pat', etc
+        self.message = None
+    
+    @discord.ui.button(label="💝 Retribuir", style=discord.ButtonStyle.success, custom_id="retribuir_button")
+    async def retribuir_button(self, interaction: discord.Interaction, button: discord.ui.Button):
+        # Só o alvo pode retribuir
+        if interaction.user.id != self.target.id:
+            await interaction.response.send_message(
+                "❌ Só quem recebeu pode retribuir!",
+                ephemeral=True
+            )
+            return
+        
+        # Desabilita o botão
+        button.disabled = True
+        button.label = "✅ Retribuído"
+        await interaction.message.edit(view=self)
+        
+        # Retribui a ação
+        gif = random.choice(INTERACTION_GIFS[self.action_type])
+        
+        if self.action_type == 'kiss':
+            mensagens = [
+                f'💋 **{self.target.mention}** retribuiu o beijo em **{self.author.mention}**!',
+                f'😘 **{self.target.mention}** beijou **{self.author.mention}** de volta!',
+                f'💕 **{self.target.mention}** correspondeu o beijo de **{self.author.mention}**!',
+                f'❤️ **{self.target.mention}** não resistiu e beijou **{self.author.mention}** também!'
+            ]
+            titulo = '💋 Beijo Retribuído'
+            cor = 0xff1493
+        
+        elif self.action_type == 'hug':
+            mensagens = [
+                f'🤗 **{self.target.mention}** retribuiu o abraço em **{self.author.mention}**!',
+                f'🫂 **{self.target.mention}** abraçou **{self.author.mention}** de volta!',
+                f'💛 **{self.target.mention}** correspondeu o abraço de **{self.author.mention}**!',
+                f'✨ **{self.target.mention}** abraçou **{self.author.mention}** também!'
+            ]
+            titulo = '🤗 Abraço Retribuído'
+            cor = 0xffd700
+        
+        elif self.action_type == 'pat':
+            mensagens = [
+                f'😊 **{self.target.mention}** retribuiu o carinho em **{self.author.mention}**!',
+                f'🥰 **{self.target.mention}** acariciou **{self.author.mention}** de volta!',
+                f'💕 **{self.target.mention}** correspondeu o carinho de **{self.author.mention}**!',
+                f'✨ **{self.target.mention}** fez carinho em **{self.author.mention}** também!'
+            ]
+            titulo = '😊 Carinho Retribuído'
+            cor = 0x87ceeb
+        
+        else:
+            mensagens = [f'❤️ **{self.target.mention}** retribuiu a ação!']
+            titulo = '💝 Retribuído'
+            cor = 0xff69b4
+        
+        mensagem = random.choice(mensagens)
+        
+        embed = discord.Embed(
+            title=titulo,
+            description=mensagem,
+            color=cor
+        )
+        embed.set_image(url=gif)
+        embed.set_footer(
+            text=f'Retribuído por {self.target.name} • {datetime.now().strftime("%H:%M")}',
+            icon_url=self.target.display_avatar.url
+        )
+        
+        await interaction.response.send_message(embed=embed)
+    
+    async def on_timeout(self):
+        # Desabilita o botão quando expirar
+        for item in self.children:
+            item.disabled = True
+        
+        if self.message:
+            try:
+                await self.message.edit(view=self)
+            except:
+                pass
 
 @bot.command(name='beijar')
 async def beijar_command(ctx, usuario: discord.Member = None):
@@ -3354,7 +3447,10 @@ async def beijar_command(ctx, usuario: discord.Member = None):
         icon_url=ctx.author.display_avatar.url
     )
     
-    await ctx.reply(embed=embed)
+    # Criar view com botão de retribuir
+    view = RetribuirView(ctx.author, usuario, 'kiss', timeout=60)
+    message = await ctx.reply(embed=embed, view=view)
+    view.message = message
 
 @bot.command(name='abracar')
 async def abracar_command(ctx, usuario: discord.Member = None):
@@ -3408,7 +3504,10 @@ async def abracar_command(ctx, usuario: discord.Member = None):
         icon_url=ctx.author.display_avatar.url
     )
     
-    await ctx.reply(embed=embed)
+    # Criar view com botão de retribuir
+    view = RetribuirView(ctx.author, usuario, 'hug', timeout=60)
+    message = await ctx.reply(embed=embed, view=view)
+    view.message = message
 
 @bot.command(name='acariciar')
 async def acariciar_command(ctx, usuario: discord.Member = None):
@@ -3462,7 +3561,10 @@ async def acariciar_command(ctx, usuario: discord.Member = None):
         icon_url=ctx.author.display_avatar.url
     )
     
-    await ctx.reply(embed=embed)
+    # Criar view com botão de retribuir
+    view = RetribuirView(ctx.author, usuario, 'pat', timeout=60)
+    message = await ctx.reply(embed=embed, view=view)
+    view.message = message
 
 @bot.command(name='tapa')
 async def tapa_command(ctx, usuario: discord.Member = None):
@@ -3777,7 +3879,10 @@ async def cafune_command(ctx, usuario: discord.Member = None):
         icon_url=ctx.author.display_avatar.url
     )
     
-    await ctx.reply(embed=embed)
+    # Criar view com botão de retribuir
+    view = RetribuirView(ctx.author, usuario, 'pat', timeout=60)
+    message = await ctx.reply(embed=embed, view=view)
+    view.message = message
 
 # ========================================
 # COMANDOS DE CONTROLE - BOAS-VINDAS/SAÍDA/BAN
