@@ -21,6 +21,8 @@ import threading
 from flask import Flask, request, jsonify, render_template, session, redirect, url_for
 from functools import wraps
 import secrets
+from PIL import Image, ImageDraw, ImageFont
+from io import BytesIO
 from io import BytesIO
 
 # ========================================
