@@ -143,7 +143,7 @@ def login_page():
             display: flex;
             align-items: center;
             justify-content: center;
-            overflow: hidden;
+            overflow-y: auto;
         }}
         @keyframes fireGlow {{
             0%, 100% {{ background-position: 0% 50%; }}
@@ -423,7 +423,7 @@ def dashboard():
             animation: fireGlow 20s ease infinite;
             min-height: 100vh; 
             color: #fff; 
-            overflow: hidden;
+            overflow-y: auto;
             position: relative;
         }}
         
@@ -468,7 +468,7 @@ def dashboard():
             left: 0;
             width: 100%;
             height: 100%;
-            overflow: hidden;
+            overflow-y: auto;
             pointer-events: none;
             z-index: 0;
         }}
@@ -583,7 +583,7 @@ def dashboard():
             padding: 32px 24px; 
             z-index: 10; 
             box-shadow: 5px 0 30px rgba(255, 50, 0, 0.3);
-            overflow: hidden;
+            overflow-y: auto;
         }}
         
         @keyframes hueShift {{
