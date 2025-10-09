@@ -1,0 +1,36 @@
+═══════════════════════════════════════════════════
+  SETUP ULTRA RÁPIDO - SERVIDOR DE IMAGENS
+═══════════════════════════════════════════════════
+
+🚀 COLA ESSE COMANDO NO NOTEBOOK (LINUX):
+
+wget -qO- https://raw.githubusercontent.com/megacavaleiro6662-hub/caosbot-discord/main/setup_notebook.sh | bash
+
+═══════════════════════════════════════════════════
+
+✅ VAI INSTALAR TUDO AUTOMÁTICO!
+
+Depois:
+
+1️⃣ Configurar Ngrok:
+   - Cria conta: https://dashboard.ngrok.com/signup
+   - Pega token: https://dashboard.ngrok.com/get-started/your-authtoken
+   - Cola: ngrok config add-authtoken SEU_TOKEN
+
+2️⃣ Rodar servidor (Terminal 1):
+   cd ~/ship-server
+   python3 image_server.py
+
+3️⃣ Expor (Terminal 2):
+   ngrok http 5001
+   
+4️⃣ Copiar URL (ex: https://abc123.ngrok.io)
+
+5️⃣ No Render:
+   - https://dashboard.render.com
+   - Seu bot > Environment
+   - Add: IMAGE_SERVER_URL = https://abc123.ngrok.io
+
+═══════════════════════════════════════════════════
+PRONTO! Usa .ship no Discord e vai ter imagem! 🎨
+═══════════════════════════════════════════════════
