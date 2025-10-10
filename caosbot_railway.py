@@ -3477,7 +3477,6 @@ async def beijar_command(ctx, usuario: discord.Member = None):
         "Casem logo! 💍"
     ]
     
-    gif = random.choice(INTERACTION_GIFS['kiss'])
     mensagem = random.choice(mensagens)
     reacao = random.choice(reacoes)
     
@@ -3491,7 +3490,6 @@ async def beijar_command(ctx, usuario: discord.Member = None):
         value=reacao,
         inline=False
     )
-    embed.set_image(url=gif)
     embed.set_footer(
         text=f'Comando usado por {ctx.author.name} • {datetime.now().strftime("%H:%M")}',
         icon_url=ctx.author.display_avatar.url
