@@ -3475,6 +3475,7 @@ async def beijar_command(ctx, usuario: discord.Member = None):
         "Casem logo! 💍"
     ]
     
+    gif = random.choice(INTERACTION_GIFS['kiss'])
     mensagem = random.choice(mensagens)
     reacao = random.choice(reacoes)
     
@@ -3488,6 +3489,7 @@ async def beijar_command(ctx, usuario: discord.Member = None):
         value=reacao,
         inline=False
     )
+    embed.set_image(url=gif)
     embed.set_footer(
         text=f'Comando usado por {ctx.author.name} • {datetime.now().strftime("%H:%M")}',
         icon_url=ctx.author.display_avatar.url
@@ -4034,6 +4036,126 @@ async def ship_command(ctx, user1: discord.Member = None, user2: discord.Member 
     else:
         # Se falhar, envia só o embed
         await ctx.reply(embed=embed)
+
+# ========================================
+# COMANDOS DE ZOEIRA PESADA
+# ========================================
+
+@bot.command(name='vaitomarnocu')
+async def vaitomarnocu_command(ctx, usuario: discord.Member = None):
+    if not usuario:
+        await ctx.reply('❌ Menciona alguém pra xingar, oras!')
+        return
+    
+    if usuario.id == ctx.author.id:
+        await ctx.reply('🤡 Quer xingar você mesmo? Procure ajuda profissional!')
+        return
+    
+    if usuario.bot:
+        await ctx.reply('🤖 Deixa os bots em paz, eles só fazem o trabalho deles!')
+        return
+    
+    xingamentos = [
+        f'🖕 **{ctx.author.mention}** mandou **{usuario.mention}** tomar no cu!',
+        f'💢 **{ctx.author.mention}** disse: **{usuario.mention}**, vai se fuder!',
+        f'😤 **{ctx.author.mention}** falou pra **{usuario.mention}** ir pra pqp!',
+        f'🔥 **{ctx.author.mention}** mandou **{usuario.mention}** à merda!',
+        f'💀 **{ctx.author.mention}** disse: **{usuario.mention}**, vai catar coquinho!',
+        f'⚡ **{ctx.author.mention}** mandou **{usuario.mention}** se foder!',
+        f'👊 **{ctx.author.mention}** disse: **{usuario.mention}**, vai tomar no olho do seu cu!',
+        f'💥 **{ctx.author.mention}** mandou **{usuario.mention}** pra casa do caralho!',
+        f'🌪️ **{ctx.author.mention}** falou: **{usuario.mention}**, vai se lascar!',
+        f'🔨 **{ctx.author.mention}** disse: **{usuario.mention}**, vai pra puta que pariu!',
+        f'💣 **{ctx.author.mention}** mandou **{usuario.mention}** pra aquele lugar!',
+        f'🎯 **{ctx.author.mention}** disse: **{usuario.mention}**, vai mamar!',
+        f'⛈️ **{ctx.author.mention}** falou: **{usuario.mention}**, vai pro inferno!',
+        f'🌋 **{ctx.author.mention}** mandou **{usuario.mention}** tomar no centro do cu!',
+        f'💨 **{ctx.author.mention}** disse: **{usuario.mention}**, vai chupar um canavial!',
+        f'🗡️ **{ctx.author.mention}** mandou **{usuario.mention}** pra casa do caralho de asas!',
+        f'⚔️ **{ctx.author.mention}** disse: **{usuario.mention}**, vai pastar!',
+        f'🔪 **{ctx.author.mention}** falou: **{usuario.mention}**, vai se ferrar na esquina!',
+        f'💢 **{ctx.author.mention}** mandou **{usuario.mention}** enfiar o dedo no cu e rodar!',
+        f'🎭 **{ctx.author.mention}** disse: **{usuario.mention}**, vai pro caralho que te pariu!'
+    ]
+    
+    mensagem = random.choice(xingamentos)
+    
+    embed = discord.Embed(
+        title='💢 Xingamento Pesado',
+        description=mensagem,
+        color=0xff0000
+    )
+    embed.set_footer(
+        text=f'É zoeira! • {datetime.now().strftime("%H:%M")}',
+        icon_url=ctx.author.display_avatar.url
+    )
+    
+    await ctx.reply(embed=embed)
+
+@bot.command(name='filhodaputa')
+async def filhodaputa_command(ctx, usuario: discord.Member = None):
+    if not usuario:
+        await ctx.reply('❌ Menciona alguém pra xingar, oras!')
+        return
+    
+    if usuario.id == ctx.author.id:
+        await ctx.reply('🤡 Você é filho da puta? Não precisa confirmar!')
+        return
+    
+    if usuario.bot:
+        await ctx.reply('🤖 Bots não têm mãe, deixa eles quietos!')
+        return
+    
+    xingamentos = [
+        f'🖕 **{ctx.author.mention}** chamou **{usuario.mention}** de filho da puta!',
+        f'💀 **{ctx.author.mention}** disse: **{usuario.mention}** é um fdp mesmo!',
+        f'🔥 **{ctx.author.mention}** confirmou: **{usuario.mention}** é filho duma puta!',
+        f'💢 **{ctx.author.mention}** falou: **{usuario.mention}**, seu filho da mãe!',
+        f'⚡ **{ctx.author.mention}** disse: **{usuario.mention}** é um desgraçado!',
+        f'👊 **{ctx.author.mention}** chamou **{usuario.mention}** de arrombado!',
+        f'💥 **{ctx.author.mention}** falou: **{usuario.mention}** é um babaca do caralho!',
+        f'🌪️ **{ctx.author.mention}** disse: **{usuario.mention}** é um merda!',
+        f'🔨 **{ctx.author.mention}** chamou **{usuario.mention}** de corno manso!',
+        f'💣 **{ctx.author.mention}** falou: **{usuario.mention}** é um bosta!',
+        f'🎯 **{ctx.author.mention}** disse: **{usuario.mention}** é um lixo humano!',
+        f'⛈️ **{ctx.author.mention}** chamou **{usuario.mention}** de pilantra!',
+        f'🌋 **{ctx.author.mention}** falou: **{usuario.mention}** é um verme!',
+        f'💨 **{ctx.author.mention}** disse: **{usuario.mention}** é um cuzão!',
+        f'🗡️ **{ctx.author.mention}** chamou **{usuario.mention}** de energúmeno!',
+        f'⚔️ **{ctx.author.mention}** falou: **{usuario.mention}** é um retardado!',
+        f'🔪 **{ctx.author.mention}** disse: **{usuario.mention}** é um imbecil!',
+        f'🎭 **{ctx.author.mention}** chamou **{usuario.mention}** de pau no cu!',
+        f'🏴 **{ctx.author.mention}** falou: **{usuario.mention}** é um fracassado!',
+        f'⚠️ **{ctx.author.mention}** disse: **{usuario.mention}** é um escroto!'
+    ]
+    
+    gifs = [
+        'https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExbmxkejQxbnU2OGk3NGcwOHRiNGFqZHRlZHE2enAzc2xib3VpMTg2YSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/44Eq3Ab5LPYn6/giphy.gif',
+        'https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExbmxkejQxbnU2OGk3NGcwOHRiNGFqZHRlZHE2enAzc2xib3VpMTg2YSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/yV5xcSTmtVPBS/giphy.gif',
+        'https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExbmxkejQxbnU2OGk3NGcwOHRiNGFqZHRlZHE2enAzc2xib3VpMTg2YSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/l4Fsly71gEOtGvLQA/giphy.gif',
+        'https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExbmxkejQxbnU2OGk3NGcwOHRiNGFqZHRlZHE2enAzc2xib3VpMTg2YSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/FNMXxCshJxel7cRYuj/giphy.gif',
+        'https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExbmxkejQxbnU2OGk3NGcwOHRiNGFqZHRlZHE2enAzc2xib3VpMTg2YSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/ImWifslsGZjrSyxyjM/giphy.gif',
+        'https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExbmxkejQxbnU2OGk3NGcwOHRiNGFqZHRlZHE2enAzc2xib3VpMTg2YSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/I7p8K5EY9w9dC/giphy.gif',
+        'https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExbmxkejQxbnU2OGk3NGcwOHRiNGFqZHRlZHE2enAzc2xib3VpMTg2YSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/KzGCAlMiK6hQQ/giphy.gif',
+        'https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExbmxkejQxbnU2OGk3NGcwOHRiNGFqZHRlZHE2enAzc2xib3VpMTg2YSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/BXHtzkBTqd9dAemgCL/giphy.gif',
+        'https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExbmxkejQxbnU2OGk3NGcwOHRiNGFqZHRlZHE2enAzc2xib3VpMTg2YSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/U7P2vnWfPkIQ8/giphy.gif'
+    ]
+    
+    mensagem = random.choice(xingamentos)
+    gif = random.choice(gifs)
+    
+    embed = discord.Embed(
+        title='🔥 Xingamento Destruidor',
+        description=mensagem,
+        color=0xff0000
+    )
+    embed.set_image(url=gif)
+    embed.set_footer(
+        text=f'É brincadeira, relaxa! • {datetime.now().strftime("%H:%M")}',
+        icon_url=ctx.author.display_avatar.url
+    )
+    
+    await ctx.reply(embed=embed)
 
 @bot.command(name='cafune')
 async def cafune_command(ctx, usuario: discord.Member = None):
