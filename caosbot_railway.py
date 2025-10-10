@@ -2977,21 +2977,6 @@ async def on_message(message):
                            f'Use o comando **`.help`** para ver todos os meus comandos!',
                 color=0xff6600
             )
-            embed.add_field(
-                name='📚 Comandos Principais',
-                value='• `.help` - Lista de comandos\n'
-                      '• `.ticket` - Sistema de tickets\n'
-                      '• `.avisos` - Ver seus avisos\n'
-                      '• `.ship` - Testar compatibilidade\n'
-                      '• `.beijar` - Interações sociais',
-                inline=False
-            )
-            embed.add_field(
-                name='⚙️ Administração',
-                value='• Use `.help` para ver comandos de moderação\n'
-                      '• Dashboard: Acesse pelo servidor',
-                inline=False
-            )
             embed.set_footer(
                 text=f'Prefixo: . (ponto) • Digite .help para mais informações',
                 icon_url=bot.user.display_avatar.url
