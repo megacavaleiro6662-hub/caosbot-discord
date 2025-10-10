@@ -2923,10 +2923,17 @@ async def on_message(message):
     
     # Verificar se o bot foi mencionado diretamente (sem comando)
     if bot.user.mentioned_in(message) and not message.mention_everyone:
-        # Verificar se é só uma menção (sem texto adicional que seja comando)
+        # Remover menções do bot da mensagem
         content_without_mentions = message.content.replace(f'<@{bot.user.id}>', '').replace(f'<@!{bot.user.id}>', '').strip()
         
-        if not content_without_mentions or not content_without_mentions.startswith('.'):
+        # Só responde se:
+        # 1. Não tem nada depois da menção OU
+        # 2. Não começa com ponto (comando) OU
+        # 3. Não tem outro @mention (tipo .ship @user @user)
+        has_command = content_without_mentions.startswith('.')
+        has_other_mention = '<@' in content_without_mentions
+        
+        if not content_without_mentions or (not has_command and not has_other_mention):
             embed = discord.Embed(
                 title='👋 Olá! Eu sou o CAOS Bot!',
                 description=f'Oi **{message.author.mention}**! Precisa de ajuda?\n\n'
