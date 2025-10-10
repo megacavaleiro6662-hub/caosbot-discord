@@ -122,6 +122,28 @@ def home():
 def ping():
     """Rota para keep-alive (evitar sleep do Render)"""
     return {"status": "alive", "bot": "online", "uptime": "running"}, 200
+
+@app.route('/test')
+def test():
+    """Rota de teste para debug"""
+    return """
+    <html>
+        <head><title>TESTE - CAOS Bot</title></head>
+        <body style="background: #000; color: #fff; font-family: Arial; padding: 50px; text-align: center;">
+            <h1>✅ FLASK ESTÁ FUNCIONANDO!</h1>
+            <p>Se você está vendo isso, o servidor Flask está online.</p>
+            <hr>
+            <h2>Diagnóstico:</h2>
+            <p><b>Status:</b> Online</p>
+            <p><b>Porta:</b> """ + str(os.getenv("PORT", "10000")) + """</p>
+            <p><b>REDIRECT_URI:</b> """ + DISCORD_REDIRECT_URI + """</p>
+            <p><b>CLIENT_ID:</b> """ + DISCORD_CLIENT_ID + """</p>
+            <hr>
+            <a href="/" style="color: #ff6600;">Ir para Home</a> | 
+            <a href="/login" style="color: #ff6600;">Ir para Login</a>
+        </body>
+    </html>
+    """, 200
 # SISTEMA DE LOGIN COM DISCORD OAUTH2
 # ========================================
 @app.route('/login')
@@ -1820,9 +1842,21 @@ def get_server_stats():
 
 def run_web():
     import os
-    port = int(os.getenv("PORT", 10000))
-    print(f'🌐 Servidor HTTP iniciado na porta {port}')
-    app.run(host="0.0.0.0", port=port, debug=False, use_reloader=False)
+    try:
+        port = int(os.getenv("PORT", 10000))
+        print(f'🌐 Servidor HTTP iniciado na porta {port}')
+        print(f'🔧 REDIRECT_URI: {DISCORD_REDIRECT_URI}')
+        print(f'🔧 CLIENT_ID: {DISCORD_CLIENT_ID}')
+        print(f'📍 Rotas disponíveis:')
+        print(f'   - http://0.0.0.0:{port}/')
+        print(f'   - http://0.0.0.0:{port}/test')
+        print(f'   - http://0.0.0.0:{port}/ping')
+        print(f'   - http://0.0.0.0:{port}/login')
+        app.run(host="0.0.0.0", port=port, debug=False, use_reloader=False)
+    except Exception as e:
+        print(f'❌ ERRO AO INICIAR FLASK: {e}')
+        import traceback
+        traceback.print_exc()
 
 # NÃO inicia aqui! Vai iniciar no bloco if __name__ == '__main__'
 
