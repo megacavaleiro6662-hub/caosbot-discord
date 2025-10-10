@@ -1,1 +1,1 @@
-worker: python caosbot_railway.py
+web: python caosbot_railway.py
