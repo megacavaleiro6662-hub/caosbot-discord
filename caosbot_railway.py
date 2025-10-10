@@ -310,24 +310,44 @@ def callback():
         bot_headers = {'Authorization': f'Bot {bot_token}'}
         member_url = f'https://discord.com/api/guilds/{SERVER_ID}/members/{user_data["id"]}'
         
+        print(f"🔍 [LOGIN] Verificando membro: {member_url}")
         member_response = requests.get(member_url, headers=bot_headers)
         
+        print(f"📡 [LOGIN] Status da API: {member_response.status_code}")
+        
         if member_response.status_code == 404:
-            print(f"❌ [LOGIN] Usuário não está no servidor CAOS Hub")
+            print(f"❌ [LOGIN] Usuário não encontrado no servidor")
+            print(f"🔍 [LOGIN] Server ID: {SERVER_ID}")
+            print(f"🔍 [LOGIN] User ID: {user_data['id']}")
             return """
             <html>
             <head><title>Acesso Negado</title><link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&display=swap" rel="stylesheet"></head>
             <body style="background:#000;color:#ff3300;text-align:center;padding-top:100px;font-family:Orbitron,sans-serif;">
                 <h1 style="font-size:48px;text-shadow:0 0 20px #ff0000;">❌ ACESSO NEGADO</h1>
                 <p style="color:#ff6666;font-size:18px;">Você não é membro do servidor CAOS Hub.</p>
+                <p style="color:#999;font-size:14px;">Certifique-se de estar no servidor e tenha os cargos necessários.</p>
                 <a href="/login" style="color:#ff6600;font-size:16px;text-decoration:none;">← Voltar ao Login</a>
             </body>
             </html>
             """
         
-        member_response.raise_for_status()
+        if member_response.status_code != 200:
+            print(f"⚠️ [LOGIN] Erro na API: {member_response.text}")
+            return f"""
+            <html>
+            <head><title>Erro</title></head>
+            <body style="background:#000;color:#ff3300;text-align:center;padding-top:100px;font-family:Arial;">
+                <h1>❌ Erro ao verificar permissões</h1>
+                <p>Status: {member_response.status_code}</p>
+                <p>Tente novamente ou contacte um administrador.</p>
+                <a href="/login" style="color:#ff6600;">← Voltar</a>
+            </body>
+            </html>
+            """
+        
         member_data = member_response.json()
         user_roles = member_data.get('roles', [])
+        print(f"✅ [LOGIN] Cargos carregados: {user_roles}")
         
         print(f"🔐 [LOGIN] Cargos do usuário: {user_roles}")
         print(f"🔐 [LOGIN] Cargos permitidos: {ALLOWED_ROLE_IDS}")
@@ -8938,6 +8958,8 @@ async def start_music_bot(name, token):
 
 def run_discord_bot():
     """Executa o bot Discord em thread separada"""
+    import time
+    time.sleep(5)  # Aguarda Flask iniciar primeiro
     try:
         print('🚀 Iniciando bot Discord...')
         bot.run(TOKEN)
@@ -8948,36 +8970,43 @@ def run_discord_bot():
 
 if __name__ == '__main__':
     print('=' * 60)
-    print('🔥 INICIANDO CAOS BOT - WEB SERVICE')
+    print('INICIANDO CAOS BOT - WEB SERVICE')
     print('=' * 60)
     
     # Verificar token principal
     if not TOKEN:
-        print('❌ ERRO: DISCORD_TOKEN não encontrado!')
+        print('ERRO: DISCORD_TOKEN nao encontrado!')
         exit(1)
     
-    # Iniciar bot Discord em thread separada (NÃO daemon)
-    print('🤖 Iniciando bot Discord em background...')
-    bot_thread = threading.Thread(target=run_discord_bot)
-    bot_thread.daemon = False  # Thread permanece viva
-    bot_thread.start()
-    
-    # Iniciar Flask como PROCESSO PRINCIPAL (para Web Service funcionar)
-    print('🌐 Iniciando Flask como processo principal...')
     import os
     port = int(os.getenv("PORT", 10000))
-    print(f'📍 Servidor rodando na porta {port}')
-    print(f'🔧 REDIRECT_URI: {DISCORD_REDIRECT_URI}')
+    
+    print(f'Porta: {port}')
+    print(f'REDIRECT_URI: {DISCORD_REDIRECT_URI}')
+    
+    # Iniciar bot Discord em thread separada DEPOIS do Flask
+    print('Iniciando bot Discord em background...')
+    bot_thread = threading.Thread(target=run_discord_bot, daemon=True)
+    bot_thread.start()
+    
+    # Flask como PROCESSO PRINCIPAL (BLOCKING - CRITICO!)
+    print('Iniciando Flask como processo principal...')
+    print('Flask vai rodar em modo blocking (correto para Web Service)')
     
     try:
-        # Flask como PRINCIPAL (blocking)
-        app.run(host="0.0.0.0", port=port, debug=False, use_reloader=False)
-    except KeyboardInterrupt:
-        print('\n⚠️ Encerrando sistema...')
+        # MODO PRODUCTION - SEM DEBUG
+        app.run(
+            host="0.0.0.0",
+            port=port,
+            debug=False,
+            use_reloader=False,
+            threaded=True  # Permite multiplas conexoes
+        )
     except Exception as e:
-        print(f'❌ Erro crítico: {e}')
+        print(f'ERRO CRITICO NO FLASK: {e}')
         import traceback
         traceback.print_exc()
+        exit(1)
 
 # Sistema anti-hibernação já definido no início do arquivo
 
