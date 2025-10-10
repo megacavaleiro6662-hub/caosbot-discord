@@ -8956,9 +8956,19 @@ async def start_music_bot(name, token):
         import traceback
         traceback.print_exc()
 
+def run_discord_bot():
+    """Executa o bot Discord em thread separada"""
+    try:
+        print('🚀 Iniciando bot Discord...')
+        bot.run(TOKEN)
+    except Exception as e:
+        print(f'❌ Erro no bot Discord: {e}')
+        import traceback
+        traceback.print_exc()
+
 if __name__ == '__main__':
     print('=' * 60)
-    print('🔥 INICIANDO CAOS BOT - MODERAÇÃO E VENDAS')
+    print('🔥 INICIANDO CAOS BOT - WEB SERVICE')
     print('=' * 60)
     
     # Verificar token principal
@@ -8966,14 +8976,22 @@ if __name__ == '__main__':
         print('❌ ERRO: DISCORD_TOKEN não encontrado!')
         exit(1)
     
-    # Iniciar servidor Flask em thread separada
-    print('🌐 Iniciando servidor HTTP...')
-    threading.Thread(target=run_web, daemon=True).start()
+    # Iniciar bot Discord em thread separada (NÃO daemon)
+    print('🤖 Iniciando bot Discord em background...')
+    bot_thread = threading.Thread(target=run_discord_bot)
+    bot_thread.daemon = False  # Thread permanece viva
+    bot_thread.start()
     
-    print('🚀 Iniciando bot principal (CAOS Hub)...')
+    # Iniciar Flask como PROCESSO PRINCIPAL (para Web Service funcionar)
+    print('🌐 Iniciando Flask como processo principal...')
+    import os
+    port = int(os.getenv("PORT", 10000))
+    print(f'📍 Servidor rodando na porta {port}')
+    print(f'🔧 REDIRECT_URI: {DISCORD_REDIRECT_URI}')
     
     try:
-        bot.run(TOKEN)
+        # Flask como PRINCIPAL (blocking)
+        app.run(host="0.0.0.0", port=port, debug=False, use_reloader=False)
     except KeyboardInterrupt:
         print('\n⚠️ Encerrando sistema...')
     except Exception as e:
