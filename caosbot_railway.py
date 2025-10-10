@@ -2918,6 +2918,46 @@ async def on_message(message):
         return
     
     # ========================================
+    # RESPOSTA QUANDO O BOT É MENCIONADO
+    # ========================================
+    
+    # Verificar se o bot foi mencionado diretamente (sem comando)
+    if bot.user.mentioned_in(message) and not message.mention_everyone:
+        # Verificar se é só uma menção (sem texto adicional que seja comando)
+        content_without_mentions = message.content.replace(f'<@{bot.user.id}>', '').replace(f'<@!{bot.user.id}>', '').strip()
+        
+        if not content_without_mentions or not content_without_mentions.startswith('.'):
+            embed = discord.Embed(
+                title='👋 Olá! Eu sou o CAOS Bot!',
+                description=f'Oi **{message.author.mention}**! Precisa de ajuda?\n\n'
+                           f'Use o comando **`.help`** para ver todos os meus comandos!',
+                color=0xff6600
+            )
+            embed.add_field(
+                name='📚 Comandos Principais',
+                value='• `.help` - Lista de comandos\n'
+                      '• `.ticket` - Sistema de tickets\n'
+                      '• `.avisos` - Ver seus avisos\n'
+                      '• `.ship` - Testar compatibilidade\n'
+                      '• `.beijar` - Interações sociais',
+                inline=False
+            )
+            embed.add_field(
+                name='⚙️ Administração',
+                value='• Use `.help` para ver comandos de moderação\n'
+                      '• Dashboard: Acesse pelo servidor',
+                inline=False
+            )
+            embed.set_footer(
+                text=f'Prefixo: . (ponto) • Digite .help para mais informações',
+                icon_url=bot.user.display_avatar.url
+            )
+            embed.set_thumbnail(url=bot.user.display_avatar.url)
+            
+            await message.reply(embed=embed)
+            return
+    
+    # ========================================
     # BLOQUEIO DE COMANDOS DE MÚSICA EM CALLS PROTEGIDAS
     # ========================================
     
