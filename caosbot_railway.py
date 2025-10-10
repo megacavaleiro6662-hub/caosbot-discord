@@ -4667,44 +4667,13 @@ def save_welcome_config():
         print(f"❌ Erro ao salvar configurações de boas-vindas: {e}")
 
 def load_welcome_config():
-    """Carrega configurações do sistema de boas-vindas VIA DASHBOARD API"""
+    """Carrega configurações do sistema de boas-vindas DO ARQUIVO LOCAL"""
     global welcome_config
     try:
-        # TENTAR BUSCAR DO DASHBOARD PRIMEIRO (prioritário!)
-        # FIX FINAL: URL CORRETO! (não é ticket-dashboard!)
-        dashboard_url = os.getenv('DASHBOARD_URL', 'https://caosbot-discord.onrender.com')
-        print(f"🔄 Tentando conectar ao dashboard: {dashboard_url}/api/config/status")
+        # DESATIVADO: Não tenta conectar ao dashboard externo (causa loop)
+        # Usa apenas arquivo local para evitar problemas de inicialização
         
-        try:
-            response = requests.get(f'{dashboard_url}/api/config/status', timeout=10)
-            print(f"📡 Response status: {response.status_code}")
-            
-            if response.status_code == 200:
-                new_config = response.json()
-                # Validar se tem as chaves necessárias
-                if 'welcome_enabled' in new_config:
-                    welcome_config.update(normalize_config(new_config))
-                    print(f"✅ Configs carregadas do DASHBOARD COM SUCESSO!")
-                    print(f"   Welcome: {is_on('welcome_enabled')}")
-                    print(f"   Goodbye: {is_on('goodbye_enabled')}")
-                    print(f"   Autorole: {is_on('autorole_enabled')}")
-                    print(f"   Tickets: {is_on('tickets_enabled')}")
-                    save_welcome_config()  # Salvar no arquivo local também
-                    return
-                else:
-                    print(f"⚠️ Dashboard retornou dados inválidos")
-            else:
-                print(f"❌ Dashboard retornou status {response.status_code}")
-        except requests.exceptions.Timeout:
-            print(f"⚠️ Timeout ao conectar no dashboard (>10s)")
-        except requests.exceptions.RequestException as e:
-            print(f"⚠️ Erro de rede ao conectar no dashboard: {str(e)}")
-        except Exception as e:
-            print(f"⚠️ Erro ao conectar no dashboard: {type(e).__name__}: {str(e)}")
-        
-        print("   Tentando carregar do arquivo local...")
-        
-        # FALLBACK: Ler do arquivo local se dashboard não estiver disponível
+        # Ler do arquivo local
         if os.path.exists(WELCOME_CONFIG_FILE):
             with open(WELCOME_CONFIG_FILE, 'r', encoding='utf-8') as f:
                 loaded_config = json.load(f)
@@ -4712,11 +4681,22 @@ def load_welcome_config():
             print(f"✅ Configurações carregadas do arquivo local")
             print(f"   Welcome: {is_on('welcome_enabled')}")
             print(f"   Goodbye: {is_on('goodbye_enabled')}")
+            print(f"   Autorole: {is_on('autorole_enabled')}")
+            print(f"   Tickets: {is_on('tickets_enabled')}")
         else:
-            print("⚠️ AVISO: Arquivo local não encontrado! Usando configs DESATIVADAS por segurança")
+            # Se não existe arquivo, cria um padrão
+            print("📝 Arquivo de configuração não encontrado, criando padrão...")
+            welcome_config.update({
+                'welcome_enabled': True,
+                'goodbye_enabled': True,
+                'autorole_enabled': False,
+                'tickets_enabled': True
+            })
+            save_welcome_config()
+            print(f"✅ Configurações padrão criadas")
             print(f"   Welcome: {is_on('welcome_enabled')}")
     except Exception as e:
-        print(f"❌ Erro crítico ao carregar configurações: {e}")
+        print(f"❌ Erro ao carregar configurações: {e}")
         print("   Mantendo tudo DESATIVADO por segurança")
 
 async def update_status_panel(guild):
