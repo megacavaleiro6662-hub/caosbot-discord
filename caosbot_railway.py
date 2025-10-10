@@ -38,8 +38,11 @@ app.secret_key = secrets.token_hex(32)
 # Discord OAuth2
 DISCORD_CLIENT_ID = os.getenv('DISCORD_CLIENT_ID', 'YOUR_CLIENT_ID')
 DISCORD_CLIENT_SECRET = os.getenv('DISCORD_CLIENT_SECRET', 'YOUR_CLIENT_SECRET')
-DISCORD_REDIRECT_URI = os.getenv('DISCORD_REDIRECT_URI', 'https://caosbot-discord-foxc.onrender.com/callback')
+DISCORD_REDIRECT_URI = os.getenv('DISCORD_REDIRECT_URI', 'http://localhost:5000/callback')
 DISCORD_OAUTH_URL = f"https://discord.com/api/oauth2/authorize?client_id={DISCORD_CLIENT_ID}&redirect_uri={DISCORD_REDIRECT_URI}&response_type=code&scope=identify%20guilds%20guilds.members.read"
+
+# Log para debug
+print(f"🔧 REDIRECT_URI configurado: {DISCORD_REDIRECT_URI}")
 
 # IDs dos cargos PERMITIDOS (apenas Founder, Sub-Dono, Administrador)
 ALLOWED_ROLE_IDS = [
