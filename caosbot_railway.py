@@ -1225,17 +1225,17 @@ def dashboard():
                     
                     <!-- Preview -->
                     <div>
-                        <div class="card" style="position: sticky; top: 20px;">
+                        <div class="card">
                             <div class="card-header">
                                 <h2>👁️ Preview</h2>
                             </div>
                             <div id="embed-preview" style="background: #2b2d31; padding: 16px; border-radius: 4px; min-height: 300px;">
                                 <div style="color: #b9bbbe; text-align: center; padding: 40px 20px;">
-                                    Preencha os campos ao lado para ver o preview
+                                    📝 Configure o embed ao lado para ver o preview aqui
                                 </div>
                             </div>
                         </div>
-                        
+                    </div>    
                         <!-- Enviar -->
                         <div class="card" style="margin-top: 24px;">
                             <div class="form-group">
@@ -1699,8 +1699,11 @@ def dashboard():
         function loadEmbedTemplate() {{
             const template = document.getElementById('embed-template').value;
             
-            // Limpar campos existentes
-            document.getElementById('embed-fields-container').innerHTML = '';
+            // Limpar campos existentes SEMPRE que trocar template
+            const container = document.getElementById('embed-fields-container');
+            if (container) {{
+                container.innerHTML = '';
+            }}
             embedFieldCount = 0;
             
             // Mostrar/esconder campos específicos
@@ -1826,7 +1829,7 @@ def dashboard():
                 else if (unit === 'h') timeText = duration + ' hora' + (duration > 1 ? 's' : '');
                 else timeText = duration + ' dia' + (duration > 1 ? 's' : '');
                 
-                description = `**Reaja com ${{emoji}} para participar!**\\n\\n🎁 **Prêmio:** ${{prize}}\\n⏰ **Duração:** ${{timeText}}\\n👥 **Vencedores:** ${{winners}}\\n\\n**Boa sorte a todos!** 🍀`;
+                description = `**Reaja com ${{emoji}} para participar!**\n\n🎁 **Prêmio:** ${{prize}}\n⏰ **Duração:** ${{timeText}}\n👥 **Vencedores:** ${{winners}}\n\n**Boa sorte a todos!** 🍀`;
                 
                 // Atualizar o textarea (opcional, para mostrar a descrição gerada)
                 document.getElementById('embed-description').value = description;
@@ -1850,8 +1853,22 @@ def dashboard():
                 }}
             }});
             
+            // Mensagem extra
+            const extraMessage = document.getElementById('embed-extra-message').value;
+            
             // Gerar preview HTML (estilo Discord REAL)
-            let previewHTML = `
+            let previewHTML = '';
+            
+            // Adicionar mensagem extra se tiver
+            if (extraMessage) {{
+                previewHTML += `
+                <div style="color: #dbdee1; font-size: 16px; margin-bottom: 8px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;">
+                    ${{extraMessage}}
+                </div>
+                `;
+            }}
+            
+            previewHTML += `
             <style>
                 .discord-message {{
                     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif !important;
@@ -2006,6 +2023,7 @@ def dashboard():
             if (description) {{
                 let desc = description.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
                 desc = desc.replace(/\*(.*?)\*/g, '<em>$1</em>');
+                desc = desc.replace(/\\n/g, '<br>');  // Quebrar linhas
                 previewHTML += '<div class="embed-description">' + desc + '</div>';
             }}
             
@@ -2568,7 +2586,14 @@ def send_embed():
                     return False, 'Canal não encontrado'
                 
                 embed = discord.Embed.from_dict(embed_dict)
-                await channel.send(embed=embed)
+                
+                # Enviar com mensagem extra se tiver
+                extra_msg = data.get('extra_message', '')
+                if extra_msg:
+                    await channel.send(content=extra_msg, embed=embed)
+                else:
+                    await channel.send(embed=embed)
+                
                 return True, 'Embed enviado'
             except Exception as e:
                 return False, str(e)
@@ -2643,13 +2668,14 @@ def send_giveaway():
                 if not channel:
                     return False, 'Canal não encontrado'
                 
-                # Enviar mensagem extra se tiver (antes do embed)
+                embed = discord.Embed.from_dict(embed_dict)
+                
+                # Enviar com mensagem extra se tiver (JUNTO, não separado)
                 extra_msg = data.get('extra_message', '')
                 if extra_msg:
-                    await channel.send(extra_msg)
-                
-                embed = discord.Embed.from_dict(embed_dict)
-                message = await channel.send(embed=embed)
+                    message = await channel.send(content=extra_msg, embed=embed)
+                else:
+                    message = await channel.send(embed=embed)
                 
                 # Adicionar reação
                 emoji = giveaway_data.get('emoji', '🎉')
