@@ -1777,35 +1777,170 @@ def dashboard():
                 }}
             }});
             
-            // Gerar preview HTML (estilo Discord)
-            let previewHTML = '<div style="border-left: 4px solid ' + colorPicker + '; background: #2b2d31; padding: 12px 16px; border-radius: 4px;">';
+            // Gerar preview HTML (estilo Discord REAL)
+            let previewHTML = `
+            <style>
+                @import url('https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;600;700&display=swap');
+                .discord-message {{
+                    font-family: 'Noto Sans', 'gg sans', 'Whitney', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+                    background: #313338;
+                    padding: 16px;
+                    border-radius: 4px;
+                }}
+                .message-header {{
+                    display: flex;
+                    align-items: center;
+                    margin-bottom: 8px;
+                }}
+                .bot-avatar {{
+                    width: 40px;
+                    height: 40px;
+                    border-radius: 50%;
+                    margin-right: 12px;
+                }}
+                .bot-name {{
+                    font-size: 15px;
+                    font-weight: 500;
+                    color: #f2f3f5;
+                    margin-right: 6px;
+                }}
+                .bot-tag {{
+                    background: #5865f2;
+                    color: #fff;
+                    font-size: 10px;
+                    font-weight: 500;
+                    padding: 2px 4px;
+                    border-radius: 3px;
+                    text-transform: uppercase;
+                    vertical-align: middle;
+                }}
+                .embed-container {{
+                    display: flex;
+                    margin-left: 52px;
+                }}
+                .embed-content {{
+                    border-left: 4px solid ` + colorPicker + `;
+                    background: #2b2d31;
+                    padding: 8px 12px 12px 12px;
+                    border-radius: 4px;
+                    max-width: 520px;
+                    flex: 1;
+                    position: relative;
+                }}
+                .embed-author {{
+                    display: flex;
+                    align-items: center;
+                    margin-bottom: 8px;
+                    font-size: 13px;
+                    color: #f2f3f5;
+                    font-weight: 600;
+                }}
+                .embed-title {{
+                    color: #00aff4;
+                    font-size: 15px;
+                    font-weight: 600;
+                    margin-bottom: 8px;
+                    line-height: 1.2;
+                }}
+                .embed-description {{
+                    color: #dbdee1;
+                    font-size: 14px;
+                    line-height: 1.375;
+                    margin-bottom: 8px;
+                    white-space: pre-wrap;
+                    word-wrap: break-word;
+                }}
+                .embed-fields {{
+                    display: grid;
+                    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+                    gap: 8px;
+                    margin-top: 8px;
+                }}
+                .embed-field {{
+                    min-width: 0;
+                }}
+                .embed-field-name {{
+                    color: #f2f3f5;
+                    font-size: 14px;
+                    font-weight: 600;
+                    margin-bottom: 2px;
+                }}
+                .embed-field-value {{
+                    color: #dbdee1;
+                    font-size: 14px;
+                    line-height: 1.375;
+                }}
+                .embed-image {{
+                    max-width: 100%;
+                    border-radius: 4px;
+                    margin-top: 16px;
+                }}
+                .embed-thumbnail {{
+                    position: absolute;
+                    right: 12px;
+                    top: 8px;
+                    width: 80px;
+                    height: 80px;
+                    object-fit: cover;
+                    border-radius: 4px;
+                }}
+                .embed-footer {{
+                    display: flex;
+                    align-items: center;
+                    margin-top: 8px;
+                    padding-top: 8px;
+                    border-top: 1px solid #404249;
+                    font-size: 12px;
+                    color: #b5bac1;
+                    font-weight: 500;
+                }}
+                .embed-footer-icon {{
+                    width: 20px;
+                    height: 20px;
+                    border-radius: 50%;
+                    margin-right: 8px;
+                }}
+            </style>
+            
+            <div class="discord-message">
+                <div class="message-header">
+                    <img src="https://i.ibb.co/Fq5Lgzs5/Chat-GPT-Image-7-de-out-de-2025-00-25-49.png" class="bot-avatar">
+                    <span class="bot-name">CAOS Bot</span>
+                    <span class="bot-tag">BOT</span>
+                </div>
+                <div class="embed-container">
+                    <div class="embed-content">
+            `;
+            
+            // Thumbnail
+            if (thumbnail) {{
+                previewHTML += '<img src="' + thumbnail + '" class="embed-thumbnail" onerror="this.style.display=\\'none\\'">';
+            }}
             
             // Author
             if (author) {{
-                previewHTML += '<div style="display: flex; align-items: center; margin-bottom: 8px; font-size: 13px; color: #fff; font-weight: 600;">';
-                previewHTML += '<span>' + author + '</span></div>';
+                previewHTML += '<div class="embed-author">' + author + '</div>';
             }}
             
             // Title
             if (title) {{
-                previewHTML += '<div style="color: #00aff4; font-size: 16px; font-weight: 600; margin-bottom: 8px;">' + title + '</div>';
+                previewHTML += '<div class="embed-title">' + title + '</div>';
             }}
             
             // Description
             if (description) {{
-                let desc = description.replace(/\\n/g, '<br>');
-                desc = desc.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+                let desc = description.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
                 desc = desc.replace(/\*(.*?)\*/g, '<em>$1</em>');
-                previewHTML += '<div style="color: #dcddde; font-size: 14px; line-height: 1.5; margin-bottom: 12px;">' + desc + '</div>';
+                previewHTML += '<div class="embed-description">' + desc + '</div>';
             }}
             
             // Fields
             if (fields.length > 0) {{
-                previewHTML += '<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 12px;">';
+                previewHTML += '<div class="embed-fields">';
                 fields.forEach(f => {{
-                    previewHTML += '<div style="' + (f.inline ? '' : 'grid-column: 1 / -1;') + '">';
-                    previewHTML += '<div style="color: #fff; font-size: 13px; font-weight: 600; margin-bottom: 4px;">' + f.name + '</div>';
-                    previewHTML += '<div style="color: #dcddde; font-size: 13px;">' + f.value + '</div>';
+                    previewHTML += '<div class="embed-field" style="' + (f.inline ? '' : 'grid-column: 1 / -1;') + '">';
+                    previewHTML += '<div class="embed-field-name">' + (f.name || 'Campo') + '</div>';
+                    previewHTML += '<div class="embed-field-value">' + (f.value || 'Valor') + '</div>';
                     previewHTML += '</div>';
                 }});
                 previewHTML += '</div>';
@@ -1813,31 +1948,32 @@ def dashboard():
             
             // Image
             if (image) {{
-                previewHTML += '<img src="' + image + '" style="max-width: 100%; border-radius: 4px; margin-top: 12px;" onerror="this.style.display=\\'none\\'">';
-            }}
-            
-            // Thumbnail
-            if (thumbnail) {{
-                previewHTML += '<img src="' + thumbnail + '" style="position: absolute; right: 16px; top: 16px; width: 80px; height: 80px; object-fit: cover; border-radius: 4px;" onerror="this.style.display=\\'none\\'">';
+                previewHTML += '<img src="' + image + '" class="embed-image" onerror="this.style.display=\\'none\\'">';
             }}
             
             // Footer
             if (footer || timestamp) {{
-                previewHTML += '<div style="display: flex; align-items: center; gap: 8px; margin-top: 12px; padding-top: 12px; border-top: 1px solid #404249; font-size: 12px; color: #b9bbbe;">';
+                previewHTML += '<div class="embed-footer">';
                 if (footerIcon) {{
-                    previewHTML += '<img src="' + footerIcon + '" style="width: 20px; height: 20px; border-radius: 50%;" onerror="this.style.display=\\'none\\'">';
+                    previewHTML += '<img src="' + footerIcon + '" class="embed-footer-icon" onerror="this.style.display=\\'none\\'">';
                 }}
                 if (footer) {{
                     previewHTML += '<span>' + footer + '</span>';
                 }}
                 if (timestamp) {{
-                    if (footer) previewHTML += '<span> • </span>';
-                    previewHTML += '<span>' + new Date().toLocaleString('pt-BR') + '</span>';
+                    if (footer) previewHTML += '<span style="margin: 0 4px;">•</span>';
+                    const now = new Date();
+                    const time = now.toLocaleTimeString('pt-BR', {{ hour: '2-digit', minute: '2-digit' }});
+                    previewHTML += '<span>Hoje às ' + time + '</span>';
                 }}
                 previewHTML += '</div>';
             }}
             
-            previewHTML += '</div>';
+            previewHTML += `
+                    </div>
+                </div>
+            </div>
+            `;
             
             document.getElementById('embed-preview').innerHTML = previewHTML;
         }}
