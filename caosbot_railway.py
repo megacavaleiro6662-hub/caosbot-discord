@@ -972,6 +972,9 @@ def dashboard():
                                 <input type="checkbox" checked> 🤝 Parceria
                             </label>
                             <label style="display: flex; align-items: center; gap: 8px; padding: 10px; background: rgba(255,255,255,0.05); border-radius: 8px; cursor: pointer;">
+                                <input type="checkbox" checked> 🎉 Sorteios
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 8px; padding: 10px; background: rgba(255,255,255,0.05); border-radius: 8px; cursor: pointer;">
                                 <input type="checkbox" checked> 💰 Financeiro
                             </label>
                             <label style="display: flex; align-items: center; gap: 8px; padding: 10px; background: rgba(255,255,255,0.05); border-radius: 8px; cursor: pointer;">
@@ -1211,6 +1214,12 @@ def dashboard():
                                 <input type="checkbox" id="embed-timestamp" onchange="updateEmbedPreview()">
                                 <span style="color: #ffaa66;">Adicionar timestamp atual</span>
                             </label>
+                        </div>
+                        
+                        <div class="form-group" style="margin-top: 24px;">
+                            <label class="form-label">💬 Mensagem Fora do Embed (opcional)</label>
+                            <textarea id="embed-extra-message" class="form-textarea" rows="2" placeholder="Ex: @everyone Novo sorteio!"></textarea>
+                            <small style="color: #ffaa66; font-size: 12px;">Esta mensagem aparece ACIMA do embed (use para mencionar @everyone)</small>
                         </div>
                     </div>
                     
@@ -2106,6 +2115,12 @@ def dashboard():
                 }}
             }});
             
+            // Adicionar mensagem extra se tiver
+            const extraMessage = document.getElementById('embed-extra-message').value;
+            if (extraMessage) {{
+                embedData.extra_message = extraMessage;
+            }}
+            
             try {{
                 const apiUrl = template === 'giveaway' ? '/api/embeds/giveaway' : '/api/embeds/send';
                 const response = await fetch(apiUrl, {{
@@ -2628,6 +2643,11 @@ def send_giveaway():
                 if not channel:
                     return False, 'Canal não encontrado'
                 
+                # Enviar mensagem extra se tiver (antes do embed)
+                extra_msg = data.get('extra_message', '')
+                if extra_msg:
+                    await channel.send(extra_msg)
+                
                 embed = discord.Embed.from_dict(embed_dict)
                 message = await channel.send(embed=embed)
                 
@@ -2637,9 +2657,79 @@ def send_giveaway():
                     await message.add_reaction(emoji)
                 except:
                     await message.add_reaction('🎉')  # Fallback
+                    emoji = '🎉'
                 
-                # Agendar sorteio (você pode implementar um sistema de tasks aqui)
-                # Por enquanto só envia a mensagem com reação
+                # Agendar sorteio automático
+                duration = giveaway_data.get('duration', 7)
+                time_unit = giveaway_data.get('time_unit', 'd')
+                winners_count = giveaway_data.get('winners', 1)
+                prize = giveaway_data.get('prize', 'Prêmio')
+                
+                # Calcular tempo em segundos
+                if time_unit == 'm':
+                    wait_time = duration * 60
+                elif time_unit == 'h':
+                    wait_time = duration * 3600
+                else:  # dias
+                    wait_time = duration * 86400
+                
+                # Agendar task para sortear depois
+                async def do_giveaway_draw():
+                    await asyncio.sleep(wait_time)
+                    
+                    # Refetch da mensagem para pegar reações atualizadas
+                    try:
+                        msg = await channel.fetch_message(message.id)
+                        
+                        # Pegar usuários que reagiram
+                        reaction = None
+                        for r in msg.reactions:
+                            if str(r.emoji) == emoji:
+                                reaction = r
+                                break
+                        
+                        if not reaction or reaction.count <= 1:  # Só o bot
+                            await channel.send(f"🎉 **SORTEIO ENCERRADO**\\n\\nNinguém participou do sorteio de **{prize}**! 😢")
+                            return
+                        
+                        # Pegar participantes (excluindo o bot)
+                        participants = []
+                        async for user in reaction.users():
+                            if not user.bot:
+                                participants.append(user)
+                        
+                        if len(participants) == 0:
+                            await channel.send(f"🎉 **SORTEIO ENCERRADO**\\n\\nNinguém participou do sorteio de **{prize}**! 😢")
+                            return
+                        
+                        # Sortear vencedores
+                        import random
+                        actual_winners = min(winners_count, len(participants))
+                        winners = random.sample(participants, actual_winners)
+                        
+                        # Anunciar vencedores
+                        winners_mention = ', '.join([w.mention for w in winners])
+                        
+                        result_embed = discord.Embed(
+                            title="🎉 GIVEAWAY ENCERRADO!",
+                            description=f"**Prêmio:** {prize}\\n**Vencedor(es):** {winners_mention}\\n\\n🎊 **Parabéns!** 🎊",
+                            color=0x00ff00
+                        )
+                        result_embed.add_field(
+                            name="📋 Próximos Passos",
+                            value="**Vencedores devem abrir um ticket para receber o prêmio!**\\n\\nAbra um ticket na categoria 🎉 **Sorteios**.",
+                            inline=False
+                        )
+                        result_embed.set_footer(text=f"Participantes: {len(participants)}")
+                        
+                        await channel.send(content=winners_mention, embed=result_embed)
+                        
+                    except Exception as e:
+                        print(f"❌ Erro ao sortear giveaway: {e}")
+                        await channel.send(f"❌ Erro ao realizar sorteio! Contate um administrador.")
+                
+                # Criar task
+                bot.loop.create_task(do_giveaway_draw())
                 
                 return True, f'Giveaway criado! ID: {message.id}'
             except Exception as e:
@@ -3236,8 +3326,9 @@ class TicketConfigView(discord.ui.View):
             "suporte": ("Suporte Técnico", "🔧"),
             "denuncia": ("Denúncia", "🚨"),
             "parceria": ("Parceria", "🤝"),
+            "sorteios": ("Sorteios", "🎉"),
             "financeiro": ("Financeiro", "💰"),
-            "moderacao": ("Moderação", "🛡️"),
+            "moderacao": ("Moderação", "👮"),
             "bug": ("Bug", "🐛"),
         }
         
