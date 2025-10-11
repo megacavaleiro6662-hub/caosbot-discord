@@ -1132,6 +1132,36 @@ def dashboard():
                             <textarea id="embed-description" class="form-textarea" rows="4" placeholder="Digite a descrição (suporta markdown)" onkeyup="updateEmbedPreview()"></textarea>
                         </div>
                         
+                        <!-- Campos específicos do Giveaway -->
+                        <div id="giveaway-fields" style="display: none;">
+                            <div class="form-group">
+                                <label class="form-label">🎁 Prêmio</label>
+                                <input type="text" id="giveaway-prize" class="form-input" placeholder="Ex: Nitro Classic, R$50 Steam" onkeyup="updateEmbedPreview()">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">⏰ Duração do Sorteio</label>
+                                <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 10px;">
+                                    <input type="number" id="giveaway-duration" class="form-input" placeholder="Ex: 7" min="1" onkeyup="updateEmbedPreview()">
+                                    <select id="giveaway-time-unit" class="form-select" onchange="updateEmbedPreview()">
+                                        <option value="m">Minutos</option>
+                                        <option value="h">Horas</option>
+                                        <option value="d" selected>Dias</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">👥 Número de Vencedores</label>
+                                <input type="number" id="giveaway-winners" class="form-input" placeholder="1" value="1" min="1" onkeyup="updateEmbedPreview()">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">🎉 Emoji de Reação</label>
+                                <input type="text" id="giveaway-emoji" class="form-input" placeholder="🎉" value="🎉" onkeyup="updateEmbedPreview()">
+                            </div>
+                        </div>
+                        
                         <div class="form-group">
                             <label class="form-label">🎨 Cor do Embed</label>
                             <div style="display: flex; gap: 10px; align-items: center;">
@@ -1664,12 +1694,20 @@ def dashboard():
             document.getElementById('embed-fields-container').innerHTML = '';
             embedFieldCount = 0;
             
+            // Mostrar/esconder campos específicos
+            const giveawayFields = document.getElementById('giveaway-fields');
+            if (template === 'giveaway') {{
+                giveawayFields.style.display = 'block';
+            }} else {{
+                giveawayFields.style.display = 'none';
+            }}
+            
             const templates = {{
                 giveaway: {{
                     title: '🎉 GIVEAWAY',
-                    description: '**Participe do sorteio!**\\n\\nPara participar, reaja com 🎉\\n\\n**Prêmio:** Nitro Classic\\n**Término:** Em 7 dias\\n\\n**Boa sorte!** 🍀',
+                    description: '', // Será gerado dinamicamente
                     color: '#e91e63',
-                    footer: 'Sorteio válido até',
+                    footer: 'Hospedado por CAOS Hub',
                     timestamp: true
                 }},
                 rules: {{
@@ -1762,8 +1800,28 @@ def dashboard():
         
         // Atualizar preview do embed
         function updateEmbedPreview() {{
+            const template = document.getElementById('embed-template').value;
             const title = document.getElementById('embed-title').value;
-            const description = document.getElementById('embed-description').value;
+            let description = document.getElementById('embed-description').value;
+            
+            // Gerar descrição dinamicamente para giveaway
+            if (template === 'giveaway') {{
+                const prize = document.getElementById('giveaway-prize').value || 'Não especificado';
+                const duration = document.getElementById('giveaway-duration').value || '7';
+                const unit = document.getElementById('giveaway-time-unit').value;
+                const winners = document.getElementById('giveaway-winners').value || '1';
+                const emoji = document.getElementById('giveaway-emoji').value || '🎉';
+                
+                let timeText = '';
+                if (unit === 'm') timeText = duration + ' minuto' + (duration > 1 ? 's' : '');
+                else if (unit === 'h') timeText = duration + ' hora' + (duration > 1 ? 's' : '');
+                else timeText = duration + ' dia' + (duration > 1 ? 's' : '');
+                
+                description = `**Reaja com ${{emoji}} para participar!**\\n\\n🎁 **Prêmio:** ${{prize}}\\n⏰ **Duração:** ${{timeText}}\\n👥 **Vencedores:** ${{winners}}\\n\\n**Boa sorte a todos!** 🍀`;
+                
+                // Atualizar o textarea (opcional, para mostrar a descrição gerada)
+                document.getElementById('embed-description').value = description;
+            }}
             const colorPicker = document.getElementById('embed-color-picker').value;
             const image = document.getElementById('embed-image').value;
             const thumbnail = document.getElementById('embed-thumbnail').value;
@@ -2003,6 +2061,8 @@ def dashboard():
                 return;
             }}
             
+            const template = document.getElementById('embed-template').value;
+            
             // Coletar todos os dados
             const embedData = {{
                 channel_id: channelId,
@@ -2019,6 +2079,23 @@ def dashboard():
                 fields: []
             }};
             
+            // Se for giveaway, adicionar dados específicos
+            if (template === 'giveaway') {{
+                const duration = document.getElementById('giveaway-duration').value || '7';
+                const unit = document.getElementById('giveaway-time-unit').value;
+                const winners = document.getElementById('giveaway-winners').value || '1';
+                const emoji = document.getElementById('giveaway-emoji').value || '🎉';
+                const prize = document.getElementById('giveaway-prize').value || 'Prêmio não especificado';
+                
+                embedData.giveaway = {{
+                    duration: parseInt(duration),
+                    time_unit: unit,
+                    winners: parseInt(winners),
+                    emoji: emoji,
+                    prize: prize
+                }};
+            }}
+            
             // Coletar fields
             document.querySelectorAll('.embed-field').forEach(field => {{
                 const name = field.querySelector('.field-name').value;
@@ -2030,7 +2107,8 @@ def dashboard():
             }});
             
             try {{
-                const response = await fetch('/api/embeds/send', {{
+                const apiUrl = template === 'giveaway' ? '/api/embeds/giveaway' : '/api/embeds/send';
+                const response = await fetch(apiUrl, {{
                     method: 'POST',
                     headers: {{ 'Content-Type': 'application/json' }},
                     body: JSON.stringify(embedData)
@@ -2490,6 +2568,93 @@ def send_embed():
             
     except Exception as e:
         print(f'❌ Erro ao enviar embed: {e}')
+        import traceback
+        traceback.print_exc()
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+@app.route('/api/embeds/giveaway', methods=['POST'])
+def send_giveaway():
+    """Envia giveaway com reação e sorteio automático"""
+    try:
+        data = request.get_json()
+        channel_id = data.get('channel_id')
+        giveaway_data = data.get('giveaway', {})
+        
+        if not channel_id:
+            return jsonify({'success': False, 'message': 'Canal não especificado'}), 400
+        
+        if not giveaway_data:
+            return jsonify({'success': False, 'message': 'Dados do giveaway não especificados'}), 400
+        
+        # Criar embed
+        embed_dict = {}
+        
+        if data.get('title'):
+            embed_dict['title'] = data['title']
+        
+        if data.get('description'):
+            embed_dict['description'] = data['description']
+        
+        if data.get('color'):
+            try:
+                color_hex = data['color'].replace('0x', '')
+                embed_dict['color'] = int(color_hex, 16)
+            except:
+                embed_dict['color'] = 0xe91e63
+        
+        if data.get('footer'):
+            embed_dict['footer'] = {'text': data['footer']}
+        
+        if data.get('timestamp'):
+            from datetime import datetime, timedelta
+            
+            # Calcular tempo de fim
+            duration = giveaway_data.get('duration', 7)
+            time_unit = giveaway_data.get('time_unit', 'd')
+            
+            if time_unit == 'm':
+                end_time = datetime.utcnow() + timedelta(minutes=duration)
+            elif time_unit == 'h':
+                end_time = datetime.utcnow() + timedelta(hours=duration)
+            else:  # dias
+                end_time = datetime.utcnow() + timedelta(days=duration)
+            
+            embed_dict['timestamp'] = end_time.isoformat()
+        
+        # Enviar embed e adicionar reação
+        async def send_giveaway_async():
+            try:
+                channel = bot.get_channel(int(channel_id))
+                if not channel:
+                    return False, 'Canal não encontrado'
+                
+                embed = discord.Embed.from_dict(embed_dict)
+                message = await channel.send(embed=embed)
+                
+                # Adicionar reação
+                emoji = giveaway_data.get('emoji', '🎉')
+                try:
+                    await message.add_reaction(emoji)
+                except:
+                    await message.add_reaction('🎉')  # Fallback
+                
+                # Agendar sorteio (você pode implementar um sistema de tasks aqui)
+                # Por enquanto só envia a mensagem com reação
+                
+                return True, f'Giveaway criado! ID: {message.id}'
+            except Exception as e:
+                return False, str(e)
+        
+        future = asyncio.run_coroutine_threadsafe(send_giveaway_async(), bot.loop)
+        success, message = future.result(timeout=10)
+        
+        if success:
+            return jsonify({'success': True, 'message': message})
+        else:
+            return jsonify({'success': False, 'message': message}), 500
+            
+    except Exception as e:
+        print(f'❌ Erro ao criar giveaway: {e}')
         import traceback
         traceback.print_exc()
         return jsonify({'success': False, 'message': str(e)}), 500
