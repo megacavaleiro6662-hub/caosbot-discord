@@ -1163,6 +1163,16 @@ def dashboard():
                                 <label class="form-label">🎉 Emoji de Reação</label>
                                 <input type="text" id="giveaway-emoji" class="form-input" placeholder="🎉" value="🎉" onkeyup="updateEmbedPreview()">
                             </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">🏆 Mensagem do Vencedor</label>
+                                <textarea id="giveaway-winner-message" class="form-textarea" rows="3" placeholder="Ex: Parabéns! Você ganhou {prize}! Abra um ticket para receber seu prêmio." onkeyup="updateEmbedPreview()">🎊 **Parabéns!** 🎊
+
+Você ganhou **{prize}**!
+
+📋 Abra um ticket na categoria 🎉 **Sorteios** para receber seu prêmio.</textarea>
+                                <small style="color: #ffaa66; font-size: 12px;">Use {prize} para o nome do prêmio | {winners} para mencionar vencedores</small>
+                            </div>
                         </div>
                         
                         <div class="form-group">
@@ -1224,12 +1234,16 @@ def dashboard():
                     </div>
                     
                     <!-- Preview -->
-                    <div>
+                    <div style="position: sticky; top: 20px;">
                         <div class="card">
-                            <div class="card-header">
+                            <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
                                 <h2>👁️ Preview</h2>
+                                <select id="preview-mode" class="form-select" onchange="updateEmbedPreview()" style="width: auto; padding: 8px; font-size: 13px;">
+                                    <option value="giveaway">🎉 Sorteio</option>
+                                    <option value="winner">🏆 Vencedor</option>
+                                </select>
                             </div>
-                            <div id="embed-preview" style="background: #2b2d31; padding: 16px; border-radius: 4px; min-height: 300px;">
+                            <div id="embed-preview" style="background: #2b2d31; padding: 16px; border-radius: 4px; min-height: 300px; max-height: 600px; overflow-y: auto;">
                                 <div style="color: #b9bbbe; text-align: center; padding: 40px 20px;">
                                     📝 Configure o embed ao lado para ver o preview aqui
                                 </div>
@@ -1806,13 +1820,24 @@ def dashboard():
         
         // Remover campo
         function removeEmbedField(id) {{
-            document.getElementById('field-' + id).remove();
-            updateEmbedPreview();
+            const el = document.getElementById('field-' + id);
+            if (el) {{
+                el.remove();
+                updateEmbedPreview();
+            }}
         }}
         
         // Atualizar preview do embed
         function updateEmbedPreview() {{
             const template = document.getElementById('embed-template').value;
+            const previewMode = document.getElementById('preview-mode') ? document.getElementById('preview-mode').value : 'giveaway';
+            
+            // Se for modo vencedor E template giveaway, mostrar preview do vencedor
+            if (template === 'giveaway' && previewMode === 'winner') {{
+                showWinnerPreview();
+                return;
+            }}
+            
             const title = document.getElementById('embed-title').value;
             let description = document.getElementById('embed-description').value;
             
@@ -2071,6 +2096,58 @@ def dashboard():
             document.getElementById('embed-preview').innerHTML = previewHTML;
         }}
         
+        // Preview da mensagem do vencedor
+        function showWinnerPreview() {{
+            const template = document.getElementById('embed-template').value;
+            if (template !== 'giveaway') return;
+            
+            const prize = document.getElementById('giveaway-prize').value || 'Não especificado';
+            const winners = document.getElementById('giveaway-winners').value || '1';
+            const winnerMessage = document.getElementById('giveaway-winner-message').value || '';
+            const colorPicker = document.getElementById('embed-color-picker').value;
+            
+            // Substituir placeholders
+            let message = winnerMessage.replace(/{{prize}}/g, prize);
+            message = message.replace(/{{winners}}/g, '@Vencedor' + (winners > 1 ? ` +${{parseInt(winners)-1}}` : ''));
+            
+            // Converter quebras de linha e markdown
+            message = message.replace(/\\n/g, '<br>');
+            message = message.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            message = message.replace(/\*(.*?)\*/g, '<em>$1</em>');
+            
+            const previewHTML = `
+            <style>
+                .discord-message {{
+                    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif !important;
+                    background: #313338;
+                    padding: 16px;
+                    border-radius: 4px;
+                }}
+            </style>
+            <div class="discord-message">
+                <div style="display: flex; align-items: center; margin-bottom: 8px;">
+                    <img src="https://i.ibb.co/VpPdrYCk/Chat-GPT-Image-11-de-set-de-2025-18-35-32.png" style="width: 40px; height: 40px; border-radius: 50%; margin-right: 12px;">
+                    <span style="font-size: 15px; font-weight: 500; color: #f2f3f5; margin-right: 6px;">CAOS Bot</span>
+                    <span style="background: #5865f2; color: #fff; font-size: 10px; font-weight: 500; padding: 2px 4px; border-radius: 3px; text-transform: uppercase;">BOT</span>
+                </div>
+                <div style="margin-left: 52px;">
+                    <div style="color: #dbdee1; margin-bottom: 8px;">@Vencedor${{winners > 1 ? ` +${{parseInt(winners)-1}}` : ''}}</div>
+                    <div style="border-left: 4px solid ${{colorPicker}}; background: #2b2d31; padding: 12px; border-radius: 4px;">
+                        <div style="color: #00aff4; font-size: 15px; font-weight: 600; margin-bottom: 8px;">🎉 GIVEAWAY ENCERRADO!</div>
+                        <div style="color: #dbdee1; font-size: 14px; line-height: 1.5;">
+                            ${{message}}
+                        </div>
+                        <div style="margin-top: 12px; padding-top: 8px; border-top: 1px solid #404249; font-size: 12px; color: #b5bac1;">
+                            Participantes: 10
+                        </div>
+                    </div>
+                </div>
+            </div>
+            `;
+            
+            document.getElementById('embed-preview').innerHTML = previewHTML;
+        }}
+        
         // Enviar embed
         async function sendEmbed() {{
             const channelId = document.getElementById('embed-channel').value;
@@ -2113,13 +2190,15 @@ def dashboard():
                 const winners = document.getElementById('giveaway-winners').value || '1';
                 const emoji = document.getElementById('giveaway-emoji').value || '🎉';
                 const prize = document.getElementById('giveaway-prize').value || 'Prêmio não especificado';
+                const winnerMessage = document.getElementById('giveaway-winner-message').value || '';
                 
                 embedData.giveaway = {{
                     duration: parseInt(duration),
                     time_unit: unit,
                     winners: parseInt(winners),
                     emoji: emoji,
-                    prize: prize
+                    prize: prize,
+                    winner_message: winnerMessage
                 }};
             }}
             
@@ -2715,7 +2794,7 @@ def send_giveaway():
                                 break
                         
                         if not reaction or reaction.count <= 1:  # Só o bot
-                            await channel.send(f"🎉 **SORTEIO ENCERRADO**\\n\\nNinguém participou do sorteio de **{prize}**! 😢")
+                            await channel.send(f"🎉 **SORTEIO ENCERRADO**\n\nNinguém participou do sorteio de **{prize}**! 😢")
                             return
                         
                         # Pegar participantes (excluindo o bot)
@@ -2725,7 +2804,7 @@ def send_giveaway():
                                 participants.append(user)
                         
                         if len(participants) == 0:
-                            await channel.send(f"🎉 **SORTEIO ENCERRADO**\\n\\nNinguém participou do sorteio de **{prize}**! 😢")
+                            await channel.send(f"🎉 **SORTEIO ENCERRADO**\n\nNinguém participou do sorteio de **{prize}**! 😢")
                             return
                         
                         # Sortear vencedores
@@ -2736,15 +2815,14 @@ def send_giveaway():
                         # Anunciar vencedores
                         winners_mention = ', '.join([w.mention for w in winners])
                         
+                        # Usar mensagem customizável
+                        winner_msg_template = giveaway_data.get('winner_message', '🎊 **Parabéns!** 🎊\n\nVocê ganhou **{prize}**!\n\n📋 Abra um ticket na categoria 🎉 **Sorteios** para receber seu prêmio.')
+                        winner_description = winner_msg_template.replace('{prize}', prize).replace('{winners}', winners_mention)
+                        
                         result_embed = discord.Embed(
                             title="🎉 GIVEAWAY ENCERRADO!",
-                            description=f"**Prêmio:** {prize}\\n**Vencedor(es):** {winners_mention}\\n\\n🎊 **Parabéns!** 🎊",
+                            description=winner_description,
                             color=0x00ff00
-                        )
-                        result_embed.add_field(
-                            name="📋 Próximos Passos",
-                            value="**Vencedores devem abrir um ticket para receber o prêmio!**\\n\\nAbra um ticket na categoria 🎉 **Sorteios**.",
-                            inline=False
                         )
                         result_embed.set_footer(text=f"Participantes: {len(participants)}")
                         
