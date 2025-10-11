@@ -1166,12 +1166,12 @@ def dashboard():
                             
                             <div class="form-group">
                                 <label class="form-label">🏆 Mensagem do Vencedor</label>
-                                <textarea id="giveaway-winner-message" class="form-textarea" rows="3" placeholder="Ex: Parabéns! Você ganhou {prize}! Abra um ticket para receber seu prêmio." onkeyup="updateEmbedPreview()">🎊 **Parabéns!** 🎊
+                                <textarea id="giveaway-winner-message" class="form-textarea" rows="3" placeholder="Ex: Parabéns! Você ganhou {{{{prize}}}}! Abra um ticket para receber seu prêmio." onkeyup="updateEmbedPreview()">🎊 **Parabéns!** 🎊
 
-Você ganhou **{prize}**!
+Você ganhou **{{{{prize}}}}**!
 
 📋 Abra um ticket na categoria 🎉 **Sorteios** para receber seu prêmio.</textarea>
-                                <small style="color: #ffaa66; font-size: 12px;">Use {prize} para o nome do prêmio | {winners} para mencionar vencedores</small>
+                                <small style="color: #ffaa66; font-size: 12px;">Use {{{{prize}}}} para o nome do prêmio | {{{{winners}}}} para mencionar vencedores</small>
                             </div>
                         </div>
                         
@@ -2107,8 +2107,8 @@ Você ganhou **{prize}**!
             const colorPicker = document.getElementById('embed-color-picker').value;
             
             // Substituir placeholders
-            let message = winnerMessage.replace(/{{prize}}/g, prize);
-            message = message.replace(/{{winners}}/g, '@Vencedor' + (winners > 1 ? ` +${{parseInt(winners)-1}}` : ''));
+            let message = winnerMessage.replace(/\\{{{{prize}}}}/g, prize);
+            message = message.replace(/\\{{{{winners}}}}/g, '@Vencedor' + (winners > 1 ? ` +${{parseInt(winners)-1}}` : ''));
             
             // Converter quebras de linha e markdown
             message = message.replace(/\\n/g, '<br>');
