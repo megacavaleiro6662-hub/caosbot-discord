@@ -682,9 +682,16 @@ def dashboard():
         .sidebar-nav a:hover {{ background: rgba(255, 100, 0, 0.15); color: #ffcc00; border-left-color: #ff6600; box-shadow: inset 0 0 10px rgba(255, 100, 0, 0.2); }}
         .sidebar-nav a.active {{ background: rgba(255, 50, 0, 0.25); color: #ffffff; border-left-color: #ff3300; box-shadow: inset 0 0 15px rgba(255, 50, 0, 0.3); }}
         .main {{ margin-left: 280px; padding: 32px; position: relative; z-index: 1; }}
-        .header {{ background: linear-gradient(135deg, rgba(255, 50, 0, 0.15) 0%, rgba(255, 100, 0, 0.1) 100%); backdrop-filter: blur(10px); border: 2px solid #ff6600; border-radius: 0; padding: 32px; margin-bottom: 32px; box-shadow: 0 8px 32px rgba(255, 50, 0, 0.4); }}
-        .header h1 {{ font-size: 32px; font-weight: 800; margin-bottom: 8px; text-shadow: 0 0 10px rgba(255, 100, 0, 0.5), 0 0 20px rgba(255, 50, 0, 0.3); color: #ffcc00; }}
-        .header p {{ color: #ffaa66; font-size: 16px; }}
+        .header {{ background: linear-gradient(135deg, rgba(255, 50, 0, 0.15) 0%, rgba(255, 100, 0, 0.1) 100%); backdrop-filter: blur(10px); border: 2px solid #ff6600; border-radius: 0; padding: 32px; margin-bottom: 32px; box-shadow: 0 8px 32px rgba(255, 50, 0, 0.4); display: flex; justify-content: space-between; align-items: center; }}
+        .header-left h1 {{ font-size: 32px; font-weight: 800; margin-bottom: 8px; text-shadow: 0 0 10px rgba(255, 100, 0, 0.5), 0 0 20px rgba(255, 50, 0, 0.3); color: #ffcc00; }}
+        .header-left p {{ color: #ffaa66; font-size: 16px; }}
+        .user-profile {{ display: flex; align-items: center; gap: 16px; }}
+        .user-avatar {{ width: 48px; height: 48px; border-radius: 50%; border: 2px solid #ff6600; box-shadow: 0 0 10px rgba(255, 100, 0, 0.5); }}
+        .user-info {{ text-align: right; }}
+        .user-name {{ font-size: 16px; font-weight: 700; color: #ffcc00; text-shadow: 0 0 5px rgba(255, 200, 0, 0.4); }}
+        .user-role {{ font-size: 13px; color: #ffaa66; margin-top: 4px; }}
+        .btn-logout {{ padding: 8px 16px; background: linear-gradient(135deg, #cc0000, #990000); color: white; border: 2px solid #cc0000; border-radius: 0; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.3s; box-shadow: 0 4px 12px rgba(200, 0, 0, 0.4); }}
+        .btn-logout:hover {{ background: linear-gradient(135deg, #990000, #660000); box-shadow: 0 6px 16px rgba(200, 0, 0, 0.6); transform: translateY(-2px); }}
         .grid {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 24px; }}
         .card {{ background: linear-gradient(135deg, rgba(0, 0, 0, 0.6) 0%, rgba(50, 0, 0, 0.4) 100%); backdrop-filter: blur(10px); border: 2px solid #ff6600; border-radius: 0; padding: 24px; transition: all 0.3s; box-shadow: 0 4px 16px rgba(255, 50, 0, 0.3); }}
         .card:hover {{ border-color: #ff3300; transform: translateY(-4px); box-shadow: 0 8px 24px rgba(255, 100, 0, 0.5), 0 0 30px rgba(255, 50, 0, 0.3); }}
@@ -790,8 +797,18 @@ def dashboard():
     <div class="main">
         <!-- Header -->
         <div class="header">
-            <h1>Painel de Controle</h1>
-            <p>Gerencie seu bot Discord de forma profissional</p>
+            <div class="header-left">
+                <h1>Painel de Controle</h1>
+                <p>Gerencie seu bot Discord de forma profissional</p>
+            </div>
+            <div class="user-profile">
+                <div class="user-info">
+                    <div class="user-name" id="user-display-name">Carregando...</div>
+                    <div class="user-role" id="user-display-role">•••</div>
+                </div>
+                <img src="" alt="Avatar" class="user-avatar" id="user-avatar">
+                <button class="btn-logout" onclick="window.location.href='/logout'">🚪 Sair</button>
+            </div>
         </div>
         
         <!-- Dashboard Page -->
@@ -1284,10 +1301,17 @@ def dashboard():
                         <div class="card">
                             <h3>👥 Membros Totais</h3>
                             <p style="font-size: 32px; font-weight: 800; margin-top: 16px;">${{data.total_members}}</p>
+                            <p style="font-size: 14px; color: #999; margin-top: 8px;">👤 ${{data.total_humans}} humanos • 🤖 ${{data.total_bots}} bots</p>
                         </div>
                         <div class="card">
-                            <h3>🟢 Membros Online</h3>
-                            <p style="font-size: 32px; font-weight: 800; margin-top: 16px; color: #22c55e;">${{data.online_members}}</p>
+                            <h3>🟢 Humanos Online</h3>
+                            <p style="font-size: 32px; font-weight: 800; margin-top: 16px; color: #22c55e;">${{data.humans_online}}</p>
+                            <p style="font-size: 14px; color: #999; margin-top: 8px;">de ${{data.total_humans}} humanos</p>
+                        </div>
+                        <div class="card">
+                            <h3>🤖 Robôs Online</h3>
+                            <p style="font-size: 32px; font-weight: 800; margin-top: 16px; color: #3b82f6;">${{data.bots_online}}</p>
+                            <p style="font-size: 14px; color: #999; margin-top: 8px;">de ${{data.total_bots}} bots</p>
                         </div>
                         <div class="card">
                             <h3>💬 Canais de Texto</h3>
@@ -1470,6 +1494,33 @@ def dashboard():
         window.addEventListener('beforeunload', () => {{
             clearInterval(authCheckInterval);
         }});
+        
+        // Carregar perfil do usuário no header
+        async function loadUserProfile() {{
+            try {{
+                const response = await fetch('/api/user/profile');
+                const data = await response.json();
+                
+                if (data.success) {{
+                    document.getElementById('user-display-name').textContent = data.username;
+                    document.getElementById('user-display-role').textContent = data.role || 'Administrador';
+                    if (data.avatar) {{
+                        document.getElementById('user-avatar').src = data.avatar;
+                    }} else {{
+                        document.getElementById('user-avatar').src = 'https://cdn.discordapp.com/embed/avatars/0.png';
+                    }}
+                }} else {{
+                    document.getElementById('user-display-name').textContent = 'Usuário';
+                    document.getElementById('user-display-role').textContent = 'Admin';
+                    document.getElementById('user-avatar').src = 'https://cdn.discordapp.com/embed/avatars/0.png';
+                }}
+            }} catch (error) {{
+                console.error('Erro ao carregar perfil:', error);
+            }}
+        }}
+        
+        // Carregar perfil ao iniciar
+        loadUserProfile();
     </script>
 </body>
 </html>
@@ -1829,6 +1880,42 @@ def check_auth():
     except Exception as e:
         return jsonify({'authorized': False, 'reason': str(e)}), 500
 
+@app.route('/api/user/profile', methods=['GET'])
+def get_user_profile():
+    """Retorna perfil do usuário logado"""
+    try:
+        if 'user' not in session:
+            return jsonify({'success': False, 'message': 'Não autenticado'}), 401
+        
+        user = session['user']
+        user_id = user.get('id')
+        
+        # Buscar cargo do usuário no servidor
+        if not bot.guilds:
+            return jsonify({'success': False, 'message': 'Bot não conectado'}), 500
+        
+        guild = bot.guilds[0]
+        member = guild.get_member(int(user_id))
+        
+        role_name = 'Administrador'
+        if member:
+            # IDs dos cargos (mesmo ordem do código)
+            if '1365636960651051069' in [str(r.id) for r in member.roles]:
+                role_name = '👑 Founder'
+            elif '1365636456386789437' in [str(r.id) for r in member.roles]:
+                role_name = '⚡ Sub-Dono'
+            elif '1365633918593794079' in [str(r.id) for r in member.roles]:
+                role_name = '🛡️ Administrador'
+        
+        return jsonify({
+            'success': True,
+            'username': user.get('username'),
+            'avatar': user.get('avatar'),
+            'role': role_name
+        })
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)}), 500
+
 @app.route('/api/server/stats', methods=['GET'])
 def get_server_stats():
     """Retorna estatísticas do servidor"""
@@ -1838,15 +1925,24 @@ def get_server_stats():
         
         guild = bot.guilds[0]
         
-        # Contar membros online
-        online_members = sum(1 for m in guild.members if m.status != discord.Status.offline)
+        # Separar humanos e bots
+        humans = [m for m in guild.members if not m.bot]
+        bots = [m for m in guild.members if m.bot]
+        
+        # Contar online separado
+        humans_online = sum(1 for m in humans if m.status != discord.Status.offline)
+        bots_online = sum(1 for m in bots if m.status != discord.Status.offline)
         
         stats = {
             'success': True,
             'server_name': guild.name,
             'server_icon': str(guild.icon.url) if guild.icon else None,
             'total_members': guild.member_count,
-            'online_members': online_members,
+            'total_humans': len(humans),
+            'total_bots': len(bots),
+            'humans_online': humans_online,
+            'bots_online': bots_online,
+            'online_members': humans_online + bots_online,
             'total_channels': len(guild.channels),
             'text_channels': len(guild.text_channels),
             'voice_channels': len(guild.voice_channels),
