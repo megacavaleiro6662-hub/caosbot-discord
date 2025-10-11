@@ -1200,9 +1200,15 @@ def dashboard():
                         <!-- Enviar -->
                         <div class="card" style="margin-top: 24px;">
                             <div class="form-group">
+                                <label class="form-label">📁 Categoria</label>
+                                <select id="embed-category" class="form-select" onchange="loadEmbedChannelsByCategory()">
+                                    <option value="">Carregando categorias...</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
                                 <label class="form-label">📍 Canal de Destino</label>
                                 <select id="embed-channel" class="form-select">
-                                    <option value="">Carregando canais...</option>
+                                    <option value="">Selecione uma categoria primeiro...</option>
                                 </select>
                             </div>
                             <button class="btn btn-primary" onclick="sendEmbed()" style="width: 100%; padding: 15px; font-size: 16px;">
@@ -1781,10 +1787,13 @@ def dashboard():
             let previewHTML = `
             <style>
                 .discord-message {{
-                    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+                    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif !important;
                     background: #313338;
                     padding: 16px;
                     border-radius: 4px;
+                }}
+                .discord-message * {{
+                    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif !important;
                 }}
                 .message-header {{
                     display: flex;
@@ -2040,10 +2049,31 @@ def dashboard():
             }}
         }}
         
-        // Carregar canais para embed
-        async function loadEmbedChannels() {{
+        // Carregar categorias para embed
+        async function loadEmbedCategories() {{
             try {{
-                const response = await fetch('/api/channels/text');
+                const response = await fetch('/api/discord/categories');
+                const data = await response.json();
+                
+                if (data.success) {{
+                    const select = document.getElementById('embed-category');
+                    select.innerHTML = '<option value="">Todas as categorias</option>';
+                    data.categories.forEach(cat => {{
+                        select.innerHTML += `<option value="${{cat.id}}">${{cat.name}}</option>`;
+                    }});
+                    
+                    // Carregar todos os canais inicialmente
+                    loadAllEmbedChannels();
+                }}
+            }} catch (error) {{
+                console.error('Erro ao carregar categorias:', error);
+            }}
+        }}
+        
+        // Carregar todos os canais
+        async function loadAllEmbedChannels() {{
+            try {{
+                const response = await fetch('/api/discord/text-channels');
                 const data = await response.json();
                 
                 if (data.success) {{
@@ -2058,15 +2088,41 @@ def dashboard():
             }}
         }}
         
+        // Carregar canais por categoria
+        async function loadEmbedChannelsByCategory() {{
+            const categoryId = document.getElementById('embed-category').value;
+            
+            if (!categoryId) {{
+                // Se não selecionou categoria, mostra todos
+                loadAllEmbedChannels();
+                return;
+            }}
+            
+            try {{
+                const response = await fetch(`/api/discord/categories/${{categoryId}}/channels`);
+                const data = await response.json();
+                
+                if (data.success) {{
+                    const select = document.getElementById('embed-channel');
+                    select.innerHTML = '<option value="">Selecione um canal...</option>';
+                    data.channels.forEach(channel => {{
+                        select.innerHTML += `<option value="${{channel.id}}">#${{channel.name}}</option>`;
+                    }});
+                }}
+            }} catch (error) {{
+                console.error('Erro ao carregar canais da categoria:', error);
+            }}
+        }}
+        
         // Carregar perfil ao iniciar
         loadUserProfile();
         
-        // Carregar canais quando abrir página de embeds
+        // Carregar categorias quando abrir página de embeds
         const originalShowPage = showPage;
         showPage = function(page) {{
             originalShowPage(page);
             if (page === 'embeds') {{
-                loadEmbedChannels();
+                loadEmbedCategories();
             }}
         }};
     </script>
