@@ -1127,25 +1127,25 @@ def dashboard():
                         
                         <div class="form-group">
                             <label class="form-label">📝 Título do Embed</label>
-                            <input type="text" id="embed-title" class="form-input" placeholder="Digite o título" onkeyup="updateEmbedPreview()">
+                            <input type="text" id="embed-title" class="form-input" placeholder="Digite o título" oninput="updateEmbedPreview()" onkeyup="updateEmbedPreview()">
                         </div>
                         
                         <div class="form-group">
                             <label class="form-label">📄 Descrição</label>
-                            <textarea id="embed-description" class="form-textarea" rows="4" placeholder="Digite a descrição (suporta markdown)" onkeyup="updateEmbedPreview()"></textarea>
+                            <textarea id="embed-description" class="form-textarea" rows="4" placeholder="Digite a descrição (suporta markdown)" oninput="updateEmbedPreview()" onkeyup="updateEmbedPreview()"></textarea>
                         </div>
                         
                         <!-- Campos específicos do Giveaway -->
                         <div id="giveaway-fields" style="display: none;">
                             <div class="form-group">
                                 <label class="form-label">🎁 Prêmio</label>
-                                <input type="text" id="giveaway-prize" class="form-input" placeholder="Ex: Nitro Classic, R$50 Steam" onkeyup="updateEmbedPreview()">
+                                <input type="text" id="giveaway-prize" class="form-input" placeholder="Ex: Nitro Classic, R$50 Steam" oninput="updateEmbedPreview()" onkeyup="updateEmbedPreview()">
                             </div>
                             
                             <div class="form-group">
                                 <label class="form-label">⏰ Duração do Sorteio</label>
                                 <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 10px;">
-                                    <input type="number" id="giveaway-duration" class="form-input" placeholder="Ex: 7" min="1" onkeyup="updateEmbedPreview()">
+                                    <input type="number" id="giveaway-duration" class="form-input" placeholder="Ex: 7" min="1" oninput="updateEmbedPreview()" onkeyup="updateEmbedPreview()">
                                     <select id="giveaway-time-unit" class="form-select" onchange="updateEmbedPreview()">
                                         <option value="m">Minutos</option>
                                         <option value="h">Horas</option>
@@ -1156,17 +1156,17 @@ def dashboard():
                             
                             <div class="form-group">
                                 <label class="form-label">👥 Número de Vencedores</label>
-                                <input type="number" id="giveaway-winners" class="form-input" placeholder="1" value="1" min="1" onkeyup="updateEmbedPreview()">
+                                <input type="number" id="giveaway-winners" class="form-input" placeholder="1" value="1" min="1" oninput="updateEmbedPreview()" onkeyup="updateEmbedPreview()">
                             </div>
                             
                             <div class="form-group">
                                 <label class="form-label">🎉 Emoji de Reação</label>
-                                <input type="text" id="giveaway-emoji" class="form-input" placeholder="🎉" value="🎉" onkeyup="updateEmbedPreview()">
+                                <input type="text" id="giveaway-emoji" class="form-input" placeholder="🎉" value="🎉" oninput="updateEmbedPreview()" onkeyup="updateEmbedPreview()">
                             </div>
                             
                             <div class="form-group">
                                 <label class="form-label">🏆 Mensagem do Vencedor</label>
-                                <textarea id="giveaway-winner-message" class="form-textarea" rows="3" placeholder="Ex: Parabéns! Você ganhou {{{{prize}}}}! Abra um ticket para receber seu prêmio." onkeyup="updateEmbedPreview()">🎊 **Parabéns!** 🎊
+                                <textarea id="giveaway-winner-message" class="form-textarea" rows="3" placeholder="Ex: Parabéns! Você ganhou {{{{prize}}}}! Abra um ticket para receber seu prêmio." oninput="updateEmbedPreview()" onkeyup="updateEmbedPreview()">🎊 **Parabéns!** 🎊
 
 Você ganhou **{{{{prize}}}}**!
 
@@ -1228,7 +1228,7 @@ Você ganhou **{{{{prize}}}}**!
                         
                         <div class="form-group" style="margin-top: 24px;">
                             <label class="form-label">💬 Mensagem Fora do Embed (opcional)</label>
-                            <textarea id="embed-extra-message" class="form-textarea" rows="2" placeholder="Ex: @everyone Novo sorteio!" onkeyup="updateEmbedPreview()"></textarea>
+                            <textarea id="embed-extra-message" class="form-textarea" rows="2" placeholder="Ex: @everyone Novo sorteio!" oninput="updateEmbedPreview()" onkeyup="updateEmbedPreview()"></textarea>
                             <small style="color: #ffaa66; font-size: 12px;">Esta mensagem aparece ACIMA do embed (use para mencionar @everyone)</small>
                         </div>
                     </div>
@@ -1806,8 +1806,8 @@ Você ganhou **{{{{prize}}}}**!
                         <span style="color: #ffcc00; font-weight: 600;">Campo ${{embedFieldCount}}</span>
                         <button type="button" onclick="removeEmbedField(${{embedFieldCount}}); return false;" style="background: #cc0000; color: white; border: none; padding: 4px 8px; cursor: pointer; border-radius: 2px; font-size: 12px;">❌ Remover</button>
                     </div>
-                    <input type="text" class="form-input field-name" placeholder="Nome do campo" onkeyup="updateEmbedPreview()" style="margin-bottom: 8px;">
-                    <textarea class="form-textarea field-value" rows="2" placeholder="Valor do campo" onkeyup="updateEmbedPreview()"></textarea>
+                    <input type="text" class="form-input field-name" placeholder="Nome do campo" oninput="updateEmbedPreview()" onkeyup="updateEmbedPreview()" style="margin-bottom: 8px;">
+                    <textarea class="form-textarea field-value" rows="2" placeholder="Valor do campo" oninput="updateEmbedPreview()" onkeyup="updateEmbedPreview()"></textarea>
                     <label style="display: flex; align-items: center; gap: 8px; margin-top: 8px; cursor: pointer;">
                         <input type="checkbox" class="field-inline" onchange="updateEmbedPreview()">
                         <span style="color: #ffaa66; font-size: 13px;">Inline (lado a lado)</span>
@@ -1882,18 +1882,7 @@ Você ganhou **{{{{prize}}}}**!
             const extraMessage = document.getElementById('embed-extra-message').value;
             
             // Gerar preview HTML (estilo Discord REAL)
-            let previewHTML = '';
-            
-            // Adicionar mensagem extra se tiver
-            if (extraMessage) {{
-                previewHTML += `
-                <div style="color: #dbdee1; font-size: 16px; margin-bottom: 8px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;">
-                    ${{extraMessage}}
-                </div>
-                `;
-            }}
-            
-            previewHTML += `
+            let previewHTML = `
             <style>
                 .discord-message {{
                     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif !important;
@@ -2025,6 +2014,15 @@ Você ganhou **{{{{prize}}}}**!
                     <span class="bot-name">CAOS Bot</span>
                     <span class="bot-tag">BOT</span>
                 </div>
+                <div style="margin-left: 52px;">
+            `;
+            
+            // Adicionar mensagem extra se tiver (como texto normal do Discord)
+            if (extraMessage) {{
+                previewHTML += `<div style="color: #dcddde; font-size: 16px; margin-bottom: 8px; line-height: 1.375; word-wrap: break-word;">${{extraMessage}}</div>`;
+            }}
+            
+            previewHTML += `
                 <div class="embed-container">
                     <div class="embed-content">
             `;
@@ -2089,6 +2087,7 @@ Você ganhou **{{{{prize}}}}**!
             
             previewHTML += `
                     </div>
+                </div>
                 </div>
             </div>
             `;
