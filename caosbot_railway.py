@@ -1870,11 +1870,18 @@ Você ganhou **{{{{prize}}}}**!
             // Coletar fields
             const fields = [];
             document.querySelectorAll('.embed-field').forEach(field => {{
-                const name = field.querySelector('.field-name').value;
-                const value = field.querySelector('.field-value').value;
-                const inline = field.querySelector('.field-inline').checked;
-                if (name || value) {{
-                    fields.push({{ name: name || 'Campo', value: value || 'Valor', inline }});
+                const nameEl = field.querySelector('.field-name');
+                const valueEl = field.querySelector('.field-value');
+                const inlineEl = field.querySelector('.field-inline');
+                
+                if (nameEl && valueEl) {{
+                    const name = nameEl.value;
+                    const value = valueEl.value;
+                    const inline = inlineEl ? inlineEl.checked : false;
+                    
+                    if (name || value) {{
+                        fields.push({{ name: name || 'Campo', value: value || 'Valor', inline }});
+                    }}
                 }}
             }});
             
