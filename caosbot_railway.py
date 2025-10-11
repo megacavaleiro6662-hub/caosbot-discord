@@ -789,6 +789,7 @@ def dashboard():
         <ul class="sidebar-nav">
             <li><a href="#" class="active" onclick="showPage('dashboard')">📊 Dashboard</a></li>
             <li><a href="#" onclick="showPage('tickets')">🎫 Tickets</a></li>
+            <li><a href="#" onclick="showPage('embeds')">📋 Embeds</a></li>
             <li><a href="#" onclick="showPage('stats')">📈 Estatísticas</a></li>
         </ul>
     </div>
@@ -1085,6 +1086,130 @@ def dashboard():
                 
                 <div class="card" style="margin-top: 20px;">
                     <button class="btn btn-primary" style="width: 100%; padding: 15px;">💾 Salvar Todas as Configurações</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Embeds Page -->
+        <div id="embeds-page" class="page">
+            <div class="section">
+                <h2 class="section-title">📋 Gerador de Embeds Visual</h2>
+                
+                <!-- Seletor de Template -->
+                <div class="card" style="margin-bottom: 24px;">
+                    <div class="card-header">
+                        <h2>🎨 Escolha um Template</h2>
+                    </div>
+                    <div class="form-group">
+                        <select id="embed-template" class="form-select" onchange="loadEmbedTemplate()">
+                            <option value="custom">✏️ Personalizado</option>
+                            <option value="giveaway">🎉 Giveaway</option>
+                            <option value="rules">📜 Regras</option>
+                            <option value="announcement">📢 Anúncio</option>
+                            <option value="info">📝 Informações</option>
+                            <option value="warning">⚠️ Avisos</option>
+                            <option value="success">✅ Confirmação</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <!-- Grid Editor + Preview -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+                    
+                    <!-- Editor -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h2>✏️ Editor</h2>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">📝 Título do Embed</label>
+                            <input type="text" id="embed-title" class="form-input" placeholder="Digite o título" onkeyup="updateEmbedPreview()">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">📄 Descrição</label>
+                            <textarea id="embed-description" class="form-textarea" rows="4" placeholder="Digite a descrição (suporta markdown)" onkeyup="updateEmbedPreview()"></textarea>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">🎨 Cor do Embed</label>
+                            <div style="display: flex; gap: 10px; align-items: center;">
+                                <input type="color" id="embed-color-picker" value="#ff6600" onchange="updateEmbedColor()" style="width: 60px; height: 40px; cursor: pointer; border: 2px solid #ff6600; background: transparent;">
+                                <input type="text" id="embed-color" class="form-input" value="0xff6600" style="flex: 1;" readonly>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">🖼️ URL da Imagem (opcional)</label>
+                            <input type="text" id="embed-image" class="form-input" placeholder="https://exemplo.com/imagem.png" onkeyup="updateEmbedPreview()">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">🖼️ URL do Thumbnail (opcional)</label>
+                            <input type="text" id="embed-thumbnail" class="form-input" placeholder="https://exemplo.com/thumb.png" onkeyup="updateEmbedPreview()">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">👤 Autor (opcional)</label>
+                            <input type="text" id="embed-author" class="form-input" placeholder="Nome do autor" onkeyup="updateEmbedPreview()">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">🔗 URL do Autor (opcional)</label>
+                            <input type="text" id="embed-author-url" class="form-input" placeholder="https://exemplo.com" onkeyup="updateEmbedPreview()">
+                        </div>
+                        
+                        <!-- Campos customizáveis -->
+                        <div style="margin-top: 24px; padding-top: 24px; border-top: 2px solid #ff6600;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                                <label class="form-label" style="margin: 0;">📋 Campos (Fields)</label>
+                                <button class="btn btn-primary" onclick="addEmbedField()" style="padding: 8px 16px; font-size: 13px;">+ Adicionar Campo</button>
+                            </div>
+                            <div id="embed-fields-container"></div>
+                        </div>
+                        
+                        <div style="margin-top: 24px; padding-top: 24px; border-top: 2px solid #ff6600;">
+                            <label class="form-label">📌 Footer (opcional)</label>
+                            <input type="text" id="embed-footer" class="form-input" placeholder="Texto do footer" onkeyup="updateEmbedPreview()" style="margin-bottom: 10px;">
+                            <input type="text" id="embed-footer-icon" class="form-input" placeholder="URL do ícone do footer" onkeyup="updateEmbedPreview()">
+                        </div>
+                        
+                        <div class="form-group" style="margin-top: 24px;">
+                            <label class="form-label">🕒 Timestamp</label>
+                            <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                                <input type="checkbox" id="embed-timestamp" onchange="updateEmbedPreview()">
+                                <span style="color: #ffaa66;">Adicionar timestamp atual</span>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <!-- Preview -->
+                    <div>
+                        <div class="card" style="position: sticky; top: 20px;">
+                            <div class="card-header">
+                                <h2>👁️ Preview</h2>
+                            </div>
+                            <div id="embed-preview" style="background: #2b2d31; padding: 16px; border-radius: 4px; min-height: 300px;">
+                                <div style="color: #b9bbbe; text-align: center; padding: 40px 20px;">
+                                    Preencha os campos ao lado para ver o preview
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Enviar -->
+                        <div class="card" style="margin-top: 24px;">
+                            <div class="form-group">
+                                <label class="form-label">📍 Canal de Destino</label>
+                                <select id="embed-channel" class="form-select">
+                                    <option value="">Carregando canais...</option>
+                                </select>
+                            </div>
+                            <button class="btn btn-primary" onclick="sendEmbed()" style="width: 100%; padding: 15px; font-size: 16px;">
+                                📤 Enviar Embed
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -1519,8 +1644,296 @@ def dashboard():
             }}
         }}
         
+        // ========================================
+        // SISTEMA DE EMBEDS
+        // ========================================
+        
+        let embedFieldCount = 0;
+        
+        // Carregar templates de embeds
+        function loadEmbedTemplate() {{
+            const template = document.getElementById('embed-template').value;
+            
+            // Limpar campos existentes
+            document.getElementById('embed-fields-container').innerHTML = '';
+            embedFieldCount = 0;
+            
+            const templates = {{
+                giveaway: {{
+                    title: '🎉 GIVEAWAY',
+                    description: '**Participe do sorteio!**\\n\\nPara participar, reaja com 🎉\\n\\n**Prêmio:** Nitro Classic\\n**Término:** Em 7 dias\\n\\n**Boa sorte!** 🍀',
+                    color: '#e91e63',
+                    footer: 'Sorteio válido até',
+                    timestamp: true
+                }},
+                rules: {{
+                    title: '📜 REGRAS DO SERVIDOR',
+                    description: '**Leia e siga todas as regras:**\\n\\n1️⃣ Respeite todos os membros\\n2️⃣ Sem spam ou flood\\n3️⃣ Sem conteúdo NSFW\\n4️⃣ Sem divulgação sem permissão\\n5️⃣ Use os canais corretos\\n\\n**Punições:** Warn → Mute → Ban',
+                    color: '#f44336',
+                    footer: 'Staff do CAOS Hub'
+                }},
+                announcement: {{
+                    title: '📢 ANÚNCIO IMPORTANTE',
+                    description: '**Novidades no servidor!**\\n\\nFique atento às atualizações e novidades que estão por vir!\\n\\n@everyone',
+                    color: '#ff9800',
+                    author: 'CAOS Hub',
+                    timestamp: true
+                }},
+                info: {{
+                    title: '📝 INFORMAÇÕES',
+                    description: 'Informações importantes sobre o servidor.',
+                    color: '#2196f3',
+                    footer: 'CAOS Hub - Sistema de Informações'
+                }},
+                warning: {{
+                    title: '⚠️ ATENÇÃO',
+                    description: '**Aviso importante para todos os membros!**\\n\\nPor favor, leiam com atenção.',
+                    color: '#ffc107',
+                    timestamp: true
+                }},
+                success: {{
+                    title: '✅ SUCESSO',
+                    description: 'Operação realizada com sucesso!',
+                    color: '#4caf50',
+                    footer: 'Sistema CAOS Bot'
+                }}
+            }};
+            
+            if (template !== 'custom' && templates[template]) {{
+                const data = templates[template];
+                document.getElementById('embed-title').value = data.title || '';
+                document.getElementById('embed-description').value = data.description || '';
+                document.getElementById('embed-author').value = data.author || '';
+                document.getElementById('embed-footer').value = data.footer || '';
+                document.getElementById('embed-timestamp').checked = data.timestamp || false;
+                
+                // Converter cor
+                if (data.color) {{
+                    const hex = data.color;
+                    document.getElementById('embed-color-picker').value = hex;
+                    document.getElementById('embed-color').value = '0x' + hex.replace('#', '');
+                }}
+                
+                updateEmbedPreview();
+            }}
+        }}
+        
+        // Atualizar cor do embed
+        function updateEmbedColor() {{
+            const picker = document.getElementById('embed-color-picker');
+            const hex = picker.value.replace('#', '');
+            document.getElementById('embed-color').value = '0x' + hex;
+            updateEmbedPreview();
+        }}
+        
+        // Adicionar campo ao embed
+        function addEmbedField() {{
+            embedFieldCount++;
+            const container = document.getElementById('embed-fields-container');
+            const fieldHTML = `
+                <div class="embed-field" id="field-${{embedFieldCount}}" style="border: 2px solid #ff6600; padding: 12px; margin-bottom: 12px; border-radius: 4px; background: rgba(255, 100, 0, 0.05);">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                        <span style="color: #ffcc00; font-weight: 600;">Campo ${{embedFieldCount}}</span>
+                        <button onclick="removeEmbedField(${{embedFieldCount}})" style="background: #cc0000; color: white; border: none; padding: 4px 8px; cursor: pointer; border-radius: 2px; font-size: 12px;">❌ Remover</button>
+                    </div>
+                    <input type="text" class="form-input field-name" placeholder="Nome do campo" onkeyup="updateEmbedPreview()" style="margin-bottom: 8px;">
+                    <textarea class="form-textarea field-value" rows="2" placeholder="Valor do campo" onkeyup="updateEmbedPreview()"></textarea>
+                    <label style="display: flex; align-items: center; gap: 8px; margin-top: 8px; cursor: pointer;">
+                        <input type="checkbox" class="field-inline" onchange="updateEmbedPreview()">
+                        <span style="color: #ffaa66; font-size: 13px;">Inline (lado a lado)</span>
+                    </label>
+                </div>
+            `;
+            container.insertAdjacentHTML('beforeend', fieldHTML);
+            updateEmbedPreview();
+        }}
+        
+        // Remover campo
+        function removeEmbedField(id) {{
+            document.getElementById('field-' + id).remove();
+            updateEmbedPreview();
+        }}
+        
+        // Atualizar preview do embed
+        function updateEmbedPreview() {{
+            const title = document.getElementById('embed-title').value;
+            const description = document.getElementById('embed-description').value;
+            const colorPicker = document.getElementById('embed-color-picker').value;
+            const image = document.getElementById('embed-image').value;
+            const thumbnail = document.getElementById('embed-thumbnail').value;
+            const author = document.getElementById('embed-author').value;
+            const footer = document.getElementById('embed-footer').value;
+            const footerIcon = document.getElementById('embed-footer-icon').value;
+            const timestamp = document.getElementById('embed-timestamp').checked;
+            
+            // Coletar fields
+            const fields = [];
+            document.querySelectorAll('.embed-field').forEach(field => {{
+                const name = field.querySelector('.field-name').value;
+                const value = field.querySelector('.field-value').value;
+                const inline = field.querySelector('.field-inline').checked;
+                if (name || value) {{
+                    fields.push({{ name: name || 'Campo', value: value || 'Valor', inline }});
+                }}
+            }});
+            
+            // Gerar preview HTML (estilo Discord)
+            let previewHTML = '<div style="border-left: 4px solid ' + colorPicker + '; background: #2b2d31; padding: 12px 16px; border-radius: 4px;">';
+            
+            // Author
+            if (author) {{
+                previewHTML += '<div style="display: flex; align-items: center; margin-bottom: 8px; font-size: 13px; color: #fff; font-weight: 600;">';
+                previewHTML += '<span>' + author + '</span></div>';
+            }}
+            
+            // Title
+            if (title) {{
+                previewHTML += '<div style="color: #00aff4; font-size: 16px; font-weight: 600; margin-bottom: 8px;">' + title + '</div>';
+            }}
+            
+            // Description
+            if (description) {{
+                let desc = description.replace(/\\n/g, '<br>');
+                desc = desc.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+                desc = desc.replace(/\*(.*?)\*/g, '<em>$1</em>');
+                previewHTML += '<div style="color: #dcddde; font-size: 14px; line-height: 1.5; margin-bottom: 12px;">' + desc + '</div>';
+            }}
+            
+            // Fields
+            if (fields.length > 0) {{
+                previewHTML += '<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 12px;">';
+                fields.forEach(f => {{
+                    previewHTML += '<div style="' + (f.inline ? '' : 'grid-column: 1 / -1;') + '">';
+                    previewHTML += '<div style="color: #fff; font-size: 13px; font-weight: 600; margin-bottom: 4px;">' + f.name + '</div>';
+                    previewHTML += '<div style="color: #dcddde; font-size: 13px;">' + f.value + '</div>';
+                    previewHTML += '</div>';
+                }});
+                previewHTML += '</div>';
+            }}
+            
+            // Image
+            if (image) {{
+                previewHTML += '<img src="' + image + '" style="max-width: 100%; border-radius: 4px; margin-top: 12px;" onerror="this.style.display=\\'none\\'">';
+            }}
+            
+            // Thumbnail
+            if (thumbnail) {{
+                previewHTML += '<img src="' + thumbnail + '" style="position: absolute; right: 16px; top: 16px; width: 80px; height: 80px; object-fit: cover; border-radius: 4px;" onerror="this.style.display=\\'none\\'">';
+            }}
+            
+            // Footer
+            if (footer || timestamp) {{
+                previewHTML += '<div style="display: flex; align-items: center; gap: 8px; margin-top: 12px; padding-top: 12px; border-top: 1px solid #404249; font-size: 12px; color: #b9bbbe;">';
+                if (footerIcon) {{
+                    previewHTML += '<img src="' + footerIcon + '" style="width: 20px; height: 20px; border-radius: 50%;" onerror="this.style.display=\\'none\\'">';
+                }}
+                if (footer) {{
+                    previewHTML += '<span>' + footer + '</span>';
+                }}
+                if (timestamp) {{
+                    if (footer) previewHTML += '<span> • </span>';
+                    previewHTML += '<span>' + new Date().toLocaleString('pt-BR') + '</span>';
+                }}
+                previewHTML += '</div>';
+            }}
+            
+            previewHTML += '</div>';
+            
+            document.getElementById('embed-preview').innerHTML = previewHTML;
+        }}
+        
+        // Enviar embed
+        async function sendEmbed() {{
+            const channelId = document.getElementById('embed-channel').value;
+            
+            if (!channelId) {{
+                showToast('❌ Selecione um canal!', 'error');
+                return;
+            }}
+            
+            const title = document.getElementById('embed-title').value;
+            const description = document.getElementById('embed-description').value;
+            
+            if (!title && !description) {{
+                showToast('❌ Preencha pelo menos o título ou descrição!', 'error');
+                return;
+            }}
+            
+            // Coletar todos os dados
+            const embedData = {{
+                channel_id: channelId,
+                title: title,
+                description: description,
+                color: document.getElementById('embed-color').value,
+                image: document.getElementById('embed-image').value,
+                thumbnail: document.getElementById('embed-thumbnail').value,
+                author: document.getElementById('embed-author').value,
+                author_url: document.getElementById('embed-author-url').value,
+                footer: document.getElementById('embed-footer').value,
+                footer_icon: document.getElementById('embed-footer-icon').value,
+                timestamp: document.getElementById('embed-timestamp').checked,
+                fields: []
+            }};
+            
+            // Coletar fields
+            document.querySelectorAll('.embed-field').forEach(field => {{
+                const name = field.querySelector('.field-name').value;
+                const value = field.querySelector('.field-value').value;
+                const inline = field.querySelector('.field-inline').checked;
+                if (name || value) {{
+                    embedData.fields.push({{ name: name || 'Campo', value: value || 'Valor', inline }});
+                }}
+            }});
+            
+            try {{
+                const response = await fetch('/api/embeds/send', {{
+                    method: 'POST',
+                    headers: {{ 'Content-Type': 'application/json' }},
+                    body: JSON.stringify(embedData)
+                }});
+                
+                const data = await response.json();
+                
+                if (data.success) {{
+                    showToast('✅ Embed enviado com sucesso!', 'success');
+                }} else {{
+                    showToast('❌ Erro: ' + data.message, 'error');
+                }}
+            }} catch (error) {{
+                showToast('❌ Erro ao enviar embed!', 'error');
+                console.error(error);
+            }}
+        }}
+        
+        // Carregar canais para embed
+        async function loadEmbedChannels() {{
+            try {{
+                const response = await fetch('/api/channels/text');
+                const data = await response.json();
+                
+                if (data.success) {{
+                    const select = document.getElementById('embed-channel');
+                    select.innerHTML = '<option value="">Selecione um canal...</option>';
+                    data.channels.forEach(channel => {{
+                        select.innerHTML += `<option value="${{channel.id}}">#${{channel.name}}</option>`;
+                    }});
+                }}
+            }} catch (error) {{
+                console.error('Erro ao carregar canais:', error);
+            }}
+        }}
+        
         // Carregar perfil ao iniciar
         loadUserProfile();
+        
+        // Carregar canais quando abrir página de embeds
+        const originalShowPage = showPage;
+        showPage = function(page) {{
+            originalShowPage(page);
+            if (page === 'embeds') {{
+                loadEmbedChannels();
+            }}
+        }};
     </script>
 </body>
 </html>
@@ -1804,6 +2217,90 @@ def get_category_channels(category_id):
         
         return jsonify({'success': True, 'channels': channels})
     except Exception as e:
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+@app.route('/api/embeds/send', methods=['POST'])
+def send_embed():
+    """Envia embed customizado para um canal"""
+    try:
+        data = request.get_json()
+        channel_id = data.get('channel_id')
+        
+        if not channel_id:
+            return jsonify({'success': False, 'message': 'Canal não especificado'}), 400
+        
+        # Criar embed
+        embed_dict = {}
+        
+        if data.get('title'):
+            embed_dict['title'] = data['title']
+        
+        if data.get('description'):
+            embed_dict['description'] = data['description']
+        
+        if data.get('color'):
+            try:
+                color_hex = data['color'].replace('0x', '')
+                embed_dict['color'] = int(color_hex, 16)
+            except:
+                embed_dict['color'] = 0xff6600
+        
+        if data.get('image'):
+            embed_dict['image'] = {'url': data['image']}
+        
+        if data.get('thumbnail'):
+            embed_dict['thumbnail'] = {'url': data['thumbnail']}
+        
+        if data.get('author'):
+            author_dict = {'name': data['author']}
+            if data.get('author_url'):
+                author_dict['url'] = data['author_url']
+            embed_dict['author'] = author_dict
+        
+        if data.get('footer'):
+            footer_dict = {'text': data['footer']}
+            if data.get('footer_icon'):
+                footer_dict['icon_url'] = data['footer_icon']
+            embed_dict['footer'] = footer_dict
+        
+        if data.get('timestamp'):
+            from datetime import datetime
+            embed_dict['timestamp'] = datetime.utcnow().isoformat()
+        
+        if data.get('fields'):
+            embed_dict['fields'] = []
+            for field in data['fields']:
+                embed_dict['fields'].append({
+                    'name': field.get('name', 'Campo'),
+                    'value': field.get('value', 'Valor'),
+                    'inline': field.get('inline', False)
+                })
+        
+        # Enviar embed de forma assíncrona
+        async def send_embed_async():
+            try:
+                channel = bot.get_channel(int(channel_id))
+                if not channel:
+                    return False, 'Canal não encontrado'
+                
+                embed = discord.Embed.from_dict(embed_dict)
+                await channel.send(embed=embed)
+                return True, 'Embed enviado'
+            except Exception as e:
+                return False, str(e)
+        
+        future = asyncio.run_coroutine_threadsafe(send_embed_async(), bot.loop)
+        success, message = future.result(timeout=10)
+        
+        if success:
+            return jsonify({'success': True, 'message': message})
+        else:
+            return jsonify({'success': False, 'message': message}), 500
+            
+    except Exception as e:
+        print(f'❌ Erro ao enviar embed: {e}')
+        import traceback
+        traceback.print_exc()
         return jsonify({'success': False, 'message': str(e)}), 500
 
 @app.route('/api/discord/text-channels', methods=['GET'])
