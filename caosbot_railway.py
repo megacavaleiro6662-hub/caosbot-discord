@@ -1207,7 +1207,7 @@ Você ganhou **{{{{prize}}}}**!
                         <div style="margin-top: 24px; padding-top: 24px; border-top: 2px solid #ff6600;">
                             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
                                 <label class="form-label" style="margin: 0;">📋 Campos (Fields)</label>
-                                <button class="btn btn-primary" onclick="addEmbedField()" style="padding: 8px 16px; font-size: 13px;">+ Adicionar Campo</button>
+                                <button type="button" class="btn btn-primary" onclick="addEmbedField(); return false;" style="padding: 8px 16px; font-size: 13px;">+ Adicionar Campo</button>
                             </div>
                             <div id="embed-fields-container"></div>
                         </div>
@@ -1228,7 +1228,7 @@ Você ganhou **{{{{prize}}}}**!
                         
                         <div class="form-group" style="margin-top: 24px;">
                             <label class="form-label">💬 Mensagem Fora do Embed (opcional)</label>
-                            <textarea id="embed-extra-message" class="form-textarea" rows="2" placeholder="Ex: @everyone Novo sorteio!"></textarea>
+                            <textarea id="embed-extra-message" class="form-textarea" rows="2" placeholder="Ex: @everyone Novo sorteio!" onkeyup="updateEmbedPreview()"></textarea>
                             <small style="color: #ffaa66; font-size: 12px;">Esta mensagem aparece ACIMA do embed (use para mencionar @everyone)</small>
                         </div>
                     </div>
@@ -1249,7 +1249,7 @@ Você ganhou **{{{{prize}}}}**!
                                 </div>
                             </div>
                         </div>
-                    </div>    
+                        
                         <!-- Enviar -->
                         <div class="card" style="margin-top: 24px;">
                             <div class="form-group">
@@ -1804,7 +1804,7 @@ Você ganhou **{{{{prize}}}}**!
                 <div class="embed-field" id="field-${{embedFieldCount}}" style="border: 2px solid #ff6600; padding: 12px; margin-bottom: 12px; border-radius: 4px; background: rgba(255, 100, 0, 0.05);">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
                         <span style="color: #ffcc00; font-weight: 600;">Campo ${{embedFieldCount}}</span>
-                        <button onclick="removeEmbedField(${{embedFieldCount}})" style="background: #cc0000; color: white; border: none; padding: 4px 8px; cursor: pointer; border-radius: 2px; font-size: 12px;">❌ Remover</button>
+                        <button type="button" onclick="removeEmbedField(${{embedFieldCount}}); return false;" style="background: #cc0000; color: white; border: none; padding: 4px 8px; cursor: pointer; border-radius: 2px; font-size: 12px;">❌ Remover</button>
                     </div>
                     <input type="text" class="form-input field-name" placeholder="Nome do campo" onkeyup="updateEmbedPreview()" style="margin-bottom: 8px;">
                     <textarea class="form-textarea field-value" rows="2" placeholder="Valor do campo" onkeyup="updateEmbedPreview()"></textarea>
@@ -2123,6 +2123,9 @@ Você ganhou **{{{{prize}}}}**!
                     padding: 16px;
                     border-radius: 4px;
                 }}
+                .discord-message * {{
+                    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif !important;
+                }}
             </style>
             <div class="discord-message">
                 <div style="display: flex; align-items: center; margin-bottom: 8px;">
@@ -2131,13 +2134,13 @@ Você ganhou **{{{{prize}}}}**!
                     <span style="background: #5865f2; color: #fff; font-size: 10px; font-weight: 500; padding: 2px 4px; border-radius: 3px; text-transform: uppercase;">BOT</span>
                 </div>
                 <div style="margin-left: 52px;">
-                    <div style="color: #dbdee1; margin-bottom: 8px;">@Vencedor${{winners > 1 ? ` +${{parseInt(winners)-1}}` : ''}}</div>
+                    <div style="color: #dbdee1; margin-bottom: 8px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;">@Vencedor${{winners > 1 ? ` +${{parseInt(winners)-1}}` : ''}}</div>
                     <div style="border-left: 4px solid ${{colorPicker}}; background: #2b2d31; padding: 12px; border-radius: 4px;">
-                        <div style="color: #00aff4; font-size: 15px; font-weight: 600; margin-bottom: 8px;">🎉 GIVEAWAY ENCERRADO!</div>
-                        <div style="color: #dbdee1; font-size: 14px; line-height: 1.5;">
+                        <div style="color: #00aff4; font-size: 15px; font-weight: 600; margin-bottom: 8px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;">🎉 GIVEAWAY ENCERRADO!</div>
+                        <div style="color: #dbdee1; font-size: 14px; line-height: 1.5; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;">
                             ${{message}}
                         </div>
-                        <div style="margin-top: 12px; padding-top: 8px; border-top: 1px solid #404249; font-size: 12px; color: #b5bac1;">
+                        <div style="margin-top: 12px; padding-top: 8px; border-top: 1px solid #404249; font-size: 12px; color: #b5bac1; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;">
                             Participantes: 10
                         </div>
                     </div>
