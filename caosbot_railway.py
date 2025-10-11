@@ -1780,9 +1780,8 @@ def dashboard():
             // Gerar preview HTML (estilo Discord REAL)
             let previewHTML = `
             <style>
-                @import url('https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;600;700&display=swap');
                 .discord-message {{
-                    font-family: 'Noto Sans', 'gg sans', 'Whitney', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+                    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
                     background: #313338;
                     padding: 16px;
                     border-radius: 4px;
@@ -1904,7 +1903,7 @@ def dashboard():
             
             <div class="discord-message">
                 <div class="message-header">
-                    <img src="https://i.ibb.co/Fq5Lgzs5/Chat-GPT-Image-7-de-out-de-2025-00-25-49.png" class="bot-avatar">
+                    <img src="https://i.ibb.co/VpPdrYCk/Chat-GPT-Image-11-de-set-de-2025-18-35-32.png" class="bot-avatar">
                     <span class="bot-name">CAOS Bot</span>
                     <span class="bot-tag">BOT</span>
                 </div>
