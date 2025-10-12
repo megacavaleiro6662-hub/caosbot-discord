@@ -1,4 +1,4 @@
-﻿# Bot Discord Caos - Python
+# Bot Discord Caos - Python
 # Arquivo principal do bot
 
 import discord
@@ -5737,24 +5737,26 @@ async def rank_command(ctx, user: discord.Member = None):
         xp_needed = calculate_xp_for_level(level + 1)
         rank_position = get_user_rank(user.id, ctx.guild.id)
         
-        # Gera rank card via Some Random API
+        # Gera rank card via Vacefron API (funciona 100%!)
         params = {
-            'avatar': str(user.display_avatar.url),
             'username': user.name,
-            'discriminator': user.discriminator if user.discriminator != '0' else '0000',
-            'currentxp': xp,
-            'reqxp': xp_needed,
+            'avatar': str(user.display_avatar.url),
             'level': level,
             'rank': rank_position,
-            'barcolor': 'FF6600',  # Laranja do CAOS
-            'bgcolor': '23272a',   # Cinza escuro Discord
-            'status': str(user.status) if hasattr(user, 'status') else 'online'
+            'currentxp': xp,
+            'nextlevelxp': xp_needed,
+            'previouslevelxp': 0,
+            'custombg': '23272A',
+            'xpcolor': 'FF6600'
         }
         
-        url = f"https://some-random-api.com/canvas/rankcard?{urlencode(params)}"
+        url = f"https://vacefron.nl/api/rankcard?{urlencode(params)}"
+        
+        print(f"🔗 URL Vacefron: {url}")
         
         async with aiohttp.ClientSession() as session:
             async with session.get(url) as response:
+                print(f"📊 Status: {response.status}")
                 if response.status == 200:
                     image_bytes = await response.read()
                     file = discord.File(fp=BytesIO(image_bytes), filename='rank.png')
