@@ -18,7 +18,7 @@ from datetime import datetime
 from discord.ui import Button, View
 import math
 import threading
-from flask import Flask, request, jsonify, render_template, session, redirect, url_for
+from flask import Flask, request, jsonify, render_template, session, redirect, url_for, Response
 from functools import wraps
 import secrets
 from io import BytesIO
@@ -1285,7 +1285,7 @@ Você ganhou **{{{{prize}}}}**!
                     <h2 class="section-title" style="margin: 0;">📈 Estatísticas do Servidor</h2>
                     <span style="color: #22c55e; font-size: 13px; display: flex; align-items: center; gap: 6px;">
                         <span style="width: 8px; height: 8px; background: #22c55e; border-radius: 50%; display: inline-block; animation: pulse 2s infinite;"></span>
-                        Atualização automática (10s)
+                        🔴 LIVE - Tempo Real
                     </span>
                 </div>
                 <div class="grid" id="stats-grid">
@@ -1311,21 +1311,18 @@ Você ganhou **{{{{prize}}}}**!
             
             if (page === 'tickets') {{
                 loadCategories();
-                // Parar auto-refresh de stats se estava ativo
-                if (statsInterval) {{
-                    clearInterval(statsInterval);
-                    statsInterval = null;
+                // Fechar conexão SSE se estava ativa
+                if (statsEventSource) {{
+                    statsEventSource.close();
+                    statsEventSource = null;
                 }}
             }} else if (page === 'stats') {{
-                loadStats();
-                // Iniciar auto-refresh (atualiza a cada 10 segundos)
-                if (statsInterval) clearInterval(statsInterval);
-                statsInterval = setInterval(loadStats, 10000);
+                loadStats(); // Inicia conexão em tempo real
             }} else {{
-                // Parar auto-refresh se mudou de página
-                if (statsInterval) {{
-                    clearInterval(statsInterval);
-                    statsInterval = null;
+                // Fechar conexão SSE se mudou de página
+                if (statsEventSource) {{
+                    statsEventSource.close();
+                    statsEventSource = null;
                 }}
             }}
         }}
@@ -1498,56 +1495,82 @@ Você ganhou **{{{{prize}}}}**!
             }}
         }}
         
-        // Auto-refresh interval
-        let statsInterval = null;
+        // EventSource para atualização em tempo real
+        let statsEventSource = null;
         
-        // Carregar estatísticas do servidor
-        async function loadStats() {{
+        // Renderizar estatísticas no grid
+        function renderStats(data) {{
             const grid = document.getElementById('stats-grid');
-            try {{
-                const response = await fetch('/api/server/stats');
-                const data = await response.json();
-                
-                if (data.success) {{
-                    grid.innerHTML = `
-                        <div class="card">
-                            <h3>👥 Membros Totais</h3>
-                            <p style="font-size: 32px; font-weight: 800; margin-top: 16px;">${{data.total_members}}</p>
-                            <p style="font-size: 14px; color: #999; margin-top: 8px;">👤 ${{data.total_humans}} humanos • 🤖 ${{data.total_bots}} bots</p>
-                        </div>
-                        <div class="card">
-                            <h3>🟢 Humanos Online</h3>
-                            <p style="font-size: 32px; font-weight: 800; margin-top: 16px; color: #22c55e;">${{data.humans_online}}</p>
-                            <p style="font-size: 14px; color: #999; margin-top: 8px;">de ${{data.total_humans}} humanos</p>
-                        </div>
-                        <div class="card">
-                            <h3>🤖 Robôs Online</h3>
-                            <p style="font-size: 32px; font-weight: 800; margin-top: 16px; color: #3b82f6;">${{data.bots_online}}</p>
-                            <p style="font-size: 14px; color: #999; margin-top: 8px;">de ${{data.total_bots}} bots</p>
-                        </div>
-                        <div class="card">
-                            <h3>💬 Canais de Texto</h3>
-                            <p style="font-size: 32px; font-weight: 800; margin-top: 16px;">${{data.text_channels}}</p>
-                        </div>
-                        <div class="card">
-                            <h3>🎙️ Canais de Voz</h3>
-                            <p style="font-size: 32px; font-weight: 800; margin-top: 16px;">${{data.voice_channels}}</p>
-                        </div>
-                        <div class="card">
-                            <h3>🎭 Cargos Totais</h3>
-                            <p style="font-size: 32px; font-weight: 800; margin-top: 16px;">${{data.total_roles}}</p>
-                        </div>
-                        <div class="card">
-                            <h3>🚀 Boost Level</h3>
-                            <p style="font-size: 32px; font-weight: 800; margin-top: 16px; color: #f472b6;">${{data.boost_level}}</p>
-                        </div>
-                    `;
-                }} else {{
-                    grid.innerHTML = '<div class="card"><h3>❌ Erro ao carregar estatísticas</h3></div>';
-                }}
-            }} catch (error) {{
-                grid.innerHTML = '<div class="card"><h3>❌ Erro de conexão</h3></div>';
+            if (data.success) {{
+                grid.innerHTML = `
+                    <div class="card">
+                        <h3>👥 Membros Totais</h3>
+                        <p style="font-size: 32px; font-weight: 800; margin-top: 16px;">${{data.total_members}}</p>
+                        <p style="font-size: 14px; color: #999; margin-top: 8px;">👤 ${{data.total_humans}} humanos • 🤖 ${{data.total_bots}} bots</p>
+                    </div>
+                    <div class="card">
+                        <h3>🟢 Humanos Online</h3>
+                        <p style="font-size: 32px; font-weight: 800; margin-top: 16px; color: #22c55e;">${{data.humans_online}}</p>
+                        <p style="font-size: 14px; color: #999; margin-top: 8px;">de ${{data.total_humans}} humanos</p>
+                    </div>
+                    <div class="card">
+                        <h3>🤖 Robôs Online</h3>
+                        <p style="font-size: 32px; font-weight: 800; margin-top: 16px; color: #3b82f6;">${{data.bots_online}}</p>
+                        <p style="font-size: 14px; color: #999; margin-top: 8px;">de ${{data.total_bots}} bots</p>
+                    </div>
+                    <div class="card">
+                        <h3>💬 Canais de Texto</h3>
+                        <p style="font-size: 32px; font-weight: 800; margin-top: 16px;">${{data.text_channels}}</p>
+                    </div>
+                    <div class="card">
+                        <h3>🎙️ Canais de Voz</h3>
+                        <p style="font-size: 32px; font-weight: 800; margin-top: 16px;">${{data.voice_channels}}</p>
+                    </div>
+                    <div class="card">
+                        <h3>🎭 Cargos Totais</h3>
+                        <p style="font-size: 32px; font-weight: 800; margin-top: 16px;">${{data.total_roles}}</p>
+                    </div>
+                    <div class="card">
+                        <h3>🚀 Boost Level</h3>
+                        <p style="font-size: 32px; font-weight: 800; margin-top: 16px; color: #f472b6;">${{data.boost_level}}</p>
+                    </div>
+                `;
+            }} else {{
+                grid.innerHTML = '<div class="card"><h3>❌ Erro ao carregar estatísticas</h3></div>';
             }}
+        }}
+        
+        // Carregar estatísticas em tempo real com SSE
+        function loadStats() {{
+            const grid = document.getElementById('stats-grid');
+            
+            // Fechar conexão anterior se existir
+            if (statsEventSource) {{
+                statsEventSource.close();
+            }}
+            
+            // Criar nova conexão SSE
+            statsEventSource = new EventSource('/api/server/stats/stream');
+            
+            statsEventSource.onmessage = function(event) {{
+                try {{
+                    const data = JSON.parse(event.data);
+                    renderStats(data);
+                }} catch (error) {{
+                    console.error('Erro ao processar stats:', error);
+                }}
+            }};
+            
+            statsEventSource.onerror = function(error) {{
+                console.error('Erro no SSE:', error);
+                grid.innerHTML = '<div class="card"><h3>❌ Erro de conexão em tempo real</h3></div>';
+                // Reconectar após 3 segundos
+                setTimeout(() => {{
+                    if (document.getElementById('stats-page').classList.contains('active')) {{
+                        loadStats();
+                    }}
+                }}, 3000);
+            }};
         }}
         
         // Color picker
@@ -3000,12 +3023,11 @@ def get_user_profile():
     except Exception as e:
         return jsonify({'success': False, 'message': str(e)}), 500
 
-@app.route('/api/server/stats', methods=['GET'])
-def get_server_stats():
-    """Retorna estatísticas do servidor"""
+def get_current_stats():
+    """Helper para obter estatísticas atuais"""
     try:
         if not bot.guilds:
-            return jsonify({'success': False, 'message': 'Bot não conectado'}), 500
+            return None
         
         guild = bot.guilds[0]
         
@@ -3017,7 +3039,7 @@ def get_server_stats():
         humans_online = sum(1 for m in humans if m.status in [discord.Status.online, discord.Status.idle, discord.Status.dnd])
         bots_online = sum(1 for m in bots if m.status in [discord.Status.online, discord.Status.idle, discord.Status.dnd])
         
-        stats = {
+        return {
             'success': True,
             'server_name': guild.name,
             'server_icon': str(guild.icon.url) if guild.icon else None,
@@ -3035,10 +3057,35 @@ def get_server_stats():
             'boost_count': guild.premium_subscription_count,
             'created_at': guild.created_at.strftime('%Y-%m-%d')
         }
-        
+    except:
+        return None
+
+@app.route('/api/server/stats', methods=['GET'])
+def get_server_stats():
+    """Retorna estatísticas do servidor"""
+    stats = get_current_stats()
+    if stats:
         return jsonify(stats)
-    except Exception as e:
-        return jsonify({'success': False, 'message': str(e)}), 500
+    return jsonify({'success': False, 'message': 'Bot não conectado'}), 500
+
+@app.route('/api/server/stats/stream')
+def stats_stream():
+    """Stream de estatísticas em tempo real via SSE"""
+    def generate():
+        import time
+        import json
+        last_stats = None
+        while True:
+            try:
+                stats = get_current_stats()
+                if stats and stats != last_stats:
+                    yield f"data: {json.dumps(stats)}\n\n"
+                    last_stats = stats
+                time.sleep(2)  # Atualiza a cada 2 segundos
+            except:
+                pass
+    
+    return Response(generate(), mimetype='text/event-stream')
 
 def run_web():
     import os
