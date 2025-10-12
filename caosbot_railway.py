@@ -6916,6 +6916,53 @@ async def help_command(ctx, categoria=None):
             inline=True
         )
         
+        embed.add_field(
+            name="💋 `.beijar @usuário`",
+            value="**Beija** alguém com GIF animado\n*Romântico e fofo*",
+            inline=True
+        )
+        
+        embed.add_field(
+            name="🤗 `.abracar @usuário`",
+            value="**Abraça** alguém com GIF\n*Demonstre carinho*",
+            inline=True
+        )
+        
+        embed.add_field(
+            name="😊 `.acariciar @usuário`",
+            value="**Acaricia** alguém (head pat)\n*Relaxante e carinhoso*",
+            inline=True
+        )
+        
+        embed.add_field(
+            name="👋 `.tapa @usuário`",
+            value="**Dá um tapa** em alguém\n*Quando necessário*",
+            inline=True
+        )
+        
+        embed.add_field(
+            name="💃 `.dancar [@usuário]`",
+            value="**Dança** sozinho ou com alguém\n*Mostre seus passos!*",
+            inline=True
+        )
+        
+        embed.add_field(
+            name="😭 `.chorar`",
+            value="**Chora** dramaticamente\n*Às vezes necessário*",
+            inline=True
+        )
+        
+        embed.add_field(
+            name="😌 `.cafune @usuário`",
+            value="**Faz cafuné** em alguém\n*Relaxante*",
+            inline=True
+        )
+        
+        embed.add_field(
+            name="💘 `.ship @user1 @user2`",
+            value="**Shipa** duas pessoas\n*Veja a compatibilidade!*",
+            inline=True
+        )
         
         embed.set_footer(text="🎮 Diversão • Mais comandos em desenvolvimento")
         
