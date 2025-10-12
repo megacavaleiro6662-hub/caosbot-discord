@@ -660,6 +660,11 @@ def dashboard():
             100% {{ filter: blur(2px) hue-rotate(0deg); }}
         }}
         
+        @keyframes pulse {{
+            0%, 100% {{ opacity: 1; transform: scale(1); }}
+            50% {{ opacity: 0.5; transform: scale(1.2); }}
+        }}
+        
         .sidebar::before {{
             content: '';
             position: absolute;
@@ -1276,7 +1281,13 @@ Você ganhou **{{{{prize}}}}**!
         <!-- Stats Page -->
         <div id="stats-page" class="page">
             <div class="section">
-                <h2 class="section-title">📈 Estatísticas do Servidor</h2>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+                    <h2 class="section-title" style="margin: 0;">📈 Estatísticas do Servidor</h2>
+                    <span style="color: #22c55e; font-size: 13px; display: flex; align-items: center; gap: 6px;">
+                        <span style="width: 8px; height: 8px; background: #22c55e; border-radius: 50%; display: inline-block; animation: pulse 2s infinite;"></span>
+                        Atualização automática (10s)
+                    </span>
+                </div>
                 <div class="grid" id="stats-grid">
                     <div class="card"><h3>⏳ Carregando...</h3></div>
                 </div>
@@ -1300,8 +1311,22 @@ Você ganhou **{{{{prize}}}}**!
             
             if (page === 'tickets') {{
                 loadCategories();
+                // Parar auto-refresh de stats se estava ativo
+                if (statsInterval) {{
+                    clearInterval(statsInterval);
+                    statsInterval = null;
+                }}
             }} else if (page === 'stats') {{
                 loadStats();
+                // Iniciar auto-refresh (atualiza a cada 10 segundos)
+                if (statsInterval) clearInterval(statsInterval);
+                statsInterval = setInterval(loadStats, 10000);
+            }} else {{
+                // Parar auto-refresh se mudou de página
+                if (statsInterval) {{
+                    clearInterval(statsInterval);
+                    statsInterval = null;
+                }}
             }}
         }}
         
@@ -1472,6 +1497,9 @@ Você ganhou **{{{{prize}}}}**!
                 console.error('Erro ao carregar cargos:', error);
             }}
         }}
+        
+        // Auto-refresh interval
+        let statsInterval = null;
         
         // Carregar estatísticas do servidor
         async function loadStats() {{
