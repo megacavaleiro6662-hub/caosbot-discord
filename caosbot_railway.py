@@ -158,7 +158,7 @@ def login_page():
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CAOS Hub - Login</title>
-    <link rel="icon" href="https://i.ibb.co/7Jmp2R8B/Gemini-Generated-Image-q7l7xeq7l7xeq7l7.png" type="image/png">
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cdefs%3E%3CclipPath id='circle'%3E%3Ccircle cx='50' cy='50' r='50'/%3E%3C/clipPath%3E%3C/defs%3E%3Cimage href='https://i.ibb.co/VpPdrYCk/Chat-GPT-Image-11-de-set-de-2025-18-35-32.png' width='100' height='100' clip-path='url(%23circle)'/%3E%3C/svg%3E" type="image/svg+xml">
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <style>
         * {{ margin: 0; padding: 0; box-sizing: border-box; font-family: 'Orbitron', sans-serif; }}
@@ -463,7 +463,7 @@ def dashboard():
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CAOS Hub - Dashboard</title>
-    <link rel="icon" href="https://i.ibb.co/7Jmp2R8B/Gemini-Generated-Image-q7l7xeq7l7xeq7l7.png" type="image/png">
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cdefs%3E%3CclipPath id='circle'%3E%3Ccircle cx='50' cy='50' r='50'/%3E%3C/clipPath%3E%3C/defs%3E%3Cimage href='https://i.ibb.co/VpPdrYCk/Chat-GPT-Image-11-de-set-de-2025-18-35-32.png' width='100' height='100' clip-path='url(%23circle)'/%3E%3C/svg%3E" type="image/svg+xml">
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <style>
         * {{ margin: 0; padding: 0; box-sizing: border-box; font-family: 'Orbitron', 'Rajdhani', sans-serif; }}
@@ -791,7 +791,7 @@ def dashboard():
     <!-- Sidebar -->
     <div class="sidebar">
         <div class="sidebar-logo">
-            <img src="https://i.ibb.co/7Jmp2R8B/Gemini-Generated-Image-q7l7xeq7l7xeq7l7.png" alt="CAOS Hub">
+            <img src="https://i.ibb.co/VpPdrYCk/Chat-GPT-Image-11-de-set-de-2025-18-35-32.png" alt="CAOS Hub">
         </div>
         <ul class="sidebar-nav">
             <li><a href="#" class="active" onclick="showPage('dashboard')">📊 Dashboard</a></li>
