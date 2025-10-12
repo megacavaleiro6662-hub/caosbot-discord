@@ -158,7 +158,7 @@ def login_page():
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CAOS Hub - Login</title>
-    <link rel="icon" href="https://i.ibb.co/VpPdrYCk/Chat-GPT-Image-11-de-set-de-2025-18-35-32.png" type="image/png">
+    <link rel="icon" href="https://i.ibb.co/Fq5Lgzs5/Chat-GPT-Image-7-de-out-de-2025-00-25-49.png" type="image/png">
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <style>
         * {{ margin: 0; padding: 0; box-sizing: border-box; font-family: 'Orbitron', sans-serif; }}
@@ -463,7 +463,7 @@ def dashboard():
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CAOS Hub - Dashboard</title>
-    <link rel="icon" href="https://i.ibb.co/VpPdrYCk/Chat-GPT-Image-11-de-set-de-2025-18-35-32.png" type="image/png">
+    <link rel="icon" href="https://i.ibb.co/Fq5Lgzs5/Chat-GPT-Image-7-de-out-de-2025-00-25-49.png" type="image/png">
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <style>
         * {{ margin: 0; padding: 0; box-sizing: border-box; font-family: 'Orbitron', 'Rajdhani', sans-serif; }}
@@ -791,7 +791,7 @@ def dashboard():
     <!-- Sidebar -->
     <div class="sidebar">
         <div class="sidebar-logo">
-            <img src="https://i.ibb.co/VpPdrYCk/Chat-GPT-Image-11-de-set-de-2025-18-35-32.png" alt="CAOS Hub">
+            <img src="https://i.ibb.co/Fq5Lgzs5/Chat-GPT-Image-7-de-out-de-2025-00-25-49.png" alt="CAOS Hub">
         </div>
         <ul class="sidebar-nav">
             <li><a href="#" class="active" onclick="showPage('dashboard')">📊 Dashboard</a></li>
@@ -2070,7 +2070,7 @@ Você ganhou **{{{{prize}}}}**!
             
             <div class="discord-message">
                 <div class="message-header">
-                    <img src="https://i.ibb.co/VpPdrYCk/Chat-GPT-Image-11-de-set-de-2025-18-35-32.png" class="bot-avatar">
+                    <img src="https://i.ibb.co/Fq5Lgzs5/Chat-GPT-Image-7-de-out-de-2025-00-25-49.png" class="bot-avatar">
                     <span class="bot-name">CAOS Bot</span>
                     <span class="bot-tag">BOT</span>
                 </div>
@@ -2188,7 +2188,7 @@ Você ganhou **{{{{prize}}}}**!
             </style>
             <div class="discord-message">
                 <div style="display: flex; align-items: center; margin-bottom: 8px;">
-                    <img src="https://i.ibb.co/VpPdrYCk/Chat-GPT-Image-11-de-set-de-2025-18-35-32.png" style="width: 40px; height: 40px; border-radius: 50%; margin-right: 12px;">
+                    <img src="https://i.ibb.co/Fq5Lgzs5/Chat-GPT-Image-7-de-out-de-2025-00-25-49.png" style="width: 40px; height: 40px; border-radius: 50%; margin-right: 12px;">
                     <span style="font-size: 15px; font-weight: 500; color: #f2f3f5; margin-right: 6px;">CAOS Bot</span>
                     <span style="background: #5865f2; color: #fff; font-size: 10px; font-weight: 500; padding: 2px 4px; border-radius: 3px; text-transform: uppercase;">BOT</span>
                 </div>
