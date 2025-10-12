@@ -5791,9 +5791,9 @@ async def rank_command(ctx, user: discord.Member = None):
         print(f'❌ Erro no comando rank: {e}')
         await ctx.reply(f"❌ Erro ao buscar rank: {e}")
 
-@bot.command(name='leaderboard', aliases=['lb', 'top'])
-async def leaderboard_command(ctx):
-    """Ver top 10 usuários do servidor"""
+@bot.command(name='rankxp', aliases=['leaderboard', 'lb', 'top'])
+async def rankxp_command(ctx):
+    """Ver top 10 usuários do servidor com visual estilo Loritta"""
     try:
         top_users = get_leaderboard(ctx.guild.id, 10)
         
@@ -5801,31 +5801,54 @@ async def leaderboard_command(ctx):
             await ctx.reply("❌ Ainda não há usuários no ranking!")
             return
         
-        embed = discord.Embed(
-            title=f"🏆 Top 10 - {ctx.guild.name}",
-            description="Os membros mais ativos do servidor!",
-            color=0xff6600
-        )
-        
+        # Cria descrição elaborada com visual de ranking
+        description_lines = []
         medals = ['🥇', '🥈', '🥉']
         
         for i, (user_id, xp, level, messages) in enumerate(top_users, 1):
             user = ctx.guild.get_member(int(user_id))
             if user:
-                medal = medals[i-1] if i <= 3 else f"`#{i}`"
-                embed.add_field(
-                    name=f"{medal} {user.name}",
-                    value=f"**Nível {level}** • {xp:,} XP • {messages:,} msgs",
-                    inline=False
+                medal = medals[i-1] if i <= 3 else f"**`#{i:02d}`**"
+                
+                # Barra de progresso visual
+                xp_bar_length = min(int((xp / max(top_users[0][1], 1)) * 10), 10)
+                xp_bar = "█" * xp_bar_length + "░" * (10 - xp_bar_length)
+                
+                description_lines.append(
+                    f"{medal} **{user.name}**\n"
+                    f"└ `Lv.{level:02d}` • {xp_bar} • `{xp:,} XP` • `{messages:,} msgs`\n"
                 )
         
-        embed.set_thumbnail(url=ctx.guild.icon.url if ctx.guild.icon else None)
-        embed.set_footer(text="Sistema de XP tipo Loritta • CAOS Hub")
+        embed = discord.Embed(
+            title=f"🏆 RANKING DE XP • {ctx.guild.name.upper()}",
+            description="\n".join(description_lines) + f"\n\n**📊 Total de membros no ranking:** `{len(top_users)}`",
+            color=0xff6600
+        )
+        
+        # Adiciona avatar do #1 como thumbnail
+        if top_users:
+            first_user = ctx.guild.get_member(int(top_users[0][0]))
+            if first_user:
+                embed.set_thumbnail(url=first_user.display_avatar.url)
+        
+        # Banner do servidor como imagem principal
+        if ctx.guild.banner:
+            embed.set_image(url=ctx.guild.banner.url)
+        elif ctx.guild.icon:
+            embed.set_image(url=ctx.guild.icon.url)
+        else:
+            # Usa imagem do CAOS como fallback
+            embed.set_image(url="https://i.ibb.co/BVX3K2Y2/1.png")
+        
+        embed.set_footer(
+            text="🔥 Sistema de XP tipo Loritta • Use .rank pra ver seu card individual",
+            icon_url=ctx.guild.icon.url if ctx.guild.icon else None
+        )
         
         await ctx.reply(embed=embed)
     except Exception as e:
-        print(f'❌ Erro no leaderboard: {e}')
-        await ctx.reply(f"❌ Erro ao buscar leaderboard: {e}")
+        print(f'❌ Erro no rankxp: {e}')
+        await ctx.reply(f"❌ Erro ao buscar ranking: {e}")
 
 @bot.command(name='setxp')
 @commands.has_permissions(administrator=True)
@@ -8339,7 +8362,13 @@ async def help_command(ctx, categoria=None):
         )
         
         embed.add_field(
-            name="📊 **INFORMAÇÕES**",
+            name="📊 **RANK & XP**",
+            value="`.help rank`\nSistema de níveis e ranking",
+            inline=True
+        )
+        
+        embed.add_field(
+            name="📋 **INFORMAÇÕES**",
             value="**Prefixo:** `.` (ponto)\n**Permissões:** Sub Moderador+\n**Versão:** 2.0 Premium",
             inline=False
         )
@@ -8633,6 +8662,46 @@ async def help_command(ctx, categoria=None):
         
         embed.set_footer(text="🛠️ Utilidades • Ferramentas administrativas")
         
+    elif categoria in ['rank', 'xp', 'nivel', 'nível', 'level']:
+        embed = discord.Embed(
+            title="📊 SISTEMA DE RANK & XP",
+            description="**Sistema de níveis estilo Loritta!**\nGanhe XP conversando e suba de nível!\n\n**Como ganhar XP:**\n💬 Envie mensagens (+10-15 XP)\n⏱️ Cooldown: 60 segundos\n🚫 Spam não conta",
+            color=0xff6600
+        )
+        
+        embed.add_field(
+            name="📊 `.rank [@usuário]`",
+            value="**Ver rank** com card visual tipo Loritta\n*Mostra nível, XP, posição e progresso*\n**Exemplos:**\n• `.rank` - Seu rank\n• `.rank @user` - Rank de alguém",
+            inline=False
+        )
+        
+        embed.add_field(
+            name="🏆 `.rankxp`",
+            value="**Ver TOP 10** do servidor com imagem!\n*Ranking completo dos membros mais ativos*\n**Aliases:** `.leaderboard`, `.lb`, `.top`\n**Visual:** Card com barra de progresso",
+            inline=False
+        )
+        
+        embed.add_field(
+            name="⚙️ `.setxp @usuário <quantidade>`",
+            value="**Definir XP** manualmente (Admin)\n*Modificar XP de qualquer usuário*\n**Exemplo:** `.setxp @user 1000`\n**Requer:** Permissão de Administrador",
+            inline=False
+        )
+        
+        embed.add_field(
+            name="🎨 **DESIGN DO RANK CARD**",
+            value="✅ Background laranja CAOS personalizado\n✅ Avatar circular do usuário\n✅ Barra de progresso animada\n✅ Nível e posição no ranking\n✅ Total de mensagens e XP",
+            inline=False
+        )
+        
+        embed.add_field(
+            name="📈 **FÓRMULA DE XP**",
+            value="**XP por nível:** 100 × (nível^1.5)\n**Exemplo:** Nível 10 = 3.162 XP\n**Sistema:** Exponencial tipo Loritta",
+            inline=False
+        )
+        
+        embed.set_thumbnail(url="https://i.ibb.co/BVX3K2Y2/1.png")
+        embed.set_footer(text="📊 Sistema de XP • Totalmente automático")
+        
     else:
         embed = discord.Embed(
             title="❌ CATEGORIA NÃO ENCONTRADA",
@@ -8642,7 +8711,7 @@ async def help_command(ctx, categoria=None):
         
         embed.add_field(
             name="📋 **CATEGORIAS DISPONÍVEIS**",
-            value="• `moderacao` - Comandos de moderação\n• `advertencias` - Sistema de advertências\n• `mute` - Comandos de silenciamento\n• `diversao` - Comandos de diversão\n• `conversa` - Comandos sociais\n• `utilidades` - Comandos utilitários",
+            value="• `moderacao` - Comandos de moderação\n• `advertencias` - Sistema de advertências\n• `mute` - Comandos de silenciamento\n• `diversao` - Comandos de diversão\n• `conversa` - Comandos sociais\n• `utilidades` - Comandos utilitários\n• `rank` - Sistema de XP e ranking",
             inline=False
         )
         
