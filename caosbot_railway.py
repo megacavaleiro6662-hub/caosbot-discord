@@ -2985,9 +2985,9 @@ def get_server_stats():
         humans = [m for m in guild.members if not m.bot]
         bots = [m for m in guild.members if m.bot]
         
-        # Contar online separado
-        humans_online = sum(1 for m in humans if m.status != discord.Status.offline)
-        bots_online = sum(1 for m in bots if m.status != discord.Status.offline)
+        # Contar online separado (online, idle, dnd = considerados online)
+        humans_online = sum(1 for m in humans if m.status in [discord.Status.online, discord.Status.idle, discord.Status.dnd])
+        bots_online = sum(1 for m in bots if m.status in [discord.Status.online, discord.Status.idle, discord.Status.dnd])
         
         stats = {
             'success': True,
@@ -3037,7 +3037,7 @@ intents = discord.Intents.default()
 intents.message_content = True
 intents.guilds = True
 intents.members = True  # NECESSÁRIO para eventos de entrada/saída/ban
-intents.presences = False  # Não precisa de presences
+intents.presences = True  # NECESSÁRIO para ver status online/offline dos membros
 
 bot = commands.Bot(command_prefix='.', intents=intents)
 
