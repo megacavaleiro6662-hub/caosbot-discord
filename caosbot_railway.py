@@ -158,6 +158,7 @@ def login_page():
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CAOS Hub - Login</title>
+    <link rel="icon" href="https://i.ibb.co/VpPdrYCk/Chat-GPT-Image-11-de-set-de-2025-18-35-32.png" type="image/png">
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <style>
         * {{ margin: 0; padding: 0; box-sizing: border-box; font-family: 'Orbitron', sans-serif; }}
@@ -462,6 +463,7 @@ def dashboard():
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CAOS Hub - Dashboard</title>
+    <link rel="icon" href="https://i.ibb.co/VpPdrYCk/Chat-GPT-Image-11-de-set-de-2025-18-35-32.png" type="image/png">
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <style>
         * {{ margin: 0; padding: 0; box-sizing: border-box; font-family: 'Orbitron', 'Rajdhani', sans-serif; }}
