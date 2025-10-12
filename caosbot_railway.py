@@ -22,6 +22,8 @@ from flask import Flask, request, jsonify, render_template, session, redirect, u
 from functools import wraps
 import secrets
 from io import BytesIO
+import sqlite3
+from urllib.parse import urlencode
 
 # ========================================
 # SISTEMA DE MÚSICA REMOVIDO
@@ -3119,6 +3121,148 @@ intents.presences = True  # NECESSÁRIO para ver status online/offline dos membr
 bot = commands.Bot(command_prefix='.', intents=intents)
 
 # ========================================
+# SISTEMA DE XP/RANK (ESTILO LORITTA)
+# ========================================
+
+# Banco de dados SQLite para XP
+def init_xp_database():
+    """Inicializa banco de dados de XP"""
+    conn = sqlite3.connect('xp_database.db')
+    cursor = conn.cursor()
+    
+    # Tabela de XP dos usuários
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS user_xp (
+            user_id TEXT PRIMARY KEY,
+            guild_id TEXT,
+            xp INTEGER DEFAULT 0,
+            level INTEGER DEFAULT 0,
+            messages INTEGER DEFAULT 0,
+            last_xp_time REAL DEFAULT 0
+        )
+    ''')
+    
+    # Tabela de configuração de cargos por nível
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS level_roles (
+            guild_id TEXT,
+            level INTEGER,
+            role_id TEXT,
+            PRIMARY KEY (guild_id, level)
+        )
+    ''')
+    
+    # Tabela de configuração do sistema
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS xp_config (
+            guild_id TEXT PRIMARY KEY,
+            enabled INTEGER DEFAULT 1,
+            xp_min INTEGER DEFAULT 15,
+            xp_max INTEGER DEFAULT 25,
+            cooldown INTEGER DEFAULT 60,
+            level_up_channel TEXT,
+            level_up_message TEXT DEFAULT '🎉 {user}, você subiu para o **Nível {level}**!'
+        )
+    ''')
+    
+    conn.commit()
+    conn.close()
+    print('✅ Banco de dados de XP inicializado!')
+
+# Inicializa banco ao importar
+init_xp_database()
+
+# Cooldown de XP (evita spam)
+xp_cooldowns = {}
+
+def calculate_xp_for_level(level):
+    """Calcula XP necessário para o nível (fórmula exponencial tipo Loritta)"""
+    return int(100 * (level ** 1.5))
+
+def get_user_xp(user_id, guild_id):
+    """Pega XP do usuário"""
+    conn = sqlite3.connect('xp_database.db')
+    cursor = conn.cursor()
+    cursor.execute('SELECT xp, level, messages FROM user_xp WHERE user_id = ? AND guild_id = ?', (str(user_id), str(guild_id)))
+    result = cursor.fetchone()
+    conn.close()
+    
+    if result:
+        return {'xp': result[0], 'level': result[1], 'messages': result[2]}
+    return {'xp': 0, 'level': 0, 'messages': 0}
+
+def add_xp(user_id, guild_id, xp_amount):
+    """Adiciona XP ao usuário e retorna se subiu de nível"""
+    conn = sqlite3.connect('xp_database.db')
+    cursor = conn.cursor()
+    
+    # Pega dados atuais
+    cursor.execute('SELECT xp, level, messages FROM user_xp WHERE user_id = ? AND guild_id = ?', (str(user_id), str(guild_id)))
+    result = cursor.fetchone()
+    
+    if result:
+        current_xp, current_level, messages = result
+        new_xp = current_xp + xp_amount
+        new_messages = messages + 1
+    else:
+        current_xp, current_level, messages = 0, 0, 0
+        new_xp = xp_amount
+        new_messages = 1
+    
+    # Verifica se subiu de nível
+    xp_needed = calculate_xp_for_level(current_level + 1)
+    level_up = False
+    new_level = current_level
+    
+    while new_xp >= xp_needed:
+        new_xp -= xp_needed
+        new_level += 1
+        xp_needed = calculate_xp_for_level(new_level + 1)
+        level_up = True
+    
+    # Atualiza banco
+    cursor.execute('''
+        INSERT OR REPLACE INTO user_xp (user_id, guild_id, xp, level, messages, last_xp_time)
+        VALUES (?, ?, ?, ?, ?, ?)
+    ''', (str(user_id), str(guild_id), new_xp, new_level, new_messages, time.time()))
+    
+    conn.commit()
+    conn.close()
+    
+    return {'level_up': level_up, 'new_level': new_level, 'xp': new_xp}
+
+def get_leaderboard(guild_id, limit=10):
+    """Pega top usuários do servidor"""
+    conn = sqlite3.connect('xp_database.db')
+    cursor = conn.cursor()
+    cursor.execute('''
+        SELECT user_id, xp, level, messages 
+        FROM user_xp 
+        WHERE guild_id = ? 
+        ORDER BY level DESC, xp DESC 
+        LIMIT ?
+    ''', (str(guild_id), limit))
+    results = cursor.fetchall()
+    conn.close()
+    return results
+
+def get_user_rank(user_id, guild_id):
+    """Pega posição do usuário no ranking"""
+    conn = sqlite3.connect('xp_database.db')
+    cursor = conn.cursor()
+    cursor.execute('''
+        SELECT COUNT(*) + 1
+        FROM user_xp
+        WHERE guild_id = ?
+        AND (level > (SELECT level FROM user_xp WHERE user_id = ? AND guild_id = ?)
+        OR (level = (SELECT level FROM user_xp WHERE user_id = ? AND guild_id = ?) 
+        AND xp > (SELECT xp FROM user_xp WHERE user_id = ? AND guild_id = ?)))
+    ''', (str(guild_id), str(user_id), str(guild_id), str(user_id), str(guild_id), str(user_id), str(guild_id)))
+    result = cursor.fetchone()
+    conn.close()
+    return result[0] if result else 0
+
+# ========================================
 # SISTEMA ANTI-HIBERNAÇÃO COMPLETO (100% GRATUITO)
 # ========================================
 # Este sistema mantém o bot online 24/7 no Render gratuitamente
@@ -4198,11 +4342,55 @@ async def on_voice_state_update(member, before, after):
 
 @bot.event
 async def on_message(message):
-    """Sistema de moderação automática COMPLETO + bloqueio de comandos"""
+    """Sistema de moderação automática COMPLETO + bloqueio de comandos + XP"""
     # Ignorar mensagens do próprio bot
     if message.author.bot:
         await bot.process_commands(message)
         return
+    
+    # ========================================
+    # SISTEMA DE XP (ESTILO LORITTA)
+    # ========================================
+    if message.guild:  # Só em servidores
+        user_key = f"{message.author.id}_{message.guild.id}"
+        current_time = time.time()
+        
+        # Verifica cooldown (padrão 60 segundos)
+        if user_key not in xp_cooldowns or current_time - xp_cooldowns[user_key] >= 60:
+            xp_cooldowns[user_key] = current_time
+            
+            # Ganha XP aleatório entre 15-25 (tipo Loritta)
+            xp_gain = random.randint(15, 25)
+            result = add_xp(message.author.id, message.guild.id, xp_gain)
+            
+            # Se subiu de nível, envia notificação
+            if result['level_up']:
+                try:
+                    # Embed de level up
+                    embed = discord.Embed(
+                        title="🎉 LEVEL UP!",
+                        description=f"Parabéns {message.author.mention}!\nVocê subiu para o **Nível {result['new_level']}**! 🔥",
+                        color=0xff6600
+                    )
+                    embed.set_thumbnail(url=message.author.display_avatar.url)
+                    
+                    await message.channel.send(embed=embed, delete_after=10)
+                    
+                    # Sistema de cargos automáticos por nível
+                    conn = sqlite3.connect('xp_database.db')
+                    cursor = conn.cursor()
+                    cursor.execute('SELECT role_id FROM level_roles WHERE guild_id = ? AND level = ?', 
+                                 (str(message.guild.id), result['new_level']))
+                    role_result = cursor.fetchone()
+                    conn.close()
+                    
+                    if role_result:
+                        role = message.guild.get_role(int(role_result[0]))
+                        if role:
+                            await message.author.add_roles(role)
+                            print(f'🎖️ Cargo {role.name} adicionado a {message.author.name} (Nível {result["new_level"]})')
+                except Exception as e:
+                    print(f'❌ Erro ao enviar level up: {e}')
     
     # ========================================
     # RESPOSTA QUANDO O BOT É MENCIONADO
@@ -5528,6 +5716,139 @@ async def cafune_command(ctx, usuario: discord.Member = None):
     view = RetribuirView(ctx.author, usuario, 'pat', timeout=60)
     message = await ctx.reply(embed=embed, view=view)
     view.message = message
+
+# ========================================
+# COMANDOS DE XP/RANK (ESTILO LORITTA)
+# ========================================
+
+@bot.command(name='rank')
+async def rank_command(ctx, user: discord.Member = None):
+    """Ver rank com card visual tipo Loritta"""
+    user = user or ctx.author
+    
+    try:
+        await ctx.defer() if hasattr(ctx, 'defer') else None
+        
+        # Busca dados do usuário
+        data = get_user_xp(user.id, ctx.guild.id)
+        level = data['level']
+        xp = data['xp']
+        messages = data['messages']
+        xp_needed = calculate_xp_for_level(level + 1)
+        rank_position = get_user_rank(user.id, ctx.guild.id)
+        
+        # Gera rank card via Some Random API
+        params = {
+            'avatar': str(user.display_avatar.url),
+            'username': user.name,
+            'discriminator': user.discriminator if user.discriminator != '0' else '0000',
+            'currentxp': xp,
+            'reqxp': xp_needed,
+            'level': level,
+            'rank': rank_position,
+            'barcolor': 'FF6600',  # Laranja do CAOS
+            'bgcolor': '23272a',   # Cinza escuro Discord
+            'status': str(user.status) if hasattr(user, 'status') else 'online'
+        }
+        
+        url = f"https://some-random-api.com/canvas/rankcard?{urlencode(params)}"
+        
+        async with aiohttp.ClientSession() as session:
+            async with session.get(url) as response:
+                if response.status == 200:
+                    image_bytes = await response.read()
+                    file = discord.File(fp=BytesIO(image_bytes), filename='rank.png')
+                    
+                    # Embed com info extra (cargo, próximo nível, etc)
+                    embed = discord.Embed(
+                        title=f"📊 Rank de {user.name}",
+                        color=0xff6600
+                    )
+                    embed.add_field(name="📨 Mensagens", value=f"`{messages:,}`", inline=True)
+                    embed.add_field(name="🏆 Posição", value=f"`#{rank_position}`", inline=True)
+                    embed.add_field(name="📈 Próximo Nível", value=f"`{xp_needed - xp:,} XP`", inline=True)
+                    
+                    # Verificar se tem cargo por nível
+                    conn = sqlite3.connect('xp_database.db')
+                    cursor = conn.cursor()
+                    cursor.execute('SELECT role_id FROM level_roles WHERE guild_id = ? AND level = ?', 
+                                 (str(ctx.guild.id), level))
+                    role_result = cursor.fetchone()
+                    conn.close()
+                    
+                    if role_result:
+                        role = ctx.guild.get_role(int(role_result[0]))
+                        if role:
+                            embed.add_field(name="🎖️ Cargo Atual", value=role.mention, inline=False)
+                    
+                    embed.set_image(url="attachment://rank.png")
+                    embed.set_footer(text="Sistema de XP tipo Loritta • CAOS Hub")
+                    
+                    await ctx.reply(embed=embed, file=file)
+                else:
+                    await ctx.reply("❌ Erro ao gerar rank card! Tente novamente.")
+    except Exception as e:
+        print(f'❌ Erro no comando rank: {e}')
+        await ctx.reply(f"❌ Erro ao buscar rank: {e}")
+
+@bot.command(name='leaderboard', aliases=['lb', 'top'])
+async def leaderboard_command(ctx):
+    """Ver top 10 usuários do servidor"""
+    try:
+        top_users = get_leaderboard(ctx.guild.id, 10)
+        
+        if not top_users:
+            await ctx.reply("❌ Ainda não há usuários no ranking!")
+            return
+        
+        embed = discord.Embed(
+            title=f"🏆 Top 10 - {ctx.guild.name}",
+            description="Os membros mais ativos do servidor!",
+            color=0xff6600
+        )
+        
+        medals = ['🥇', '🥈', '🥉']
+        
+        for i, (user_id, xp, level, messages) in enumerate(top_users, 1):
+            user = ctx.guild.get_member(int(user_id))
+            if user:
+                medal = medals[i-1] if i <= 3 else f"`#{i}`"
+                embed.add_field(
+                    name=f"{medal} {user.name}",
+                    value=f"**Nível {level}** • {xp:,} XP • {messages:,} msgs",
+                    inline=False
+                )
+        
+        embed.set_thumbnail(url=ctx.guild.icon.url if ctx.guild.icon else None)
+        embed.set_footer(text="Sistema de XP tipo Loritta • CAOS Hub")
+        
+        await ctx.reply(embed=embed)
+    except Exception as e:
+        print(f'❌ Erro no leaderboard: {e}')
+        await ctx.reply(f"❌ Erro ao buscar leaderboard: {e}")
+
+@bot.command(name='setxp')
+@commands.has_permissions(administrator=True)
+async def setxp_command(ctx, user: discord.Member, xp: int):
+    """Define XP de um usuário (Admin)"""
+    try:
+        conn = sqlite3.connect('xp_database.db')
+        cursor = conn.cursor()
+        cursor.execute('''
+            INSERT OR REPLACE INTO user_xp (user_id, guild_id, xp, level, messages, last_xp_time)
+            VALUES (?, ?, ?, 0, 0, ?)
+        ''', (str(user.id), str(ctx.guild.id), xp, time.time()))
+        conn.commit()
+        conn.close()
+        
+        await ctx.reply(f"✅ XP de {user.mention} definido para **{xp:,} XP**!")
+    except Exception as e:
+        await ctx.reply(f"❌ Erro: {e}")
+
+@setxp_command.error
+async def setxp_error(ctx, error):
+    if isinstance(error, commands.MissingPermissions):
+        await ctx.reply("❌ Você precisa ser **ADMINISTRADOR** para usar este comando!")
 
 # ========================================
 # COMANDOS DE CONTROLE - BOAS-VINDAS/SAÍDA/BAN
