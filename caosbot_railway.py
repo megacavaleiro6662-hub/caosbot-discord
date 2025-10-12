@@ -5721,6 +5721,60 @@ async def cafune_command(ctx, usuario: discord.Member = None):
 # COMANDOS DE XP/RANK (ESTILO LORITTA)
 # ========================================
 
+async def generate_rank_card(user, level, xp, xp_needed, rank_position):
+    """Gera rank card com Easy-PIL"""
+    try:
+        from easy_pil import Editor, Canvas, Font, load_image_async
+        from PIL import Image, ImageDraw
+        
+        # Canvas com fundo personalizado (934x282)
+        background = Editor(Canvas((934, 282), color="#FF3300"))  # Laranja CAOS
+        
+        # Baixa avatar do usuário
+        avatar_bytes = await aiohttp.ClientSession().get(str(user.display_avatar.url))
+        avatar_bytes = await avatar_bytes.read()
+        avatar = Editor(Image.open(BytesIO(avatar_bytes))).resize((150, 150)).circle_image()
+        
+        # Cola avatar
+        background.paste(avatar, (30, 66))
+        
+        # Fonte (tenta usar, se falhar usa default)
+        try:
+            font_big = Font.poppins(size=40, variant="bold")
+            font_medium = Font.poppins(size=30)
+            font_small = Font.poppins(size=20)
+        except:
+            font_big = Font.montserrat(size=40)
+            font_medium = Font.montserrat(size=30)
+            font_small = Font.montserrat(size=20)
+        
+        # Username
+        background.text((200, 40), user.name, font=font_big, color="#FFFFFF")
+        
+        # Nível
+        background.text((200, 90), f"Nível {level}", font=font_medium, color="#FFD700")
+        
+        # Rank
+        background.text((700, 40), f"#{rank_position}", font=font_medium, color="#FFD700")
+        
+        # Barra de XP (fundo)
+        background.rectangle((200, 150), width=700, height=40, fill="#40444b", radius=20)
+        
+        # Barra de XP (progresso)
+        progress_width = int(700 * (xp / xp_needed))
+        if progress_width > 0:
+            background.rectangle((200, 150), width=progress_width, height=40, fill="#FF6600", radius=20)
+        
+        # Texto XP
+        xp_text = f"{xp:,} / {xp_needed:,} XP"
+        background.text((550, 160), xp_text, font=font_small, color="#FFFFFF", align="center")
+        
+        # Retorna bytes da imagem
+        return background.image_bytes
+    except Exception as e:
+        print(f"❌ Erro ao gerar com Easy-PIL: {e}")
+        return None
+
 @bot.command(name='rank')
 async def rank_command(ctx, user: discord.Member = None):
     """Ver rank com card visual tipo Loritta"""
@@ -5737,58 +5791,64 @@ async def rank_command(ctx, user: discord.Member = None):
         xp_needed = calculate_xp_for_level(level + 1)
         rank_position = get_user_rank(user.id, ctx.guild.id)
         
-        # Gera rank card via Vacefron API (funciona 100%!)
-        params = {
-            'username': user.name,
-            'avatar': str(user.display_avatar.url),
-            'level': level,
-            'rank': rank_position,
-            'currentxp': xp,
-            'nextlevelxp': xp_needed,
-            'previouslevelxp': 0,
-            'custombg': '23272A',
-            'xpcolor': 'FF6600'
-        }
+        # TENTA GERAR COM EASY-PIL
+        print("🎨 Tentando gerar com Easy-PIL...")
+        image_bytes = await generate_rank_card(user, level, xp, xp_needed, rank_position)
         
-        url = f"https://vacefron.nl/api/rankcard?{urlencode(params)}"
+        if image_bytes:
+            # SUCESSO COM EASY-PIL!
+            print("✅ Easy-PIL funcionou!")
+            file = discord.File(fp=BytesIO(image_bytes), filename='rank.png')
+        else:
+            # Easy-PIL falhou, usa Vacefron como fallback
+            print("❌ Easy-PIL falhou, usando Vacefron...")
+            params = {
+                'username': user.name,
+                'avatar': str(user.display_avatar.url),
+                'level': level,
+                'rank': rank_position,
+                'currentxp': xp,
+                'nextlevelxp': xp_needed,
+                'previouslevelxp': 0,
+                'custombg': '23272A',
+                'xpcolor': 'FF6600'
+            }
+            url = f"https://vacefron.nl/api/rankcard?{urlencode(params)}"
+            async with aiohttp.ClientSession() as session:
+                async with session.get(url) as response:
+                    if response.status == 200:
+                        image_bytes = await response.read()
+                        file = discord.File(fp=BytesIO(image_bytes), filename='rank.png')
+                    else:
+                        await ctx.reply("❌ Erro ao gerar rank card!")
+                        return
         
-        print(f"🔗 URL Vacefron: {url}")
+        # Embed com info extra
+        embed = discord.Embed(
+            title=f"📊 Rank de {user.name}",
+            color=0xff6600
+        )
+        embed.add_field(name="📨 Mensagens", value=f"`{messages:,}`", inline=True)
+        embed.add_field(name="🏆 Posição", value=f"`#{rank_position}`", inline=True)
+        embed.add_field(name="📈 Próximo Nível", value=f"`{xp_needed - xp:,} XP`", inline=True)
         
-        async with aiohttp.ClientSession() as session:
-            async with session.get(url) as response:
-                print(f"📊 Status: {response.status}")
-                if response.status == 200:
-                    image_bytes = await response.read()
-                    file = discord.File(fp=BytesIO(image_bytes), filename='rank.png')
-                    
-                    # Embed com info extra (cargo, próximo nível, etc)
-                    embed = discord.Embed(
-                        title=f"📊 Rank de {user.name}",
-                        color=0xff6600
-                    )
-                    embed.add_field(name="📨 Mensagens", value=f"`{messages:,}`", inline=True)
-                    embed.add_field(name="🏆 Posição", value=f"`#{rank_position}`", inline=True)
-                    embed.add_field(name="📈 Próximo Nível", value=f"`{xp_needed - xp:,} XP`", inline=True)
-                    
-                    # Verificar se tem cargo por nível
-                    conn = sqlite3.connect('xp_database.db')
-                    cursor = conn.cursor()
-                    cursor.execute('SELECT role_id FROM level_roles WHERE guild_id = ? AND level = ?', 
-                                 (str(ctx.guild.id), level))
-                    role_result = cursor.fetchone()
-                    conn.close()
-                    
-                    if role_result:
-                        role = ctx.guild.get_role(int(role_result[0]))
-                        if role:
-                            embed.add_field(name="🎖️ Cargo Atual", value=role.mention, inline=False)
-                    
-                    embed.set_image(url="attachment://rank.png")
-                    embed.set_footer(text="Sistema de XP tipo Loritta • CAOS Hub")
-                    
-                    await ctx.reply(embed=embed, file=file)
-                else:
-                    await ctx.reply("❌ Erro ao gerar rank card! Tente novamente.")
+        # Verificar se tem cargo por nível
+        conn = sqlite3.connect('xp_database.db')
+        cursor = conn.cursor()
+        cursor.execute('SELECT role_id FROM level_roles WHERE guild_id = ? AND level = ?', 
+                     (str(ctx.guild.id), level))
+        role_result = cursor.fetchone()
+        conn.close()
+        
+        if role_result:
+            role = ctx.guild.get_role(int(role_result[0]))
+            if role:
+                embed.add_field(name="🎖️ Cargo Atual", value=role.mention, inline=False)
+        
+        embed.set_image(url="attachment://rank.png")
+        embed.set_footer(text="Sistema de XP tipo Loritta • CAOS Hub")
+        
+        await ctx.reply(embed=embed, file=file)
     except Exception as e:
         print(f'❌ Erro no comando rank: {e}')
         await ctx.reply(f"❌ Erro ao buscar rank: {e}")
