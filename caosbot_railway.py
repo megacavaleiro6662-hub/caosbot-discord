@@ -2,6 +2,7 @@
 # Arquivo principal do bot
 
 import discord
+from discord import app_commands
 from discord.ext import commands, tasks
 import asyncio
 import random
@@ -3118,7 +3119,8 @@ intents.guilds = True
 intents.members = True  # NECESSÁRIO para eventos de entrada/saída/ban
 intents.presences = True  # NECESSÁRIO para ver status online/offline dos membros
 
-bot = commands.Bot(command_prefix='.', intents=intents)
+# Bot configurado para SLASH COMMANDS (/) ao invés de prefixo (.)
+bot = commands.Bot(command_prefix='.', intents=intents)  # Mantém prefixo para compatibilidade, mas foco em slash commands
 
 # ========================================
 # SISTEMA DE XP/RANK (ESTILO LORITTA)
@@ -3333,8 +3335,25 @@ async def on_ready():
     bot.add_view(TicketPanelView())
     print('🎫 Sistema de Tickets V2 registrado (persistent views)')
     
+    # REGISTRAR SLASH COMMANDS CUSTOMIZADOS
+    try:
+        # Importar e registrar comandos do arquivo slash_commands.py
+        import slash_commands
+        await slash_commands.setup_all_slash_commands(bot)
+        print('📦 Slash commands customizados carregados!')
+    except Exception as e:
+        print(f'⚠️ Aviso ao carregar slash commands: {e}')
+    
+    # SINCRONIZAR SLASH COMMANDS (/) - IMPORTANTE!
+    try:
+        synced = await bot.tree.sync()
+        print(f'✅ {len(synced)} slash commands (/) sincronizados globalmente!')
+        print(f'💡 Comandos disponíveis com / no Discord!')
+    except Exception as e:
+        print(f'❌ Erro ao sincronizar slash commands: {e}')
+    
     await bot.change_presence(
-        activity=discord.Game(name="🔥 O Hub dos sonhos"),
+        activity=discord.Game(name="🔥 O Hub dos sonhos | Use /help"),
         status=discord.Status.online
     )
 
