@@ -3339,10 +3339,13 @@ async def on_ready():
     try:
         # Importar e registrar comandos do arquivo slash_commands.py
         import slash_commands
+        print('📦 Módulo slash_commands importado com sucesso!')
         await slash_commands.setup_all_slash_commands(bot)
         print('📦 Slash commands customizados carregados!')
     except Exception as e:
-        print(f'⚠️ Aviso ao carregar slash commands: {e}')
+        print(f'❌ ERRO ao carregar slash commands: {e}')
+        import traceback
+        traceback.print_exc()
     
     # SINCRONIZAR SLASH COMMANDS (/) - IMPORTANTE!
     try:
