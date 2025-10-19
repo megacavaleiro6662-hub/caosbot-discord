@@ -3349,11 +3349,22 @@ async def on_ready():
     
     # SINCRONIZAR SLASH COMMANDS (/) - IMPORTANTE!
     try:
+        print('🔄 Limpando comandos antigos...')
+        bot.tree.clear_commands(guild=None)  # Limpa comandos globais
+        
+        print('🔄 Sincronizando novos slash commands...')
         synced = await bot.tree.sync()
         print(f'✅ {len(synced)} slash commands (/) sincronizados globalmente!')
         print(f'💡 Comandos disponíveis com / no Discord!')
+        
+        # Lista todos os comandos registrados
+        print('📋 Comandos registrados:')
+        for cmd in synced:
+            print(f'   - /{cmd.name}: {cmd.description}')
     except Exception as e:
         print(f'❌ Erro ao sincronizar slash commands: {e}')
+        import traceback
+        traceback.print_exc()
     
     await bot.change_presence(
         activity=discord.Game(name="🔥 O Hub dos sonhos | Use /help"),
