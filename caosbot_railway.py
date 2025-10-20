@@ -3224,11 +3224,30 @@ print("🔥 Slash commands registrados diretamente no bot!")
 async def sync(ctx):
     """Sincroniza slash commands manualmente (Admin only)"""
     try:
-        await ctx.send("🔄 Sincronizando slash commands...")
-        synced = await bot.tree.sync()
-        await ctx.send(f"✅ {len(synced)} comandos sincronizados!\n💡 Digite `/` no chat para ver os comandos!")
+        msg = await ctx.send("🔄 Sincronizando slash commands...")
+        
+        # Contar comandos
+        all_commands = bot.tree.get_commands()
+        
+        # Sincronizar global
+        synced_global = await bot.tree.sync()
+        
+        # Sincronizar neste servidor (instantâneo!)
+        synced_guild = await bot.tree.sync(guild=ctx.guild)
+        
+        await msg.edit(content=f"""✅ **SINCRONIZADO COM SUCESSO!**
+        
+📊 **Comandos na tree:** {len(all_commands)}
+🌍 **Global:** {len(synced_global)} comandos
+⚡ **Neste servidor:** {len(synced_guild)} comandos (instantâneo!)
+
+💡 Digite `/` no chat para ver os comandos!
+
+**Comandos disponíveis:**
+{', '.join([f'`/{cmd.name}`' for cmd in all_commands[:10]])}""")
     except Exception as e:
-        await ctx.send(f"❌ Erro: {e}")
+        import traceback
+        await ctx.send(f"❌ Erro: {e}\n```{traceback.format_exc()}```")
 
 # ========================================
 # SISTEMA DE XP/RANK (ESTILO LORITTA)
@@ -3445,20 +3464,32 @@ async def on_ready():
     
     # SINCRONIZAR SLASH COMMANDS (/) - IMPORTANTE!
     try:
-        print('🔄 Limpando comandos antigos...')
-        bot.tree.clear_commands(guild=None)  # Limpa comandos globais
+        print('🔄 Iniciando sincronização de slash commands...')
         
-        print('🔄 Sincronizando novos slash commands...')
-        synced = await bot.tree.sync()
-        print(f'✅ {len(synced)} slash commands (/) sincronizados globalmente!')
-        print(f'💡 Comandos disponíveis com / no Discord!')
+        # Contar comandos registrados na tree
+        all_commands = bot.tree.get_commands()
+        print(f'📊 Comandos na tree: {len(all_commands)}')
+        for cmd in all_commands:
+            print(f'   - {cmd.name}: {cmd.description}')
         
-        # Lista todos os comandos registrados
-        print('📋 Comandos registrados:')
-        for cmd in synced:
-            print(f'   - /{cmd.name}: {cmd.description}')
+        # Sincronizar GLOBALMENTE (pode demorar até 1 hora)
+        print('🌍 Sincronizando globalmente...')
+        synced_global = await bot.tree.sync()
+        print(f'✅ {len(synced_global)} comandos globais sincronizados!')
+        
+        # Sincronizar em CADA SERVIDOR (instantâneo!)
+        print('⚡ Sincronizando em servidores específicos (instantâneo)...')
+        for guild in bot.guilds:
+            try:
+                synced_guild = await bot.tree.sync(guild=guild)
+                print(f'✅ {len(synced_guild)} comandos sincronizados em "{guild.name}" (ID: {guild.id})')
+            except Exception as e:
+                print(f'❌ Erro no servidor {guild.name}: {e}')
+        
+        print(f'💡 COMANDOS PRONTOS! Digite / no Discord!')
+        
     except Exception as e:
-        print(f'❌ Erro ao sincronizar slash commands: {e}')
+        print(f'❌ ERRO CRÍTICO ao sincronizar: {e}')
         import traceback
         traceback.print_exc()
     
