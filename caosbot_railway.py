@@ -3236,6 +3236,181 @@ async def kick_slash(interaction: discord.Interaction, usuario: discord.Member, 
     await interaction.response.send_message(embed=embed)
     await usuario.kick(reason=motivo)
 
+# Comando abracar (COMPLETO)
+@bot.tree.command(name="abracar", description="🤗 Abrace alguém")
+@app_commands.describe(usuario="Usuário para abraçar")
+async def abracar_slash(interaction: discord.Interaction, usuario: discord.Member):
+    if usuario.id == interaction.user.id:
+        await interaction.response.send_message("❌ Você não pode abraçar a si mesmo!", ephemeral=True)
+        return
+    if usuario.bot:
+        await interaction.response.send_message("❌ Você não pode abraçar um bot!", ephemeral=True)
+        return
+    
+    mensagens = [
+        f'🤗 **{interaction.user.mention}** deu um abraço em **{usuario.mention}**!',
+        f'💗 **{interaction.user.mention}** abraçou **{usuario.mention}** carinhosamente!',
+        f'🫂 **{interaction.user.mention}** deu um abraço apertado em **{usuario.mention}**!',
+        f'💕 **{interaction.user.mention}** abraçou **{usuario.mention}** com carinho!'
+    ]
+    
+    gif = random.choice(INTERACTION_GIFS['hug'])
+    embed = discord.Embed(title='🤗 Abraço Carinhoso', description=random.choice(mensagens), color=0xffb6c1)
+    embed.set_image(url=gif)
+    await interaction.response.send_message(embed=embed)
+
+# Comando tapa (COMPLETO)
+@bot.tree.command(name="tapa", description="👋 Dê um tapa em alguém")
+@app_commands.describe(usuario="Usuário para dar tapa")
+async def tapa_slash(interaction: discord.Interaction, usuario: discord.Member):
+    if usuario.id == interaction.user.id:
+        await interaction.response.send_message("❌ Você não pode dar tapa em si mesmo!", ephemeral=True)
+        return
+    if usuario.bot:
+        await interaction.response.send_message("❌ Você não pode dar tapa em um bot!", ephemeral=True)
+        return
+    
+    mensagens = [
+        f'👋 **{interaction.user.mention}** deu um tapa em **{usuario.mention}**! 💥',
+        f'💢 **{interaction.user.mention}** acertou um tapa em **{usuario.mention}**!',
+        f'😤 **{interaction.user.mention}** deu um tapão em **{usuario.mention}**!'
+    ]
+    
+    gif = random.choice(INTERACTION_GIFS['slap'])
+    embed = discord.Embed(title='👋 Tapa!', description=random.choice(mensagens), color=0xff4444)
+    embed.set_image(url=gif)
+    await interaction.response.send_message(embed=embed)
+
+# Comando ship (COMPLETO)
+@bot.tree.command(name="ship", description="💘 Veja a compatibilidade entre duas pessoas")
+@app_commands.describe(user1="Primeira pessoa", user2="Segunda pessoa")
+async def ship_slash(interaction: discord.Interaction, user1: discord.Member, user2: discord.Member):
+    seed = user1.id + user2.id
+    random.seed(seed)
+    porcentagem = random.randint(0, 100)
+    random.seed()
+    
+    emojis = {
+        (90, 100): ("💕", "Casal perfeito!", 0xff1493),
+        (70, 89): ("💗", "Ótima combinação!", 0xff69b4),
+        (50, 69): ("💛", "Pode dar certo!", 0xffd700),
+        (30, 49): ("💔", "Complicado...", 0xffa500),
+        (0, 29): ("💀", "Melhor não...", 0x808080)
+    }
+    
+    emoji, msg, cor = next((v for k, v in emojis.items() if k[0] <= porcentagem <= k[1]))
+    
+    filled = int(porcentagem / 10)
+    bar = "█" * filled + "░" * (10 - filled)
+    
+    nome1 = user1.display_name[:len(user1.display_name)//2]
+    nome2 = user2.display_name[len(user2.display_name)//2:]
+    ship_name = nome1 + nome2
+    
+    embed = discord.Embed(
+        title=f"{emoji} SHIP METER {emoji}",
+        description=f"**{user1.display_name}** × **{user2.display_name}**",
+        color=cor
+    )
+    embed.add_field(name="💕 Nome do Casal", value=f"**{ship_name}**", inline=False)
+    embed.add_field(name="📊 Compatibilidade", value=f"{bar} **{porcentagem}%**\n*{msg}*", inline=False)
+    await interaction.response.send_message(embed=embed)
+
+# Comando ban (COMPLETO)
+@bot.tree.command(name="ban", description="🔨 Bana um usuário permanentemente")
+@app_commands.describe(usuario="Usuário para banir", motivo="Motivo do banimento")
+@app_commands.checks.has_permissions(ban_members=True)
+async def ban_slash(interaction: discord.Interaction, usuario: discord.Member, motivo: str = "Sem motivo"):
+    if usuario == interaction.user:
+        await interaction.response.send_message("❌ Você não pode se banir!", ephemeral=True)
+        return
+    if usuario.top_role >= interaction.user.top_role:
+        await interaction.response.send_message("❌ Não pode banir este usuário!", ephemeral=True)
+        return
+    
+    embed = discord.Embed(title="🔨 USUÁRIO BANIDO", description=f"**{usuario.display_name}** foi banido!", color=0xff0000)
+    embed.add_field(name="📝 Motivo", value=f"`{motivo}`", inline=False)
+    embed.add_field(name="👮 Moderador", value=interaction.user.mention, inline=True)
+    await interaction.response.send_message(embed=embed)
+    await usuario.ban(reason=f"Banido por {interaction.user} | {motivo}")
+
+# Comando timeout (COMPLETO)
+@bot.tree.command(name="timeout", description="🔇 Silencia temporariamente um usuário")
+@app_commands.describe(usuario="Usuário", minutos="Minutos (1-1440)", motivo="Motivo")
+@app_commands.checks.has_permissions(moderate_members=True)
+async def timeout_slash(interaction: discord.Interaction, usuario: discord.Member, minutos: int, motivo: str = "Sem motivo"):
+    if usuario == interaction.user:
+        await interaction.response.send_message("❌ Não pode silenciar a si mesmo!", ephemeral=True)
+        return
+    if minutos < 1 or minutos > 1440:
+        await interaction.response.send_message("❌ Entre 1 e 1440 minutos!", ephemeral=True)
+        return
+    
+    duration = discord.utils.utcnow() + timedelta(minutes=minutos)
+    await usuario.timeout(duration, reason=motivo)
+    
+    embed = discord.Embed(title="🔇 TIMEOUT", description=f"**{usuario.display_name}** silenciado por **{minutos}min**!", color=0xffa500)
+    embed.add_field(name="📝 Motivo", value=f"`{motivo}`", inline=False)
+    await interaction.response.send_message(embed=embed)
+
+# Comando clear (COMPLETO)
+@bot.tree.command(name="clear", description="🧹 Limpa mensagens do canal")
+@app_commands.describe(quantidade="Quantidade (1-100)")
+@app_commands.checks.has_permissions(manage_messages=True)
+async def clear_slash(interaction: discord.Interaction, quantidade: int = 10):
+    quantidade = max(1, min(100, quantidade))
+    await interaction.response.defer(ephemeral=True)
+    deleted = await interaction.channel.purge(limit=quantidade)
+    embed = discord.Embed(title="🧹 LIMPO", description=f"**{len(deleted)}** mensagens deletadas!", color=0x00ff00)
+    await interaction.followup.send(embed=embed, ephemeral=True)
+
+# Comando adv (COMPLETO)
+@bot.tree.command(name="adv", description="⚠️ Aplica advertência em um usuário")
+@app_commands.describe(usuario="Usuário", motivo="Motivo")
+@app_commands.checks.has_permissions(moderate_members=True)
+async def adv_slash(interaction: discord.Interaction, usuario: discord.Member, motivo: str = "Sem motivo"):
+    if usuario.bot:
+        await interaction.response.send_message("❌ Não pode advertir bots!", ephemeral=True)
+        return
+    
+    embed = discord.Embed(title="⚠️ ADVERTÊNCIA", description=f"**{usuario.display_name}** recebeu advertência!", color=0xffaa00)
+    embed.add_field(name="📝 Motivo", value=f"`{motivo}`", inline=False)
+    embed.add_field(name="👮 Moderador", value=interaction.user.mention, inline=True)
+    await interaction.response.send_message(embed=embed)
+
+# Comando rank (COMPLETO)
+@bot.tree.command(name="rank", description="📊 Veja seu rank")
+@app_commands.describe(usuario="Usuário (opcional)")
+async def rank_slash(interaction: discord.Interaction, usuario: discord.Member = None):
+    user = usuario or interaction.user
+    embed = discord.Embed(title="📊 RANK", description=f"Rank de **{user.display_name}**", color=0xff6600)
+    embed.add_field(name="🎯 Nível", value="1", inline=True)
+    embed.add_field(name="⭐ XP", value="0", inline=True)
+    embed.set_thumbnail(url=user.display_avatar.url)
+    await interaction.response.send_message(embed=embed)
+
+# Comando piada (COMPLETO)
+@bot.tree.command(name="piada", description="😂 Ouça uma piada aleatória")
+async def piada_slash(interaction: discord.Interaction):
+    piadas = [
+        'Por que os pássaros voam para o sul? Porque é longe demais para ir andando! 🐦',
+        'O que o pato disse para a pata? Vem quá! 🦆',
+        'Por que o livro de matemática estava triste? Porque tinha muitos problemas! 📚'
+    ]
+    embed = discord.Embed(title="😄 Piada", description=random.choice(piadas), color=0xffff00)
+    await interaction.response.send_message(embed=embed)
+
+# Comando escolher (COMPLETO)
+@bot.tree.command(name="escolher", description="🎲 Escolha entre várias opções")
+@app_commands.describe(opcoes="Opções separadas por vírgula")
+async def escolher_slash(interaction: discord.Interaction, opcoes: str):
+    lista = [o.strip() for o in opcoes.split(',')]
+    if len(lista) < 2:
+        await interaction.response.send_message("❌ Preciso de pelo menos 2 opções!", ephemeral=True)
+        return
+    embed = discord.Embed(title="🎲 Escolha", description=f'Eu escolho: **{random.choice(lista)}**!', color=0x9932cc)
+    await interaction.response.send_message(embed=embed)
+
 # Comando help
 @bot.tree.command(name="help", description="❓ Central de ajuda do bot")
 async def help_slash(interaction: discord.Interaction):
@@ -3244,35 +3419,14 @@ async def help_slash(interaction: discord.Interaction):
         description="**Comandos Slash disponíveis:**",
         color=0x00ff88
     )
-    embed.add_field(name="/teste", value="🧪 Testa se slash commands funcionam", inline=False)
-    embed.add_field(name="/oi", value="👋 Cumprimente o bot", inline=False)
-    embed.add_field(name="/beijar", value="💋 Beije alguém", inline=False)
-    embed.add_field(name="/kick", value="👢 Expulse um usuário (requer permissão)", inline=False)
-    embed.set_footer(text="💡 Mais comandos em breve!")
+    embed.add_field(name="💬 Conversa", value="`/oi`", inline=True)
+    embed.add_field(name="🤗 Interação", value="`/beijar` `/abracar` `/tapa`", inline=True)
+    embed.add_field(name="🎮 Diversão", value="`/ship` `/piada` `/escolher`", inline=True)
+    embed.add_field(name="🛡️ Moderação", value="`/kick` `/ban` `/timeout` `/clear`", inline=True)
+    embed.add_field(name="⚠️ Advertências", value="`/adv`", inline=True)
+    embed.add_field(name="📊 Rank", value="`/rank`", inline=True)
+    embed.set_footer(text="💡 Digite / para ver todos os comandos!")
     await interaction.response.send_message(embed=embed)
-
-@bot.tree.command(name="convite", description="🔗 Gere um link de convite do bot com permissões corretas")
-async def convite(interaction: discord.Interaction):
-    # Link de convite com permissões de slash commands
-    bot_id = bot.user.id if bot.user else "SEU_BOT_ID"
-    invite_link = f"https://discord.com/api/oauth2/authorize?client_id={bot_id}&permissions=8&scope=bot%20applications.commands"
-    
-    embed = discord.Embed(
-        title="🔗 LINK DE CONVITE DO BOT",
-        description=f"Use este link para adicionar o bot com **Slash Commands** ativos!",
-        color=0x5865f2
-    )
-    embed.add_field(
-        name="📋 Link",
-        value=f"[Clique aqui para convidar]({invite_link})",
-        inline=False
-    )
-    embed.add_field(
-        name="⚠️ IMPORTANTE",
-        value="Se o bot já está no servidor mas os comandos não aparecem, **REMOVA e ADICIONE** o bot novamente usando este link!",
-        inline=False
-    )
-    await interaction.response.send_message(embed=embed, ephemeral=True)
 
 print("🔥 Slash commands registrados diretamente no bot!")
 
