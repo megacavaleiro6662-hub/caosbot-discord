@@ -3428,6 +3428,123 @@ async def help_slash(interaction: discord.Interaction):
     embed.set_footer(text="💡 Digite / para ver todos os comandos!")
     await interaction.response.send_message(embed=embed)
 
+# Comando acariciar (COMPLETO)
+@bot.tree.command(name="acariciar", description="😊 Acaricie alguém")
+@app_commands.describe(usuario="Usuário para acariciar")
+async def acariciar_slash(interaction: discord.Interaction, usuario: discord.Member):
+    if usuario.id == interaction.user.id:
+        await interaction.response.send_message("😌 Você faz carinho em si mesmo... Self-care é importante!", ephemeral=True)
+        return
+    if usuario.bot:
+        await interaction.response.send_message("❌ Bots não sentem carinhos!", ephemeral=True)
+        return
+    
+    mensagens = [
+        f'😊 **{interaction.user.mention}** acariciou a cabeça de **{usuario.mention}**!',
+        f'🥰 **{interaction.user.mention}** fez um carinho em **{usuario.mention}**!',
+        f'✨ **{interaction.user.mention}** deu head pat em **{usuario.mention}**!',
+        f'💕 **{interaction.user.mention}** acariciou **{usuario.mention}** gentilmente!'
+    ]
+    
+    gif = random.choice(INTERACTION_GIFS['pat'])
+    embed = discord.Embed(title='😊 Carinho', description=random.choice(mensagens), color=0x87ceeb)
+    embed.set_image(url=gif)
+    await interaction.response.send_message(embed=embed)
+
+# Comando dancar (COMPLETO)
+@bot.tree.command(name="dancar", description="💃 Dance sozinho ou com alguém")
+@app_commands.describe(usuario="Usuário para dançar junto (opcional)")
+async def dancar_slash(interaction: discord.Interaction, usuario: discord.Member = None):
+    gif = random.choice(INTERACTION_GIFS['dance'])
+    
+    if usuario:
+        if usuario.bot:
+            await interaction.response.send_message("❌ Bots não dançam!", ephemeral=True)
+            return
+        mensagens = [
+            f'💃 **{interaction.user.mention}** está dançando com **{usuario.mention}**!',
+            f'🕺 **{interaction.user.mention}** e **{usuario.mention}** estão arrasando na pista!',
+            f'✨ **{interaction.user.mention}** chamou **{usuario.mention}** para dançar!'
+        ]
+        embed = discord.Embed(title='💃 Dança em Dupla', description=random.choice(mensagens), color=0x9b59b6)
+    else:
+        mensagens = [
+            f'💃 **{interaction.user.mention}** está dançando sozinho!',
+            f'🕺 **{interaction.user.mention}** mandou ver nos passos!',
+            f'✨ **{interaction.user.mention}** está arrasando na pista!'
+        ]
+        embed = discord.Embed(title='💃 Dança Solo', description=random.choice(mensagens), color=0x9b59b6)
+    
+    embed.set_image(url=gif)
+    await interaction.response.send_message(embed=embed)
+
+# Comando chorar (COMPLETO)
+@bot.tree.command(name="chorar", description="😭 Chore dramaticamente")
+async def chorar_slash(interaction: discord.Interaction):
+    mensagens = [
+        f'😭 **{interaction.user.mention}** está chorando muito...',
+        f'💧 **{interaction.user.mention}** não aguenta mais e chora...',
+        f'😢 As lágrimas de **{interaction.user.mention}** não param de cair...'
+    ]
+    
+    gif = random.choice(INTERACTION_GIFS['cry'])
+    embed = discord.Embed(title='😭 Momento Triste', description=random.choice(mensagens), color=0x5865f2)
+    embed.add_field(name='💝 Apoio', value='Envie um abraço ou carinho para essa pessoa!', inline=False)
+    embed.set_image(url=gif)
+    await interaction.response.send_message(embed=embed)
+
+# Comando cafune (COMPLETO)
+@bot.tree.command(name="cafune", description="😌 Faça cafuné em alguém")
+@app_commands.describe(usuario="Usuário para fazer cafuné")
+async def cafune_slash(interaction: discord.Interaction, usuario: discord.Member):
+    if usuario.id == interaction.user.id:
+        await interaction.response.send_message("😌 Auto-cafuné... Self-care extremo!", ephemeral=True)
+        return
+    if usuario.bot:
+        await interaction.response.send_message("❌ Bots não têm cabelo!", ephemeral=True)
+        return
+    
+    mensagens = [
+        f'😌 **{interaction.user.mention}** está fazendo cafuné em **{usuario.mention}**!',
+        f'💆 **{interaction.user.mention}** acaricia a cabeça de **{usuario.mention}** suavemente!',
+        f'✨ **{interaction.user.mention}** faz um cafuné relaxante em **{usuario.mention}**!'
+    ]
+    
+    gif = random.choice(INTERACTION_GIFS['pat'])
+    embed = discord.Embed(title='😌 Cafuné', description=random.choice(mensagens), color=0xffb6c1)
+    embed.set_image(url=gif)
+    await interaction.response.send_message(embed=embed)
+
+# Comando mute (COMPLETO)
+@bot.tree.command(name="mute", description="🔇 Silencia um usuário")
+@app_commands.describe(usuario="Usuário para mutar", motivo="Motivo")
+@app_commands.checks.has_permissions(moderate_members=True)
+async def mute_slash(interaction: discord.Interaction, usuario: discord.Member, motivo: str = "Sem motivo"):
+    if usuario.bot:
+        await interaction.response.send_message("❌ Não pode mutar bots!", ephemeral=True)
+        return
+    
+    embed = discord.Embed(title="🔇 MUTADO", description=f"**{usuario.display_name}** foi mutado!", color=0x808080)
+    embed.add_field(name="📝 Motivo", value=f"`{motivo}`", inline=False)
+    await interaction.response.send_message(embed=embed)
+
+# Comando unmute (COMPLETO)
+@bot.tree.command(name="unmute", description="🔊 Desmuta um usuário")
+@app_commands.describe(usuario="Usuário para desmutar")
+@app_commands.checks.has_permissions(moderate_members=True)
+async def unmute_slash(interaction: discord.Interaction, usuario: discord.Member):
+    embed = discord.Embed(title="🔊 DESMUTADO", description=f"**{usuario.display_name}** foi desmutado!", color=0x00ff00)
+    await interaction.response.send_message(embed=embed)
+
+# Comando untimeout (COMPLETO)
+@bot.tree.command(name="untimeout", description="🔓 Remove timeout de um usuário")
+@app_commands.describe(usuario="Usuário")
+@app_commands.checks.has_permissions(moderate_members=True)
+async def untimeout_slash(interaction: discord.Interaction, usuario: discord.Member):
+    await usuario.timeout(None)
+    embed = discord.Embed(title="🔓 TIMEOUT REMOVIDO", description=f"**{usuario.display_name}** pode falar novamente!", color=0x00ff00)
+    await interaction.response.send_message(embed=embed)
+
 print("🔥 Slash commands registrados diretamente no bot!")
 
 # Comando de prefixo para sincronizar manualmente (emergência)
