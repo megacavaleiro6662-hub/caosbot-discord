@@ -193,20 +193,20 @@ def login_page():
             width: 90%;
         }}
         .logo {{
-            width: 200px;
+            width: 280px;
             margin-bottom: 30px;
             filter: drop-shadow(0 0 20px rgba(0, 150, 255, 0.8));
             animation: 
                 logoSwing 4s ease-in-out infinite,
-                logoFadeSequence 13s ease-in-out infinite;
+                logoFadeSequence 10s ease-in-out infinite;
         }}
         
         @keyframes logoFadeSequence {{
-            0%, 15% {{ opacity: 1; transform: translateX(0) rotate(-5deg); }}
-            50%, 61% {{ opacity: 1; transform: translateX(0) rotate(5deg); }}
+            0%, 20% {{ opacity: 1; transform: translateX(0) rotate(-5deg); }}
+            55%, 63% {{ opacity: 1; transform: translateX(0) rotate(5deg); }}
             70% {{ opacity: 0; transform: translateX(-100px) rotate(-10deg); }}
-            75%, 80% {{ opacity: 0; transform: translateX(100px) rotate(10deg); }}
-            90%, 100% {{ opacity: 1; transform: translateX(0) rotate(-5deg); }}
+            73%, 77% {{ opacity: 0; transform: translateX(100px) rotate(10deg); }}
+            85%, 100% {{ opacity: 1; transform: translateX(0) rotate(-5deg); }}
         }}
         h1 {{
             font-size: 42px;
@@ -257,8 +257,8 @@ def login_page():
             width: 100vw;
             height: 100vh;
             object-fit: cover;
-            opacity: 0.35;
-            filter: hue-rotate(240deg) brightness(2) saturate(4) contrast(1.4) sepia(0) drop-shadow(0 0 40px rgba(0, 150, 255, 0.9));
+            opacity: 0.25;
+            filter: hue-rotate(210deg) brightness(1.4) saturate(2) contrast(1.1) sepia(0) drop-shadow(0 0 40px rgba(0, 150, 255, 0.9));
             z-index: 0;
             pointer-events: none;
         }}
@@ -270,6 +270,9 @@ def login_page():
     </style>
 </head>
 <body>
+    <!-- GIF animado de fundo -->
+    <img src="https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExNDFjZnlmcjdpbjdseTR4ZnU5NWtzOHJhZ3Q0cWp3ZzBrYzFkcWhnbiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/IeZiGntCfEWOrSjK81/giphy.gif" alt="Animated BG" class="animated-bg">
+    
     <div class="login-container">
         <img src="https://i.ibb.co/C3gw3z4L/Gemini-Generated-Image-vjef5gvjef5gvjef-1.png" alt="Gilipe Logo" class="logo">
         <h1>ROBITO DASHBOARD</h1>
@@ -672,9 +675,9 @@ def dashboard():
         }}
         
         @keyframes hueShift {{
-            0% {{ filter: blur(2px) hue-rotate(240deg) brightness(2) saturate(4) sepia(0); }}
-            50% {{ filter: blur(2px) hue-rotate(260deg) brightness(2.2) saturate(4.5) sepia(0); }}
-            100% {{ filter: blur(2px) hue-rotate(240deg) brightness(2) saturate(4) sepia(0); }}
+            0% {{ filter: blur(2px) hue-rotate(210deg) brightness(1.6) saturate(2.5) contrast(1.2) sepia(0); }}
+            50% {{ filter: blur(2px) hue-rotate(230deg) brightness(1.8) saturate(3) contrast(1.3) sepia(0); }}
+            100% {{ filter: blur(2px) hue-rotate(210deg) brightness(1.6) saturate(2.5) contrast(1.2) sepia(0); }}
         }}
         
         @keyframes pulse {{
@@ -698,12 +701,12 @@ def dashboard():
         
         .sidebar-logo {{ display: flex; align-items: center; justify-content: center; margin-bottom: 40px; position: relative; z-index: 1; }}
         .sidebar-logo img {{ 
-            width: 180px; 
+            width: 220px; 
             height: auto; 
             filter: drop-shadow(0 0 20px rgba(0, 150, 255, 0.8)); 
             animation: 
                 sidebarLogoSwing 4s ease-in-out infinite,
-                sidebarLogoFadeSequence 13s ease-in-out infinite;
+                sidebarLogoFadeSequence 10s ease-in-out infinite;
         }}
         
         @keyframes sidebarLogoSwing {{
@@ -712,11 +715,11 @@ def dashboard():
         }}
         
         @keyframes sidebarLogoFadeSequence {{
-            0%, 15% {{ opacity: 1; transform: translateX(0) rotate(-5deg); }}
-            50%, 61% {{ opacity: 1; transform: translateX(0) rotate(5deg); }}
+            0%, 20% {{ opacity: 1; transform: translateX(0) rotate(-5deg); }}
+            55%, 63% {{ opacity: 1; transform: translateX(0) rotate(5deg); }}
             70% {{ opacity: 0; transform: translateX(-100px) rotate(-10deg); }}
-            75%, 80% {{ opacity: 0; transform: translateX(100px) rotate(10deg); }}
-            90%, 100% {{ opacity: 1; transform: translateX(0) rotate(-5deg); }}
+            73%, 77% {{ opacity: 0; transform: translateX(100px) rotate(10deg); }}
+            85%, 100% {{ opacity: 1; transform: translateX(0) rotate(-5deg); }}
         }}
         .sidebar-nav {{ list-style: none; }}
         .sidebar-nav li {{ margin-bottom: 12px; }}
