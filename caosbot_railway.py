@@ -1237,7 +1237,7 @@ Você ganhou **{{{{prize}}}}**!
                             <label class="form-label">🎨 Cor do Embed</label>
                             <div style="display: flex; gap: 10px; align-items: center;">
                                 <input type="color" id="embed-color-picker" value="#0066ff" onchange="updateEmbedColor()" style="width: 60px; height: 40px; cursor: pointer; border: 2px solid #0066ff; background: transparent;">
-                                <input type="text" id="embed-color" class="form-input" value="0xff6600" style="flex: 1;" readonly>
+                                <input type="text" id="embed-color" class="form-input" value="0x0066ff" style="flex: 1;" readonly>
                             </div>
                         </div>
                         
@@ -1306,6 +1306,29 @@ Você ganhou **{{{{prize}}}}**!
                                     📝 Configure o embed ao lado para ver o preview aqui
                                 </div>
                             </div>
+                        </div>
+                        
+                        <!-- Salvar/Carregar Embeds -->
+                        <div class="card" style="margin-top: 24px;">
+                            <div class="card-header">
+                                <h2>💾 Embeds Salvos</h2>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">📝 Nome do Embed</label>
+                                <input type="text" id="embed-save-name" class="form-input" placeholder="Ex: Sorteio Nitro">
+                            </div>
+                            <button class="btn btn-primary" onclick="saveEmbedToStorage()" style="width: 100%; margin-bottom: 10px;">
+                                💾 Salvar Embed
+                            </button>
+                            <div class="form-group">
+                                <label class="form-label">📂 Carregar Embed Salvo</label>
+                                <select id="saved-embeds-list" class="form-select" onchange="loadSavedEmbed()">
+                                    <option value="">Nenhum embed salvo</option>
+                                </select>
+                            </div>
+                            <button class="btn btn-danger" onclick="deleteSavedEmbed()" style="width: 100%; font-size: 14px;">
+                                🗑️ Deletar Selecionado
+                            </button>
                         </div>
                         
                         <!-- Enviar -->
@@ -1832,12 +1855,23 @@ Você ganhou **{{{{prize}}}}**!
                 giveawayFields.style.display = 'none';
             }}
             
+            // Se for personalizado, limpar os campos
+            if (template === 'custom') {{
+                document.getElementById('embed-title').value = '';
+                document.getElementById('embed-description').value = '';
+                document.getElementById('embed-author').value = '';
+                document.getElementById('embed-footer').value = '';
+                document.getElementById('embed-timestamp').checked = false;
+                document.getElementById('embed-color-picker').value = '#0066ff';
+                document.getElementById('embed-color').value = '0x0066ff';
+            }}
+            
             const templates = {{
                 giveaway: {{
                     title: '🎉 GIVEAWAY',
                     description: '', // Será gerado dinamicamente
-                    color: '#e91e63',
-                    footer: 'Hospedado por CAOS Hub',
+                    color: '#0066ff',
+                    footer: 'Hospedado por Robito Hub',
                     timestamp: true
                 }},
                 rules: {{
@@ -2122,7 +2156,7 @@ Você ganhou **{{{{prize}}}}**!
             <div class="discord-message">
                 <div class="message-header">
                     <img src="https://i.ibb.co/w28K9D5/Gemini-Generated-Image-4rgarl4rgarl4rga.png" class="bot-avatar">
-                    <span class="bot-name">Gilipe Bot</span>
+                    <span class="bot-name">Robito</span>
                     <span class="bot-tag">BOT</span>
                 </div>
                 <div style="margin-left: 52px;">
@@ -2239,8 +2273,8 @@ Você ganhou **{{{{prize}}}}**!
             </style>
             <div class="discord-message">
                 <div style="display: flex; align-items: center; margin-bottom: 8px;">
-                    <img src="https://i.ibb.co/VpPdrYCk/Chat-GPT-Image-11-de-set-de-2025-18-35-32.png" style="width: 40px; height: 40px; border-radius: 50%; margin-right: 12px;">
-                    <span style="font-size: 15px; font-weight: 500; color: #f2f3f5; margin-right: 6px;">CAOS Bot</span>
+                    <img src="https://i.ibb.co/w28K9D5/Gemini-Generated-Image-4rgarl4rgarl4rga.png" style="width: 40px; height: 40px; border-radius: 50%; margin-right: 12px;">
+                    <span style="font-size: 15px; font-weight: 500; color: #f2f3f5; margin-right: 6px;">Robito</span>
                     <span style="background: #5865f2; color: #fff; font-size: 10px; font-weight: 500; padding: 2px 4px; border-radius: 3px; text-transform: uppercase;">BOT</span>
                 </div>
                 <div style="margin-left: 52px;">
@@ -2417,6 +2451,197 @@ Você ganhou **{{{{prize}}}}**!
             }}
         }}
         
+        // ==================== SISTEMA DE SALVAR EMBEDS POR USUÁRIO ====================
+        
+        // Obter ID do usuário atual (do session storage ou gerar um)
+        function getCurrentUserId() {{
+            // Pega username do perfil (já carregado)
+            const userName = document.querySelector('.user-name')?.textContent || 'user';
+            return 'embeds_' + userName.replace(/[^a-zA-Z0-9]/g, '_');
+        }}
+        
+        // Salvar embed atual no localStorage
+        function saveEmbedToStorage() {{
+            const name = document.getElementById('embed-save-name').value.trim();
+            
+            if (!name) {{
+                showToast('❌ Digite um nome para o embed!', 'error');
+                return;
+            }}
+            
+            // Coletar todos os dados do embed atual
+            const embedData = {{
+                name: name,
+                template: document.getElementById('embed-template').value,
+                title: document.getElementById('embed-title').value,
+                description: document.getElementById('embed-description').value,
+                color: document.getElementById('embed-color').value,
+                colorPicker: document.getElementById('embed-color-picker').value,
+                image: document.getElementById('embed-image').value,
+                thumbnail: document.getElementById('embed-thumbnail').value,
+                author: document.getElementById('embed-author').value,
+                authorUrl: document.getElementById('embed-author-url').value,
+                footer: document.getElementById('embed-footer').value,
+                footerIcon: document.getElementById('embed-footer-icon').value,
+                timestamp: document.getElementById('embed-timestamp').checked,
+                extraMessage: document.getElementById('embed-extra-message').value,
+                savedAt: new Date().toISOString()
+            }};
+            
+            // Se for giveaway, salvar dados extras
+            if (embedData.template === 'giveaway') {{
+                embedData.giveaway = {{
+                    prize: document.getElementById('giveaway-prize').value,
+                    duration: document.getElementById('giveaway-duration').value,
+                    timeUnit: document.getElementById('giveaway-time-unit').value,
+                    winners: document.getElementById('giveaway-winners').value,
+                    emoji: document.getElementById('giveaway-emoji').value,
+                    winnerMessage: document.getElementById('giveaway-winner-message').value
+                }};
+            }}
+            
+            // Coletar fields
+            embedData.fields = [];
+            document.querySelectorAll('.embed-field').forEach(field => {{
+                embedData.fields.push({{
+                    name: field.querySelector('.field-name').value,
+                    value: field.querySelector('.field-value').value,
+                    inline: field.querySelector('.field-inline').checked
+                }});
+            }});
+            
+            // Pegar embeds salvos do usuário
+            const userId = getCurrentUserId();
+            let savedEmbeds = JSON.parse(localStorage.getItem(userId) || '[]');
+            
+            // Verificar se já existe embed com esse nome
+            const existingIndex = savedEmbeds.findIndex(e => e.name === name);
+            if (existingIndex >= 0) {{
+                savedEmbeds[existingIndex] = embedData;
+                showToast('✅ Embed atualizado!', 'success');
+            }} else {{
+                savedEmbeds.push(embedData);
+                showToast('✅ Embed salvo com sucesso!', 'success');
+            }}
+            
+            // Salvar no localStorage
+            localStorage.setItem(userId, JSON.stringify(savedEmbeds));
+            
+            // Atualizar lista
+            updateSavedEmbedsList();
+            
+            // Limpar campo nome
+            document.getElementById('embed-save-name').value = '';
+        }}
+        
+        // Carregar embed salvo
+        function loadSavedEmbed() {{
+            const select = document.getElementById('saved-embeds-list');
+            const name = select.value;
+            
+            if (!name) return;
+            
+            const userId = getCurrentUserId();
+            const savedEmbeds = JSON.parse(localStorage.getItem(userId) || '[]');
+            const embed = savedEmbeds.find(e => e.name === name);
+            
+            if (!embed) {{
+                showToast('❌ Embed não encontrado!', 'error');
+                return;
+            }}
+            
+            // Preencher template primeiro
+            document.getElementById('embed-template').value = embed.template || 'custom';
+            loadEmbedTemplate(); // Chama a função que mostra/esconde campos
+            
+            // Preencher campos básicos
+            document.getElementById('embed-title').value = embed.title || '';
+            document.getElementById('embed-description').value = embed.description || '';
+            document.getElementById('embed-color').value = embed.color || '0x0066ff';
+            document.getElementById('embed-color-picker').value = embed.colorPicker || '#0066ff';
+            document.getElementById('embed-image').value = embed.image || '';
+            document.getElementById('embed-thumbnail').value = embed.thumbnail || '';
+            document.getElementById('embed-author').value = embed.author || '';
+            document.getElementById('embed-author-url').value = embed.authorUrl || '';
+            document.getElementById('embed-footer').value = embed.footer || '';
+            document.getElementById('embed-footer-icon').value = embed.footerIcon || '';
+            document.getElementById('embed-timestamp').checked = embed.timestamp || false;
+            document.getElementById('embed-extra-message').value = embed.extraMessage || '';
+            
+            // Se for giveaway, preencher dados extras
+            if (embed.template === 'giveaway' && embed.giveaway) {{
+                document.getElementById('giveaway-prize').value = embed.giveaway.prize || '';
+                document.getElementById('giveaway-duration').value = embed.giveaway.duration || '7';
+                document.getElementById('giveaway-time-unit').value = embed.giveaway.timeUnit || 'd';
+                document.getElementById('giveaway-winners').value = embed.giveaway.winners || '1';
+                document.getElementById('giveaway-emoji').value = embed.giveaway.emoji || '🎉';
+                document.getElementById('giveaway-winner-message').value = embed.giveaway.winnerMessage || '';
+            }}
+            
+            // Limpar fields existentes
+            document.getElementById('embed-fields-container').innerHTML = '';
+            embedFieldCount = 0;
+            
+            // Recriar fields
+            if (embed.fields && embed.fields.length > 0) {{
+                embed.fields.forEach(field => {{
+                    addEmbedField();
+                    const lastField = document.querySelector('.embed-field:last-child');
+                    lastField.querySelector('.field-name').value = field.name;
+                    lastField.querySelector('.field-value').value = field.value;
+                    lastField.querySelector('.field-inline').checked = field.inline;
+                }});
+            }}
+            
+            // Atualizar preview
+            updateEmbedPreview();
+            
+            showToast('✅ Embed carregado!', 'success');
+        }}
+        
+        // Deletar embed salvo
+        function deleteSavedEmbed() {{
+            const select = document.getElementById('saved-embeds-list');
+            const name = select.value;
+            
+            if (!name) {{
+                showToast('❌ Selecione um embed para deletar!', 'error');
+                return;
+            }}
+            
+            if (!confirm(`Tem certeza que deseja deletar "${{name}}"?`)) {{
+                return;
+            }}
+            
+            const userId = getCurrentUserId();
+            let savedEmbeds = JSON.parse(localStorage.getItem(userId) || '[]');
+            
+            savedEmbeds = savedEmbeds.filter(e => e.name !== name);
+            localStorage.setItem(userId, JSON.stringify(savedEmbeds));
+            
+            updateSavedEmbedsList();
+            showToast('✅ Embed deletado!', 'success');
+        }}
+        
+        // Atualizar lista de embeds salvos no select
+        function updateSavedEmbedsList() {{
+            const userId = getCurrentUserId();
+            const savedEmbeds = JSON.parse(localStorage.getItem(userId) || '[]');
+            const select = document.getElementById('saved-embeds-list');
+            
+            if (savedEmbeds.length === 0) {{
+                select.innerHTML = '<option value="">Nenhum embed salvo</option>';
+            }} else {{
+                select.innerHTML = '<option value="">Selecione um embed...</option>';
+                savedEmbeds.forEach(embed => {{
+                    const date = new Date(embed.savedAt).toLocaleDateString('pt-BR');
+                    select.innerHTML += `<option value="${{embed.name}}">${{embed.name}} (${date})</option>`;
+                }});
+            }}
+        }}
+        
+        // ==================== FIM SISTEMA DE EMBEDS ====================
+        
         // Carregar perfil ao iniciar
         loadUserProfile();
         
@@ -2426,6 +2651,7 @@ Você ganhou **{{{{prize}}}}**!
             originalShowPage(page);
             if (page === 'embeds') {{
                 loadEmbedCategories();
+                updateSavedEmbedsList(); // Carregar lista de embeds salvos
             }}
         }};
     </script>
