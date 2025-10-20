@@ -3122,6 +3122,9 @@ intents.presences = True  # NECESSÁRIO para ver status online/offline dos membr
 # Bot configurado para SLASH COMMANDS (/) ao invés de prefixo (.)
 bot = commands.Bot(command_prefix='.', intents=intents)  # Mantém prefixo para compatibilidade, mas foco em slash commands
 
+# Flag para evitar sincronização múltipla
+slash_commands_synced = False
+
 # ========================================
 # 🔥 SLASH COMMANDS - COMANDOS DIRETOS
 # ========================================
@@ -3521,38 +3524,44 @@ async def on_ready():
     print('🎫 Sistema de Tickets V2 registrado (persistent views)')
     
     # SINCRONIZAR SLASH COMMANDS (/) - IMPORTANTE!
-    try:
-        print('🔄 Iniciando sincronização de slash commands...')
-        
-        # Contar comandos registrados na tree
-        all_commands = bot.tree.get_commands()
-        print(f'📊 Comandos na tree: {len(all_commands)}')
-        for cmd in all_commands:
-            print(f'   - {cmd.name}: {cmd.description}')
-        
-        # Sincronizar GLOBALMENTE (pode demorar até 1 hora)
-        print('🌍 Sincronizando globalmente...')
-        synced_global = await bot.tree.sync()
-        print(f'✅ {len(synced_global)} comandos globais sincronizados!')
-        
-        # Sincronizar em CADA SERVIDOR (instantâneo!)
-        print('⚡ Copiando comandos para servidores específicos (instantâneo)...')
-        for guild in bot.guilds:
-            try:
-                # COPIAR comandos globais para o servidor
-                bot.tree.copy_global_to(guild=guild)
-                # SINCRONIZAR no servidor
-                synced_guild = await bot.tree.sync(guild=guild)
-                print(f'✅ {len(synced_guild)} comandos sincronizados em "{guild.name}" (ID: {guild.id})')
-            except Exception as e:
-                print(f'❌ Erro no servidor {guild.name}: {e}')
-        
-        print(f'💡 COMANDOS PRONTOS! Digite / no Discord!')
-        
-    except Exception as e:
-        print(f'❌ ERRO CRÍTICO ao sincronizar: {e}')
-        import traceback
-        traceback.print_exc()
+    global slash_commands_synced
+    
+    if not slash_commands_synced:
+        try:
+            print('🔄 Iniciando sincronização de slash commands...')
+            
+            # Contar comandos registrados na tree
+            all_commands = bot.tree.get_commands()
+            print(f'📊 Comandos na tree: {len(all_commands)}')
+            for cmd in all_commands:
+                print(f'   - {cmd.name}: {cmd.description}')
+            
+            # Sincronizar GLOBALMENTE (pode demorar até 1 hora)
+            print('🌍 Sincronizando globalmente...')
+            synced_global = await bot.tree.sync()
+            print(f'✅ {len(synced_global)} comandos globais sincronizados!')
+            
+            # Sincronizar em CADA SERVIDOR (instantâneo!)
+            print('⚡ Copiando comandos para servidores específicos (instantâneo)...')
+            for guild in bot.guilds:
+                try:
+                    # COPIAR comandos globais para o servidor
+                    bot.tree.copy_global_to(guild=guild)
+                    # SINCRONIZAR no servidor
+                    synced_guild = await bot.tree.sync(guild=guild)
+                    print(f'✅ {len(synced_guild)} comandos sincronizados em "{guild.name}" (ID: {guild.id})')
+                except Exception as e:
+                    print(f'❌ Erro no servidor {guild.name}: {e}')
+            
+            print(f'💡 COMANDOS PRONTOS! Digite / no Discord!')
+            slash_commands_synced = True  # Marcar como sincronizado
+            
+        except Exception as e:
+            print(f'❌ ERRO CRÍTICO ao sincronizar: {e}')
+            import traceback
+            traceback.print_exc()
+    else:
+        print('⏭️ Slash commands já sincronizados anteriormente!')
     
     await bot.change_presence(
         activity=discord.Game(name="🔥 O Hub dos sonhos | Use /help"),
