@@ -1855,7 +1855,7 @@ Você ganhou **{{{{prize}}}}**!
                 giveawayFields.style.display = 'none';
             }}
             
-            // Se for personalizado, limpar os campos
+            // Se for personalizado, limpar os campos e atualizar preview
             if (template === 'custom') {{
                 document.getElementById('embed-title').value = '';
                 document.getElementById('embed-description').value = '';
@@ -1864,6 +1864,15 @@ Você ganhou **{{{{prize}}}}**!
                 document.getElementById('embed-timestamp').checked = false;
                 document.getElementById('embed-color-picker').value = '#0066ff';
                 document.getElementById('embed-color').value = '0x0066ff';
+                document.getElementById('embed-image').value = '';
+                document.getElementById('embed-thumbnail').value = '';
+                document.getElementById('embed-author-url').value = '';
+                document.getElementById('embed-footer-icon').value = '';
+                document.getElementById('embed-extra-message').value = '';
+                
+                // Atualizar preview imediatamente
+                updateEmbedPreview();
+                return; // Não processar templates
             }}
             
             const templates = {{
