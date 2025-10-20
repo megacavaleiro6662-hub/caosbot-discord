@@ -257,8 +257,8 @@ def login_page():
             width: 100vw;
             height: 100vh;
             object-fit: cover;
-            opacity: 0.25;
-            filter: hue-rotate(180deg) brightness(1.6) saturate(2.5) drop-shadow(0 0 40px rgba(0, 150, 255, 0.9));
+            opacity: 0.3;
+            filter: hue-rotate(200deg) brightness(1.8) saturate(3) contrast(1.2) drop-shadow(0 0 40px rgba(0, 150, 255, 0.9));
             z-index: 0;
             pointer-events: none;
         }}
@@ -675,9 +675,9 @@ def dashboard():
         }}
         
         @keyframes hueShift {{
-            0% {{ filter: blur(2px) hue-rotate(0deg); }}
-            50% {{ filter: blur(2px) hue-rotate(30deg); }}
-            100% {{ filter: blur(2px) hue-rotate(0deg); }}
+            0% {{ filter: blur(2px) hue-rotate(200deg) brightness(1.5) saturate(2.5); }}
+            50% {{ filter: blur(2px) hue-rotate(230deg) brightness(1.7) saturate(3); }}
+            100% {{ filter: blur(2px) hue-rotate(200deg) brightness(1.5) saturate(2.5); }}
         }}
         
         @keyframes pulse {{
