@@ -2926,6 +2926,13 @@ def get_category_channels(category_id):
 def send_embed():
     """Envia embed customizado para um canal"""
     try:
+        # VERIFICAR SE BOT ESTÁ PRONTO
+        if not bot.is_ready():
+            return jsonify({'success': False, 'message': 'Bot não está pronto ainda. Aguarde alguns segundos e tente novamente.'}), 503
+        
+        if not bot.guilds:
+            return jsonify({'success': False, 'message': 'Bot não está conectado a nenhum servidor'}), 503
+            
         data = request.get_json()
         channel_id = data.get('channel_id')
         
