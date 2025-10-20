@@ -2742,47 +2742,15 @@ def update_config_api():
         return jsonify({'success': False, 'message': str(e)}), 500
 
 def load_config_dashboard():
-    """Carrega configurações do dashboard"""
-    default_config = {
-        'welcome_enabled': False,
-        'goodbye_enabled': False,
-        'autorole_enabled': False,
-        'tickets_enabled': False,
-        'status_message_id': None
-    }
-    
-    if os.path.exists(WELCOME_CONFIG_FILE):
-        try:
-            with open(WELCOME_CONFIG_FILE, 'r', encoding='utf-8') as f:
-                content = f.read().strip()
-                if not content:
-                    print("⚠️ Arquivo de config vazio, usando padrões")
-                    return default_config
-                return json.loads(content)
-        except json.JSONDecodeError as e:
-            print(f"❌ JSON inválido no arquivo de config: {e}")
-            print(f"🔧 Recriando arquivo com configs padrão...")
-            # Deletar arquivo corrompido e criar novo
-            try:
-                os.remove(WELCOME_CONFIG_FILE)
-            except:
-                pass
-            save_config_dashboard(default_config)
-            return default_config
-        except Exception as e:
-            print(f"❌ Erro ao ler config: {e}")
-            return default_config
-    
-    return default_config
+    """Carrega configurações do dashboard (EM MEMÓRIA)"""
+    global dashboard_config_global
+    return dashboard_config_global.copy()
 
 def save_config_dashboard(config):
-    """Salva configurações do dashboard"""
-    try:
-        with open(WELCOME_CONFIG_FILE, 'w', encoding='utf-8') as f:
-            json.dump(config, f, indent=2, ensure_ascii=False)
-        print(f"✅ Configurações salvas com sucesso")
-    except Exception as e:
-        print(f"❌ Erro ao salvar configurações: {e}")
+    """Salva configurações do dashboard (EM MEMÓRIA)"""
+    global dashboard_config_global
+    dashboard_config_global.update(config)
+    print(f"✅ Configurações salvas EM MEMÓRIA: {dashboard_config_global}")
 
 # ========================================
 # ENDPOINTS DO SISTEMA DE TICKETS
@@ -5637,7 +5605,18 @@ WELCOME_GIF = "https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExeWd3ZnNhYm0yN2p
 GOODBYE_GIF = "https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExZmFwZjhxb2k2NnFwajloYXBjMDN2eTJmdzAwMGtmZnhobjNwYTBrayZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/QA7TPdyKJvj5Xdjm9A/giphy.gif"
 BAN_GIF = "https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExbDE4YnhmZms4b29va2JxYnRubnI3cXVybzhsdWJsb3MxZmI3ZDB3eSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/nrXif9YExO9EI/giphy.gif"
 
-# Arquivo de configuração
+# ========================================
+# CONFIGURAÇÕES DO DASHBOARD (EM MEMÓRIA - COMPATÍVEL COM RENDER)
+# ========================================
+dashboard_config_global = {
+    'welcome_enabled': False,
+    'goodbye_enabled': False,
+    'autorole_enabled': False,
+    'tickets_enabled': False,
+    'stats_message_id': None
+}
+
+# Arquivo de configuração (NÃO USADO NO RENDER - apenas backup local)
 WELCOME_CONFIG_FILE = "welcome_config.json"
 
 # Estado do sistema (DESATIVADO por padrão - aguarda dashboard)
