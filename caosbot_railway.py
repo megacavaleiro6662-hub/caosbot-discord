@@ -3538,6 +3538,15 @@ async def on_ready():
     print(f'📊 Conectado em {len(bot.guilds)} servidor(es)')
     print(f'👥 Servindo {sum(guild.member_count for guild in bot.guilds)} membros')
     
+    # LIMPAR COMANDOS SLASH ANTIGOS (REMOVER TODOS)
+    try:
+        print('🧹 Limpando comandos slash antigos...')
+        bot.tree.clear_commands(guild=None)  # Limpar comandos globais
+        await bot.tree.sync()  # Sincronizar (remove todos)
+        print('✅ Comandos slash removidos! Use apenas comandos com PONTO (.)')
+    except Exception as e:
+        print(f'⚠️ Aviso ao limpar comandos slash: {e}')
+    
     # Status rotativo
     statuses = [
         discord.Activity(type=discord.ActivityType.watching, name="Gilipe no YouTube 📺"),
