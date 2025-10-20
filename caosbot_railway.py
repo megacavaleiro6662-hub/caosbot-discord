@@ -2088,8 +2088,8 @@ Você ganhou **{{{{prize}}}}**!
             
             <div class="discord-message">
                 <div class="message-header">
-                    <img src="https://i.ibb.co/VpPdrYCk/Chat-GPT-Image-11-de-set-de-2025-18-35-32.png" class="bot-avatar">
-                    <span class="bot-name">CAOS Bot</span>
+                    <img src="https://i.ibb.co/w28K9D5/Gemini-Generated-Image-4rgarl4rgarl4rga.png" class="bot-avatar">
+                    <span class="bot-name">Gilipe Bot</span>
                     <span class="bot-tag">BOT</span>
                 </div>
                 <div style="margin-left: 52px;">
