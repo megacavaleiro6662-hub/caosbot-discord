@@ -270,9 +270,6 @@ def login_page():
     </style>
 </head>
 <body>
-    <!-- GIF animado de fundo -->
-    <img src="https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExNDFjZnlmcjdpbjdseTR4ZnU5NWtzOHJhZ3Q0cWp3ZzBrYzFkcWhnbiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/IeZiGntCfEWOrSjK81/giphy.gif" alt="Animated BG" class="animated-bg">
-    
     <div class="login-container">
         <img src="https://i.ibb.co/C3gw3z4L/Gemini-Generated-Image-vjef5gvjef5gvjef-1.png" alt="Gilipe Logo" class="logo">
         <h1>ROBITO DASHBOARD</h1>
