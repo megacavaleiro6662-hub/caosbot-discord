@@ -2,7 +2,6 @@
 # Arquivo principal do bot
 
 import discord
-from discord import app_commands
 from discord.ext import commands, tasks
 import asyncio
 import random
@@ -3121,37 +3120,6 @@ intents.presences = True  # NECESSÁRIO para ver status online/offline dos membr
 
 # Bot configurado com PREFIXO (.)
 bot = commands.Bot(command_prefix='.', intents=intents)
-
-            description=f"**Criado por:** {member.mention}\n**Categoria:** {category_name}",
-            color=0x5865F2,
-            timestamp=discord.utils.utcnow()
-        )
-        embed.add_field(name="📋 Assunto", value=assunto, inline=False)
-        embed.add_field(name="📝 Descrição", value=descricao, inline=False)
-        embed.add_field(name="🔢 Número do Ticket", value=f"`#{ticket_number}`", inline=True)
-        embed.add_field(name="⏰ Status", value="🟢 Aguardando atendimento", inline=True)
-        embed.set_footer(text=f"Sistema de Tickets • Caos Hub | Ticket {ticket_name}")
-        
-        # Enviar com botões de gerenciamento
-        await ticket_channel.send(f"{member.mention}", embed=embed, view=TicketManageView(ticket_channel))
-        
-        # Responder
-        await interaction.followup.send(
-            f'✅ Ticket criado com sucesso! {ticket_channel.mention}',
-            ephemeral=True
-        )
-        
-    except Exception as e:
-        print(f'❌ Erro ao criar ticket: {e}')
-        try:
-            await interaction.followup.send('❌ Erro ao criar ticket. Contate um administrador.', ephemeral=True)
-        except:
-            pass
-
-async def handle_create_ticket(interaction: discord.Interaction):
-    """Handler antigo - redireciona para novo sistema"""
-    # Agora não usa mais - substituído pelo sistema de categorias
-    pass
 
 # Nova função COMPLETA com todos os campos
 async def create_ticket_channel_complete(interaction, category_name, category_emoji, priority_name, priority_emoji, assunto, descricao, idioma, info_adicional):
