@@ -3528,6 +3528,38 @@ async def create_ticket_channel_complete(interaction, category_name, category_em
         return None
 
 # ========================================
+# EVENTO ON_READY - STATUS DO BOT
+# ========================================
+
+@bot.event
+async def on_ready():
+    """Evento quando o bot fica online"""
+    print(f'✅ {bot.user} está ONLINE!')
+    print(f'📊 Conectado em {len(bot.guilds)} servidor(es)')
+    print(f'👥 Servindo {sum(guild.member_count for guild in bot.guilds)} membros')
+    
+    # Status rotativo
+    statuses = [
+        discord.Activity(type=discord.ActivityType.watching, name="Gilipe no YouTube 📺"),
+        discord.Activity(type=discord.ActivityType.playing, name="Robito Dashboard 🤖"),
+        discord.Activity(type=discord.ActivityType.listening, name="comandos com . 💙"),
+    ]
+    
+    async def rotate_status():
+        index = 0
+        while True:
+            try:
+                await bot.change_presence(activity=statuses[index], status=discord.Status.online)
+                index = (index + 1) % len(statuses)
+                await asyncio.sleep(30)  # Troca a cada 30 segundos
+            except Exception as e:
+                print(f"❌ Erro ao mudar status: {e}")
+                await asyncio.sleep(60)
+    
+    # Iniciar rotação de status em background
+    bot.loop.create_task(rotate_status())
+
+# ========================================
 # EVENTOS DE BOAS-VINDAS/SAÍDA/BAN
 # ========================================
 
