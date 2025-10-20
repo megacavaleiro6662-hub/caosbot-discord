@@ -3541,8 +3541,8 @@ async def on_ready():
     # Status rotativo
     statuses = [
         discord.Activity(type=discord.ActivityType.watching, name="Gilipe no YouTube 📺"),
-        discord.Activity(type=discord.ActivityType.playing, name="Robito Dashboard 🤖"),
-        discord.Activity(type=discord.ActivityType.listening, name="comandos com . 💙"),
+        discord.Activity(type=discord.ActivityType.playing, name="use .help para comandos 🤖"),
+        discord.Activity(type=discord.ActivityType.competing, name=f"{sum(guild.member_count for guild in bot.guilds)} membros 💙"),
     ]
     
     async def rotate_status():
