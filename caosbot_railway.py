@@ -257,9 +257,22 @@ def login_page():
             width: 100vw;
             height: 100vh;
             object-fit: cover;
-            opacity: 0.25;
-            filter: hue-rotate(210deg) brightness(1.4) saturate(2) contrast(1.1) sepia(0) drop-shadow(0 0 40px rgba(0, 150, 255, 0.9));
+            opacity: 0.3;
+            filter: grayscale(1) brightness(0.8) contrast(1.3);
             z-index: 0;
+            pointer-events: none;
+            mix-blend-mode: screen;
+        }}
+        
+        /* Overlay azul no GIF */
+        .animated-bg::after {{
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at center, rgba(0, 150, 255, 0.4), rgba(0, 100, 255, 0.6));
             pointer-events: none;
         }}
         
