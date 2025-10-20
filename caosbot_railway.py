@@ -3232,6 +3232,9 @@ async def sync(ctx):
         # Sincronizar global
         synced_global = await bot.tree.sync()
         
+        # COPIAR comandos globais para este servidor
+        bot.tree.copy_global_to(guild=ctx.guild)
+        
         # Sincronizar neste servidor (instantâneo!)
         synced_guild = await bot.tree.sync(guild=ctx.guild)
         
@@ -3478,9 +3481,12 @@ async def on_ready():
         print(f'✅ {len(synced_global)} comandos globais sincronizados!')
         
         # Sincronizar em CADA SERVIDOR (instantâneo!)
-        print('⚡ Sincronizando em servidores específicos (instantâneo)...')
+        print('⚡ Copiando comandos para servidores específicos (instantâneo)...')
         for guild in bot.guilds:
             try:
+                # COPIAR comandos globais para o servidor
+                bot.tree.copy_global_to(guild=guild)
+                # SINCRONIZAR no servidor
                 synced_guild = await bot.tree.sync(guild=guild)
                 print(f'✅ {len(synced_guild)} comandos sincronizados em "{guild.name}" (ID: {guild.id})')
             except Exception as e:
