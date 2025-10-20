@@ -2635,7 +2635,7 @@ Você ganhou **{{{{prize}}}}**!
                 select.innerHTML = '<option value="">Selecione um embed...</option>';
                 savedEmbeds.forEach(embed => {{
                     const date = new Date(embed.savedAt).toLocaleDateString('pt-BR');
-                    select.innerHTML += `<option value="${{embed.name}}">${{embed.name}} (${date})</option>`;
+                    select.innerHTML += `<option value="${{embed.name}}">${{embed.name}} (${{date}})</option>`;
                 }});
             }}
         }}
