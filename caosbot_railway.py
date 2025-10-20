@@ -3123,6 +3123,114 @@ intents.presences = True  # NECESSÁRIO para ver status online/offline dos membr
 bot = commands.Bot(command_prefix='.', intents=intents)  # Mantém prefixo para compatibilidade, mas foco em slash commands
 
 # ========================================
+# 🔥 SLASH COMMANDS - COMANDOS DIRETOS
+# ========================================
+
+# Comando de teste simples
+@bot.tree.command(name="teste", description="🧪 Comando de teste para verificar se slash commands funcionam")
+async def teste(interaction: discord.Interaction):
+    embed = discord.Embed(
+        title="✅ SLASH COMMANDS FUNCIONANDO!",
+        description="Se você viu este comando com `/`, significa que os slash commands estão ativos! 🎉",
+        color=0x00ff00
+    )
+    await interaction.response.send_message(embed=embed)
+
+# Comando oi
+@bot.tree.command(name="oi", description="👋 Diga olá para o bot!")
+async def oi(interaction: discord.Interaction):
+    saudacoes = [
+        'Oi! Como você está? 😊',
+        'Olá! Bem-vindo(a)! ✨',
+        'E aí! Tudo bem? 🤗',
+        'Salve! Como vai? 🙌',
+    ]
+    embed = discord.Embed(title="👋 Olá!", description=random.choice(saudacoes), color=0x00ff88)
+    await interaction.response.send_message(embed=embed)
+
+# Comando beijar
+@bot.tree.command(name="beijar", description="💋 Beije alguém")
+@app_commands.describe(usuario="Usuário para beijar")
+async def beijar(interaction: discord.Interaction, usuario: discord.Member):
+    if usuario.id == interaction.user.id:
+        await interaction.response.send_message("❌ Você não pode beijar a si mesmo!", ephemeral=True)
+        return
+    embed = discord.Embed(
+        title="💋 Beijo!",
+        description=f'**{interaction.user.display_name}** beijou **{usuario.display_name}**! 💕',
+        color=0xff69b4
+    )
+    await interaction.response.send_message(embed=embed)
+
+# Comando kick
+@bot.tree.command(name="kick", description="👢 Expulse um usuário")
+@app_commands.describe(usuario="Usuário para expulsar", motivo="Motivo")
+@app_commands.checks.has_permissions(kick_members=True)
+async def kick_slash(interaction: discord.Interaction, usuario: discord.Member, motivo: str = "Sem motivo"):
+    if usuario == interaction.user:
+        await interaction.response.send_message("❌ Você não pode se expulsar!", ephemeral=True)
+        return
+    if usuario.top_role >= interaction.user.top_role:
+        await interaction.response.send_message("❌ Não pode expulsar este usuário!", ephemeral=True)
+        return
+    embed = discord.Embed(title="👢 EXPULSO", description=f"**{usuario.display_name}** foi expulso!", color=0xff8c00)
+    embed.add_field(name="📝 Motivo", value=f"`{motivo}`", inline=False)
+    await interaction.response.send_message(embed=embed)
+    await usuario.kick(reason=motivo)
+
+# Comando help
+@bot.tree.command(name="help", description="❓ Central de ajuda do bot")
+async def help_slash(interaction: discord.Interaction):
+    embed = discord.Embed(
+        title="🤖 CENTRAL DE AJUDA - CAOS BOT",
+        description="**Comandos Slash disponíveis:**",
+        color=0x00ff88
+    )
+    embed.add_field(name="/teste", value="🧪 Testa se slash commands funcionam", inline=False)
+    embed.add_field(name="/oi", value="👋 Cumprimente o bot", inline=False)
+    embed.add_field(name="/beijar", value="💋 Beije alguém", inline=False)
+    embed.add_field(name="/kick", value="👢 Expulse um usuário (requer permissão)", inline=False)
+    embed.set_footer(text="💡 Mais comandos em breve!")
+    await interaction.response.send_message(embed=embed)
+
+@bot.tree.command(name="convite", description="🔗 Gere um link de convite do bot com permissões corretas")
+async def convite(interaction: discord.Interaction):
+    # Link de convite com permissões de slash commands
+    bot_id = bot.user.id if bot.user else "SEU_BOT_ID"
+    invite_link = f"https://discord.com/api/oauth2/authorize?client_id={bot_id}&permissions=8&scope=bot%20applications.commands"
+    
+    embed = discord.Embed(
+        title="🔗 LINK DE CONVITE DO BOT",
+        description=f"Use este link para adicionar o bot com **Slash Commands** ativos!",
+        color=0x5865f2
+    )
+    embed.add_field(
+        name="📋 Link",
+        value=f"[Clique aqui para convidar]({invite_link})",
+        inline=False
+    )
+    embed.add_field(
+        name="⚠️ IMPORTANTE",
+        value="Se o bot já está no servidor mas os comandos não aparecem, **REMOVA e ADICIONE** o bot novamente usando este link!",
+        inline=False
+    )
+    await interaction.response.send_message(embed=embed, ephemeral=True)
+
+print("🔥 Slash commands registrados diretamente no bot!")
+
+# Comando de prefixo para sincronizar manualmente (emergência)
+@bot.command(name='sync')
+@commands.has_permissions(administrator=True)
+async def sync(ctx):
+    """Sincroniza slash commands manualmente (Admin only)"""
+    try:
+        await ctx.send("🔄 Sincronizando slash commands...")
+        synced = await bot.tree.sync()
+        await ctx.send(f"✅ {len(synced)} comandos sincronizados!\n💡 Digite `/` no chat para ver os comandos!")
+    except Exception as e:
+        await ctx.send(f"❌ Erro: {e}")
+
+# ========================================
 # SISTEMA DE XP/RANK (ESTILO LORITTA)
 # ========================================
 
@@ -3334,18 +3442,6 @@ async def on_ready():
     # REGISTRAR PERSISTENT VIEWS (sistema de tickets V2)
     bot.add_view(TicketPanelView())
     print('🎫 Sistema de Tickets V2 registrado (persistent views)')
-    
-    # REGISTRAR SLASH COMMANDS CUSTOMIZADOS
-    try:
-        # Importar e registrar comandos do arquivo slash_commands.py
-        import slash_commands
-        print('📦 Módulo slash_commands importado com sucesso!')
-        await slash_commands.setup_all_slash_commands(bot)
-        print('📦 Slash commands customizados carregados!')
-    except Exception as e:
-        print(f'❌ ERRO ao carregar slash commands: {e}')
-        import traceback
-        traceback.print_exc()
     
     # SINCRONIZAR SLASH COMMANDS (/) - IMPORTANTE!
     try:
