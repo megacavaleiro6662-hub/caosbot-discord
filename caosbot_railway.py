@@ -100,10 +100,10 @@ def login_required(f):
             return """
             <html>
             <head><title>Sessão Expirada</title><link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&display=swap" rel="stylesheet"></head>
-            <body style="background:#000;color:#ff3300;text-align:center;padding-top:100px;font-family:Orbitron,sans-serif;">
-                <h1 style="font-size:48px;text-shadow:0 0 20px #ff0000;">⚠️ ACESSO REVOGADO</h1>
-                <p style="color:#ff6666;font-size:18px;">Suas permissões de administrador foram removidas.</p>
-                <a href="/login" style="color:#ff6600;font-size:16px;text-decoration:none;">← Fazer Login Novamente</a>
+            <body style="background:#000;color:#0033ff;text-align:center;padding-top:100px;font-family:Orbitron,sans-serif;">
+                <h1 style="font-size:48px;text-shadow:0 0 20px #0000ff;">⚠️ ACESSO REVOGADO</h1>
+                <p style="color:#6666ff;font-size:18px;">Suas permissões de administrador foram removidas.</p>
+                <a href="/login" style="color:#0066ff;font-size:16px;text-decoration:none;">← Fazer Login Novamente</a>
             </body>
             </html>
             """
@@ -141,8 +141,8 @@ def test():
             <p><b>REDIRECT_URI:</b> """ + DISCORD_REDIRECT_URI + """</p>
             <p><b>CLIENT_ID:</b> """ + DISCORD_CLIENT_ID + """</p>
             <hr>
-            <a href="/" style="color: #ff6600;">Ir para Home</a> | 
-            <a href="/login" style="color: #ff6600;">Ir para Login</a>
+            <a href="/" style="color: #0066ff;">Ir para Home</a> | 
+            <a href="/login" style="color: #0066ff;">Ir para Login</a>
         </body>
     </html>
     """, 200
@@ -159,56 +159,72 @@ def login_page():
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CAOS Hub - Login</title>
-    <link rel="icon" href="https://i.ibb.co/Fq5Lgzs5/Chat-GPT-Image-7-de-out-de-2025-00-25-49.png" type="image/png">
+    <title>Gilipe Hub - Login</title>
+    <link rel="icon" href="https://i.ibb.co/C3gw3z4L/Gemini-Generated-Image-vjef5gvjef5gvjef-1.png" type="image/png">
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <style>
         * {{ margin: 0; padding: 0; box-sizing: border-box; font-family: 'Orbitron', sans-serif; }}
         body {{
-            background: linear-gradient(135deg, #000000 0%, #1a0000 25%, #330000 50%, #1a0000 75%, #000000 100%);
+            background: linear-gradient(135deg, #000000 0%, #001a33 25%, #003366 50%, #001a33 75%, #000000 100%);
             background-size: 400% 400%;
-            animation: fireGlow 20s ease infinite;
+            animation: oceanGlow 20s ease infinite;
             min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
             overflow-y: auto;
         }}
-        @keyframes fireGlow {{
+        @keyframes oceanGlow {{
             0%, 100% {{ background-position: 0% 50%; }}
             50% {{ background-position: 100% 50%; }}
         }}
+        
+        @keyframes logoSwing {{
+            0%, 100% {{ transform: rotate(-5deg); }}
+            50% {{ transform: rotate(5deg); }}
+        }}
         .login-container {{
-            background: linear-gradient(135deg, rgba(0, 0, 0, 0.9) 0%, rgba(50, 0, 0, 0.8) 100%);
-            border: 3px solid #ff6600;
+            background: linear-gradient(135deg, rgba(0, 0, 0, 0.9) 0%, rgba(0, 20, 50, 0.8) 100%);
+            border: 3px solid #0066ff;
             padding: 60px 50px;
             text-align: center;
-            box-shadow: 0 16px 64px rgba(255, 50, 0, 0.6), 0 0 40px rgba(255, 100, 0, 0.4);
+            box-shadow: 0 16px 64px rgba(0, 100, 255, 0.6), 0 0 40px rgba(0, 150, 255, 0.4);
             max-width: 500px;
             width: 90%;
         }}
         .logo {{
             width: 200px;
             margin-bottom: 30px;
-            filter: drop-shadow(0 0 20px rgba(255, 100, 0, 0.8));
+            filter: drop-shadow(0 0 20px rgba(0, 150, 255, 0.8));
+            animation: 
+                logoSwing 4s ease-in-out infinite,
+                logoFadeSequence 13s ease-in-out infinite;
+        }}
+        
+        @keyframes logoFadeSequence {{
+            0%, 15% {{ opacity: 1; transform: translateX(0) rotate(-5deg); }}
+            50%, 61% {{ opacity: 1; transform: translateX(0) rotate(5deg); }}
+            70% {{ opacity: 0; transform: translateX(-100px) rotate(-10deg); }}
+            75%, 80% {{ opacity: 0; transform: translateX(100px) rotate(10deg); }}
+            90%, 100% {{ opacity: 1; transform: translateX(0) rotate(-5deg); }}
         }}
         h1 {{
             font-size: 42px;
-            color: #ffcc00;
+            color: #00ccff;
             margin-bottom: 15px;
-            text-shadow: 0 0 15px rgba(255, 200, 0, 0.6);
+            text-shadow: 0 0 15px rgba(0, 200, 255, 0.6);
             letter-spacing: 3px;
         }}
         p {{
-            color: #ffaa66;
+            color: #66aaff;
             font-size: 16px;
             margin-bottom: 40px;
             letter-spacing: 1px;
         }}
         .login-btn {{
-            background: linear-gradient(135deg, #ff6600, #ff3300);
+            background: linear-gradient(135deg, #0066ff, #0033ff);
             color: white;
-            border: 3px solid #ff3300;
+            border: 3px solid #0033ff;
             padding: 18px 40px;
             font-size: 18px;
             font-weight: 700;
@@ -217,19 +233,19 @@ def login_page():
             letter-spacing: 2px;
             text-decoration: none;
             display: inline-block;
-            box-shadow: 0 8px 24px rgba(255, 50, 0, 0.5);
+            box-shadow: 0 8px 24px rgba(0, 100, 255, 0.5);
         }}
         .login-btn:hover {{
-            background: linear-gradient(135deg, #ff3300, #cc0000);
-            box-shadow: 0 12px 32px rgba(255, 50, 0, 0.8);
+            background: linear-gradient(135deg, #0033ff, #0000cc);
+            box-shadow: 0 12px 32px rgba(0, 100, 255, 0.8);
             transform: translateY(-3px);
         }}
         .warning {{
             margin-top: 30px;
             padding: 15px;
-            background: rgba(255, 50, 0, 0.1);
-            border: 2px solid #ff3300;
-            color: #ff6666;
+            background: rgba(0, 100, 255, 0.1);
+            border: 2px solid #0033ff;
+            color: #6666ff;
             font-size: 14px;
         }}
         
@@ -242,7 +258,7 @@ def login_page():
             height: 100vh;
             object-fit: cover;
             opacity: 0.25;
-            filter: hue-rotate(20deg) brightness(1.6) saturate(2.5) drop-shadow(0 0 40px rgba(255, 120, 0, 0.9));
+            filter: hue-rotate(180deg) brightness(1.6) saturate(2.5) drop-shadow(0 0 40px rgba(0, 150, 255, 0.9));
             z-index: 0;
             pointer-events: none;
         }}
@@ -258,8 +274,8 @@ def login_page():
     <img src="https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExNDFjZnlmcjdpbjdseTR4ZnU5NWtzOHJhZ3Q0cWp3ZzBrYzFkcWhnbiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/IeZiGntCfEWOrSjK81/giphy.gif" alt="Animated BG" class="animated-bg">
     
     <div class="login-container">
-        <img src="https://i.ibb.co/Fq5Lgzs5/Chat-GPT-Image-7-de-out-de-2025-00-25-49.png" alt="CAOS Logo" class="logo">
-        <h1>CAOS HUB</h1>
+        <img src="https://i.ibb.co/C3gw3z4L/Gemini-Generated-Image-vjef5gvjef5gvjef-1.png" alt="Gilipe Logo" class="logo">
+        <h1>GILIPE HUB</h1>
         <p>Sistema Administrativo Avançado</p>
         <a href="{DISCORD_OAUTH_URL}" class="login-btn">🔐 LOGIN COM DISCORD</a>
         <div class="warning">
@@ -325,11 +341,11 @@ def callback():
             return """
             <html>
             <head><title>Acesso Negado</title><link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&display=swap" rel="stylesheet"></head>
-            <body style="background:#000;color:#ff3300;text-align:center;padding-top:100px;font-family:Orbitron,sans-serif;">
-                <h1 style="font-size:48px;text-shadow:0 0 20px #ff0000;">❌ ACESSO NEGADO</h1>
-                <p style="color:#ff6666;font-size:18px;">Você não é membro do servidor CAOS Hub.</p>
+            <body style="background:#000;color:#0033ff;text-align:center;padding-top:100px;font-family:Orbitron,sans-serif;">
+                <h1 style="font-size:48px;text-shadow:0 0 20px #0000ff;">❌ ACESSO NEGADO</h1>
+                <p style="color:#6666ff;font-size:18px;">Você não é membro do servidor CAOS Hub.</p>
                 <p style="color:#999;font-size:14px;">Certifique-se de estar no servidor e tenha os cargos necessários.</p>
-                <a href="/login" style="color:#ff6600;font-size:16px;text-decoration:none;">← Voltar ao Login</a>
+                <a href="/login" style="color:#0066ff;font-size:16px;text-decoration:none;">← Voltar ao Login</a>
             </body>
             </html>
             """
@@ -339,11 +355,11 @@ def callback():
             return f"""
             <html>
             <head><title>Erro</title></head>
-            <body style="background:#000;color:#ff3300;text-align:center;padding-top:100px;font-family:Arial;">
+            <body style="background:#000;color:#0033ff;text-align:center;padding-top:100px;font-family:Arial;">
                 <h1>❌ Erro ao verificar permissões</h1>
                 <p>Status: {member_response.status_code}</p>
                 <p>Tente novamente ou contacte um administrador.</p>
-                <a href="/login" style="color:#ff6600;">← Voltar</a>
+                <a href="/login" style="color:#0066ff;">← Voltar</a>
             </body>
             </html>
             """
@@ -376,10 +392,10 @@ def callback():
             return """
             <html>
             <head><title>Acesso Negado</title><link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&display=swap" rel="stylesheet"></head>
-            <body style="background:#000;color:#ff3300;text-align:center;padding-top:100px;font-family:Orbitron,sans-serif;">
-                <h1 style="font-size:48px;text-shadow:0 0 20px #ff0000;">❌ ACESSO NEGADO</h1>
-                <p style="color:#ff6666;font-size:18px;">Você precisa ter cargo de <strong>Founder</strong>, <strong>Sub-Dono</strong> ou <strong>Administrador</strong>.</p>
-                <a href="/login" style="color:#ff6600;font-size:16px;text-decoration:none;">← Voltar ao Login</a>
+            <body style="background:#000;color:#0033ff;text-align:center;padding-top:100px;font-family:Orbitron,sans-serif;">
+                <h1 style="font-size:48px;text-shadow:0 0 20px #0000ff;">❌ ACESSO NEGADO</h1>
+                <p style="color:#6666ff;font-size:18px;">Você precisa ter cargo de <strong>Founder</strong>, <strong>Sub-Dono</strong> ou <strong>Administrador</strong>.</p>
+                <a href="/login" style="color:#0066ff;font-size:16px;text-decoration:none;">← Voltar ao Login</a>
             </body>
             </html>
             """
@@ -398,7 +414,7 @@ def callback():
     
     except Exception as e:
         print(f"❌ [LOGIN] Erro: {e}")
-        return f"<html><body style='background:#000;color:#ff3300;text-align:center;padding:50px;font-family:Orbitron;'><h1>❌ Erro no login</h1><p>{str(e)}</p><a href='/login' style='color:#ff6600;'>← Voltar</a></body></html>", 500
+        return f"<html><body style='background:#000;color:#0033ff;text-align:center;padding:50px;font-family:Orbitron;'><h1>❌ Erro no login</h1><p>{str(e)}</p><a href='/login' style='color:#0066ff;'>← Voltar</a></body></html>", 500
 
 @app.route('/logout')
 def logout():
@@ -464,42 +480,42 @@ def dashboard():
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CAOS Hub - Dashboard</title>
-    <link rel="icon" href="https://i.ibb.co/Fq5Lgzs5/Chat-GPT-Image-7-de-out-de-2025-00-25-49.png" type="image/png">
+    <title>Gilipe Hub - Dashboard</title>
+    <link rel="icon" href="https://i.ibb.co/C3gw3z4L/Gemini-Generated-Image-vjef5gvjef5gvjef-1.png" type="image/png">
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <style>
         * {{ margin: 0; padding: 0; box-sizing: border-box; font-family: 'Orbitron', 'Rajdhani', sans-serif; }}
         
-        /* Animação de fogo no fundo */
-        @keyframes fireGlow {{
+        /* Animação de oceano no fundo */
+        @keyframes oceanGlow {{
             0%, 100% {{ background-position: 0% 50%; }}
             50% {{ background-position: 100% 50%; }}
         }}
         
-        @keyframes fireFloat {{
+        @keyframes oceanFloat {{
             0% {{ transform: translateY(100vh) scale(0); opacity: 0; }}
             10% {{ opacity: 1; }}
             90% {{ opacity: 1; }}
             100% {{ transform: translateY(-100vh) scale(1.5); opacity: 0; }}
         }}
         
-        @keyframes fireFlicker {{
+        @keyframes oceanFlicker {{
             0%, 100% {{ opacity: 0.6; }}
             50% {{ opacity: 1; }}
         }}
         
         body {{ 
             font-family: 'Inter', 'Roboto', sans-serif; 
-            background: linear-gradient(135deg, #000000 0%, #1a0000 25%, #330000 50%, #1a0000 75%, #000000 100%);
+            background: linear-gradient(135deg, #000000 0%, #001a33 25%, #003366 50%, #001a33 75%, #000000 100%);
             background-size: 400% 400%;
-            animation: fireGlow 20s ease infinite;
+            animation: oceanGlow 20s ease infinite;
             min-height: 100vh; 
             color: #fff; 
             overflow-y: auto;
             position: relative;
         }}
         
-        /* Partículas de fogo animadas */
+        /* Partículas de oceano animadas */
         body::before {{
             content: '';
             position: fixed;
@@ -508,11 +524,11 @@ def dashboard():
             width: 100%;
             height: 100%;
             background: 
-                radial-gradient(circle at 10% 90%, rgba(255, 50, 0, 0.15) 0%, transparent 30%),
-                radial-gradient(circle at 90% 10%, rgba(255, 100, 0, 0.12) 0%, transparent 35%),
-                radial-gradient(circle at 50% 50%, rgba(255, 150, 0, 0.08) 0%, transparent 40%),
-                radial-gradient(circle at 30% 20%, rgba(255, 200, 0, 0.06) 0%, transparent 25%);
-            animation: fireFlicker 3s ease-in-out infinite;
+                radial-gradient(circle at 10% 90%, rgba(0, 100, 255, 0.15) 0%, transparent 30%),
+                radial-gradient(circle at 90% 10%, rgba(0, 150, 255, 0.12) 0%, transparent 35%),
+                radial-gradient(circle at 50% 50%, rgba(0, 200, 255, 0.08) 0%, transparent 40%),
+                radial-gradient(circle at 30% 20%, rgba(100, 200, 255, 0.06) 0%, transparent 25%);
+            animation: oceanFlicker 3s ease-in-out infinite;
             pointer-events: none;
             z-index: 0;
         }}
@@ -525,9 +541,9 @@ def dashboard():
             width: 100%;
             height: 100%;
             background: 
-                radial-gradient(circle 150px at 15% 80%, rgba(255, 100, 0, 0.2) 0%, transparent 100%),
-                radial-gradient(circle 200px at 85% 20%, rgba(255, 150, 0, 0.15) 0%, transparent 100%),
-                radial-gradient(circle 100px at 50% 60%, rgba(255, 200, 0, 0.1) 0%, transparent 100%);
+                radial-gradient(circle 150px at 15% 80%, rgba(0, 150, 255, 0.2) 0%, transparent 100%),
+                radial-gradient(circle 200px at 85% 20%, rgba(0, 200, 255, 0.15) 0%, transparent 100%),
+                radial-gradient(circle 100px at 50% 60%, rgba(100, 200, 255, 0.1) 0%, transparent 100%);
             animation: fireFloat 25s linear infinite;
             pointer-events: none;
             z-index: 0;
@@ -550,23 +566,23 @@ def dashboard():
             bottom: -50px;
             width: 5px;
             height: 5px;
-            background: radial-gradient(circle, #ffcc00, #ff6600, transparent);
+            background: radial-gradient(circle, #00ccff, #0066ff, transparent);
             border-radius: 50%;
             opacity: 0;
             animation: rise 15s linear infinite;
-            box-shadow: 0 0 10px #ff6600, 0 0 20px #ff3300;
+            box-shadow: 0 0 10px #0066ff, 0 0 20px #0033ff;
         }}
         
         /* Partículas vermelhas */
         .particle:nth-child(3n) {{
-            background: radial-gradient(circle, #ff3300, #cc0000, transparent);
-            box-shadow: 0 0 10px #ff3300, 0 0 20px #ff0000;
+            background: radial-gradient(circle, #0033ff, #0000cc, transparent);
+            box-shadow: 0 0 10px #0033ff, 0 0 20px #0000ff;
         }}
         
         /* Partículas amarelas */
         .particle:nth-child(5n) {{
-            background: radial-gradient(circle, #ffff00, #ffcc00, transparent);
-            box-shadow: 0 0 15px #ffcc00, 0 0 25px #ffaa00;
+            background: radial-gradient(circle, #00ffff, #00ccff, transparent);
+            box-shadow: 0 0 15px #00ccff, 0 0 25px #00aaff;
         }}
         
         /* Estrelas (forma diferente) */
@@ -576,7 +592,7 @@ def dashboard():
             background: linear-gradient(45deg, transparent 40%, #fff 40%, #fff 60%, transparent 60%),
                         linear-gradient(-45deg, transparent 40%, #fff 40%, #fff 60%, transparent 60%);
             border-radius: 0;
-            box-shadow: 0 0 15px #fff, 0 0 30px #ffcc00;
+            box-shadow: 0 0 15px #fff, 0 0 30px #00ccff;
         }}
         
         /* Partículas maiores */
@@ -651,10 +667,10 @@ def dashboard():
             height: 100vh; 
             background: linear-gradient(180deg, #000000 0%, #1a0000 100%); 
             backdrop-filter: blur(10px); 
-            border-right: 3px solid #ff3300; 
+            border-right: 3px solid #0033ff; 
             padding: 32px 24px; 
             z-index: 10; 
-            box-shadow: 5px 0 30px rgba(255, 50, 0, 0.3);
+            box-shadow: 5px 0 30px rgba(0, 100, 255, 0.3);
             overflow-y: auto;
         }}
         
@@ -684,55 +700,55 @@ def dashboard():
         }}
         
         .sidebar-logo {{ display: flex; align-items: center; justify-content: center; margin-bottom: 40px; position: relative; z-index: 1; }}
-        .sidebar-logo img {{ width: 180px; height: auto; filter: drop-shadow(0 0 20px rgba(255, 100, 0, 0.8)); }}
+        .sidebar-logo img {{ width: 180px; height: auto; filter: drop-shadow(0 0 20px rgba(0, 150, 255, 0.8)); }}
         .sidebar-nav {{ list-style: none; }}
         .sidebar-nav li {{ margin-bottom: 12px; }}
-        .sidebar-nav a {{ display: flex; align-items: center; padding: 14px 18px; color: #ffaa66; text-decoration: none; border-radius: 0; border-left: 4px solid transparent; transition: all 0.3s; font-weight: 600; letter-spacing: 0.5px; }}
-        .sidebar-nav a:hover {{ background: rgba(255, 100, 0, 0.15); color: #ffcc00; border-left-color: #ff6600; box-shadow: inset 0 0 10px rgba(255, 100, 0, 0.2); }}
-        .sidebar-nav a.active {{ background: rgba(255, 50, 0, 0.25); color: #ffffff; border-left-color: #ff3300; box-shadow: inset 0 0 15px rgba(255, 50, 0, 0.3); }}
+        .sidebar-nav a {{ display: flex; align-items: center; padding: 14px 18px; color: #66aaff; text-decoration: none; border-radius: 0; border-left: 4px solid transparent; transition: all 0.3s; font-weight: 600; letter-spacing: 0.5px; }}
+        .sidebar-nav a:hover {{ background: rgba(0, 150, 255, 0.15); color: #00ccff; border-left-color: #0066ff; box-shadow: inset 0 0 10px rgba(0, 150, 255, 0.2); }}
+        .sidebar-nav a.active {{ background: rgba(0, 100, 255, 0.25); color: #ffffff; border-left-color: #0033ff; box-shadow: inset 0 0 15px rgba(0, 100, 255, 0.3); }}
         .main {{ margin-left: 280px; padding: 32px; position: relative; z-index: 1; }}
-        .header {{ background: linear-gradient(135deg, rgba(255, 50, 0, 0.15) 0%, rgba(255, 100, 0, 0.1) 100%); backdrop-filter: blur(10px); border: 2px solid #ff6600; border-radius: 0; padding: 32px; margin-bottom: 32px; box-shadow: 0 8px 32px rgba(255, 50, 0, 0.4); display: flex; justify-content: space-between; align-items: center; }}
-        .header-left h1 {{ font-size: 32px; font-weight: 800; margin-bottom: 8px; text-shadow: 0 0 10px rgba(255, 100, 0, 0.5), 0 0 20px rgba(255, 50, 0, 0.3); color: #ffcc00; }}
-        .header-left p {{ color: #ffaa66; font-size: 16px; }}
+        .header {{ background: linear-gradient(135deg, rgba(0, 100, 255, 0.15) 0%, rgba(0, 150, 255, 0.1) 100%); backdrop-filter: blur(10px); border: 2px solid #0066ff; border-radius: 0; padding: 32px; margin-bottom: 32px; box-shadow: 0 8px 32px rgba(0, 100, 255, 0.4); display: flex; justify-content: space-between; align-items: center; }}
+        .header-left h1 {{ font-size: 32px; font-weight: 800; margin-bottom: 8px; text-shadow: 0 0 10px rgba(0, 150, 255, 0.5), 0 0 20px rgba(0, 100, 255, 0.3); color: #00ccff; }}
+        .header-left p {{ color: #66aaff; font-size: 16px; }}
         .user-profile {{ display: flex; align-items: center; gap: 16px; }}
-        .user-avatar {{ width: 48px; height: 48px; border-radius: 50%; border: 2px solid #ff6600; box-shadow: 0 0 10px rgba(255, 100, 0, 0.5); }}
+        .user-avatar {{ width: 48px; height: 48px; border-radius: 50%; border: 2px solid #0066ff; box-shadow: 0 0 10px rgba(0, 150, 255, 0.5); }}
         .user-info {{ text-align: right; }}
-        .user-name {{ font-size: 16px; font-weight: 700; color: #ffcc00; text-shadow: 0 0 5px rgba(255, 200, 0, 0.4); }}
-        .user-role {{ font-size: 13px; color: #ffaa66; margin-top: 4px; }}
-        .btn-logout {{ padding: 8px 16px; background: linear-gradient(135deg, #cc0000, #990000); color: white; border: 2px solid #cc0000; border-radius: 0; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.3s; box-shadow: 0 4px 12px rgba(200, 0, 0, 0.4); }}
-        .btn-logout:hover {{ background: linear-gradient(135deg, #990000, #660000); box-shadow: 0 6px 16px rgba(200, 0, 0, 0.6); transform: translateY(-2px); }}
+        .user-name {{ font-size: 16px; font-weight: 700; color: #00ccff; text-shadow: 0 0 5px rgba(100, 200, 255, 0.4); }}
+        .user-role {{ font-size: 13px; color: #66aaff; margin-top: 4px; }}
+        .btn-logout {{ padding: 8px 16px; background: linear-gradient(135deg, #0000cc, #000099); color: white; border: 2px solid #0000cc; border-radius: 0; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.3s; box-shadow: 0 4px 12px rgba(0, 100, 200, 0.4); }}
+        .btn-logout:hover {{ background: linear-gradient(135deg, #000099, #000066); box-shadow: 0 6px 16px rgba(0, 100, 200, 0.6); transform: translateY(-2px); }}
         .grid {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 24px; }}
-        .card {{ background: linear-gradient(135deg, rgba(0, 0, 0, 0.6) 0%, rgba(50, 0, 0, 0.4) 100%); backdrop-filter: blur(10px); border: 2px solid #ff6600; border-radius: 0; padding: 24px; transition: all 0.3s; box-shadow: 0 4px 16px rgba(255, 50, 0, 0.3); }}
-        .card:hover {{ border-color: #ff3300; transform: translateY(-4px); box-shadow: 0 8px 24px rgba(255, 100, 0, 0.5), 0 0 30px rgba(255, 50, 0, 0.3); }}
+        .card {{ background: linear-gradient(135deg, rgba(0, 0, 0, 0.6) 0%, rgba(50, 0, 0, 0.4) 100%); backdrop-filter: blur(10px); border: 2px solid #0066ff; border-radius: 0; padding: 24px; transition: all 0.3s; box-shadow: 0 4px 16px rgba(0, 100, 255, 0.3); }}
+        .card:hover {{ border-color: #0033ff; transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0, 150, 255, 0.5), 0 0 30px rgba(0, 100, 255, 0.3); }}
         .card-header {{ display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }}
-        .card-header h2 {{ font-size: 18px; font-weight: 700; color: #ffcc00; text-shadow: 0 0 5px rgba(255, 200, 0, 0.4); }}
+        .card-header h2 {{ font-size: 18px; font-weight: 700; color: #00ccff; text-shadow: 0 0 5px rgba(100, 200, 255, 0.4); }}
         .toggle {{ position: relative; width: 48px; height: 24px; }}
         .toggle input {{ opacity: 0; width: 0; height: 0; }}
-        .toggle label {{ position: absolute; cursor: pointer; inset: 0; background: #330000; transition: 0.3s; border-radius: 0; border: 1px solid #ff6600; }}
-        .toggle label:before {{ content: ""; position: absolute; height: 18px; width: 18px; left: 3px; bottom: 3px; background: linear-gradient(135deg, #ff6600, #ffcc00); transition: 0.3s; border-radius: 0; box-shadow: 0 0 5px rgba(255, 200, 0, 0.5); }}
-        .toggle input:checked + label {{ background: linear-gradient(135deg, #ff3300, #ff6600); box-shadow: 0 0 10px rgba(255, 50, 0, 0.6); }}
-        .toggle input:checked + label:before {{ transform: translateX(24px); background: linear-gradient(135deg, #ffcc00, #ffffff); }}
+        .toggle label {{ position: absolute; cursor: pointer; inset: 0; background: #330000; transition: 0.3s; border-radius: 0; border: 1px solid #0066ff; }}
+        .toggle label:before {{ content: ""; position: absolute; height: 18px; width: 18px; left: 3px; bottom: 3px; background: linear-gradient(135deg, #0066ff, #00ccff); transition: 0.3s; border-radius: 0; box-shadow: 0 0 5px rgba(100, 200, 255, 0.5); }}
+        .toggle input:checked + label {{ background: linear-gradient(135deg, #0033ff, #0066ff); box-shadow: 0 0 10px rgba(0, 100, 255, 0.6); }}
+        .toggle input:checked + label:before {{ transform: translateX(24px); background: linear-gradient(135deg, #00ccff, #ffffff); }}
         .status {{ display: inline-block; padding: 4px 12px; border-radius: 0; font-size: 12px; font-weight: 600; border: 1px solid; }}
-        .status-on {{ background: rgba(255, 200, 0, 0.15); color: #ffcc00; border-color: #ffaa00; text-shadow: 0 0 5px rgba(255, 200, 0, 0.4); }}
-        .status-off {{ background: rgba(100, 0, 0, 0.3); color: #ff6666; border-color: #ff3300; }}
+        .status-on {{ background: rgba(100, 200, 255, 0.15); color: #00ccff; border-color: #00aaff; text-shadow: 0 0 5px rgba(100, 200, 255, 0.4); }}
+        .status-off {{ background: rgba(100, 0, 0, 0.3); color: #6666ff; border-color: #0033ff; }}
         .btn {{ padding: 12px 24px; border: 2px solid; border-radius: 0; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.3s; letter-spacing: 0.5px; }}
-        .btn-primary {{ background: linear-gradient(135deg, #ff6600, #ff3300); color: white; border-color: #ff3300; box-shadow: 0 4px 15px rgba(255, 50, 0, 0.4); }}
-        .btn-primary:hover {{ background: linear-gradient(135deg, #ff3300, #cc0000); box-shadow: 0 6px 20px rgba(255, 50, 0, 0.6), 0 0 20px rgba(255, 100, 0, 0.4); transform: translateY(-2px); }}
-        .btn-danger {{ background: linear-gradient(135deg, #cc0000, #990000); color: white; border-color: #cc0000; box-shadow: 0 4px 15px rgba(200, 0, 0, 0.4); }}
-        .btn-danger:hover {{ background: linear-gradient(135deg, #990000, #660000); box-shadow: 0 6px 20px rgba(200, 0, 0, 0.6); transform: translateY(-2px); }}
+        .btn-primary {{ background: linear-gradient(135deg, #0066ff, #0033ff); color: white; border-color: #0033ff; box-shadow: 0 4px 15px rgba(0, 100, 255, 0.4); }}
+        .btn-primary:hover {{ background: linear-gradient(135deg, #0033ff, #0000cc); box-shadow: 0 6px 20px rgba(0, 100, 255, 0.6), 0 0 20px rgba(0, 150, 255, 0.4); transform: translateY(-2px); }}
+        .btn-danger {{ background: linear-gradient(135deg, #0000cc, #000099); color: white; border-color: #0000cc; box-shadow: 0 4px 15px rgba(0, 100, 200, 0.4); }}
+        .btn-danger:hover {{ background: linear-gradient(135deg, #000099, #000066); box-shadow: 0 6px 20px rgba(0, 100, 200, 0.6); transform: translateY(-2px); }}
         .section {{ margin-bottom: 32px; }}
-        .section-title {{ font-size: 20px; font-weight: 700; margin-bottom: 16px; color: #ffcc00; text-shadow: 0 0 8px rgba(255, 200, 0, 0.4); }}
+        .section-title {{ font-size: 20px; font-weight: 700; margin-bottom: 16px; color: #00ccff; text-shadow: 0 0 8px rgba(100, 200, 255, 0.4); }}
         .page {{ display: none; }}
         .page.active {{ display: block; }}
         .form-group {{ margin-bottom: 16px; }}
-        .form-label {{ display: block; margin-bottom: 8px; font-size: 14px; font-weight: 600; color: #ffaa66; }}
-        .form-input, .form-select, .form-textarea {{ width: 100%; padding: 10px 14px; background: rgba(0, 0, 0, 0.5); border: 2px solid #ff6600; border-radius: 0; color: #ffcc00; font-family: 'Inter', 'Roboto', sans-serif; font-size: 14px; transition: all 0.3s; }}
-        .form-input:focus, .form-select:focus, .form-textarea:focus {{ outline: none; border-color: #ff3300; box-shadow: 0 0 10px rgba(255, 50, 0, 0.4), inset 0 0 5px rgba(255, 100, 0, 0.2); background: rgba(20, 0, 0, 0.6); }}
+        .form-label {{ display: block; margin-bottom: 8px; font-size: 14px; font-weight: 600; color: #66aaff; }}
+        .form-input, .form-select, .form-textarea {{ width: 100%; padding: 10px 14px; background: rgba(0, 0, 0, 0.5); border: 2px solid #0066ff; border-radius: 0; color: #00ccff; font-family: 'Inter', 'Roboto', sans-serif; font-size: 14px; transition: all 0.3s; }}
+        .form-input:focus, .form-select:focus, .form-textarea:focus {{ outline: none; border-color: #0033ff; box-shadow: 0 0 10px rgba(0, 100, 255, 0.4), inset 0 0 5px rgba(0, 150, 255, 0.2); background: rgba(20, 0, 0, 0.6); }}
         .form-textarea {{ resize: vertical; min-height: 100px; }}
-        .toast {{ position: fixed; top: 24px; right: 24px; background: linear-gradient(135deg, rgba(0, 0, 0, 0.9), rgba(50, 0, 0, 0.9)); border: 2px solid #ff6600; border-radius: 0; padding: 16px; min-width: 300px; opacity: 0; transform: translateX(400px); transition: all 0.3s; z-index: 1000; box-shadow: 0 8px 32px rgba(255, 50, 0, 0.5), 0 0 20px rgba(255, 100, 0, 0.3); }}
+        .toast {{ position: fixed; top: 24px; right: 24px; background: linear-gradient(135deg, rgba(0, 0, 0, 0.9), rgba(50, 0, 0, 0.9)); border: 2px solid #0066ff; border-radius: 0; padding: 16px; min-width: 300px; opacity: 0; transform: translateX(400px); transition: all 0.3s; z-index: 1000; box-shadow: 0 8px 32px rgba(0, 100, 255, 0.5), 0 0 20px rgba(0, 150, 255, 0.3); }}
         .toast.show {{ opacity: 1; transform: translateX(0); }}
-        .toast-success {{ border-color: #ffcc00; box-shadow: 0 8px 32px rgba(255, 200, 0, 0.5), 0 0 20px rgba(255, 200, 0, 0.3); }}
-        .toast-error {{ border-color: #ff3300; box-shadow: 0 8px 32px rgba(255, 50, 0, 0.6), 0 0 20px rgba(255, 0, 0, 0.4); }}
+        .toast-success {{ border-color: #00ccff; box-shadow: 0 8px 32px rgba(100, 200, 255, 0.5), 0 0 20px rgba(100, 200, 255, 0.3); }}
+        .toast-error {{ border-color: #0033ff; box-shadow: 0 8px 32px rgba(0, 100, 255, 0.6), 0 0 20px rgba(255, 0, 0, 0.4); }}
     </style>
 </head>
 <body>
@@ -1180,14 +1196,14 @@ def dashboard():
 Você ganhou **{{{{prize}}}}**!
 
 📋 Abra um ticket na categoria 🎉 **Sorteios** para receber seu prêmio.</textarea>
-                                <small style="color: #ffaa66; font-size: 12px;">Use {{{{prize}}}} para o nome do prêmio | {{{{winners}}}} para mencionar vencedores</small>
+                                <small style="color: #66aaff; font-size: 12px;">Use {{{{prize}}}} para o nome do prêmio | {{{{winners}}}} para mencionar vencedores</small>
                             </div>
                         </div>
                         
                         <div class="form-group">
                             <label class="form-label">🎨 Cor do Embed</label>
                             <div style="display: flex; gap: 10px; align-items: center;">
-                                <input type="color" id="embed-color-picker" value="#ff6600" onchange="updateEmbedColor()" style="width: 60px; height: 40px; cursor: pointer; border: 2px solid #ff6600; background: transparent;">
+                                <input type="color" id="embed-color-picker" value="#0066ff" onchange="updateEmbedColor()" style="width: 60px; height: 40px; cursor: pointer; border: 2px solid #0066ff; background: transparent;">
                                 <input type="text" id="embed-color" class="form-input" value="0xff6600" style="flex: 1;" readonly>
                             </div>
                         </div>
@@ -1213,7 +1229,7 @@ Você ganhou **{{{{prize}}}}**!
                         </div>
                         
                         <!-- Campos customizáveis -->
-                        <div style="margin-top: 24px; padding-top: 24px; border-top: 2px solid #ff6600;">
+                        <div style="margin-top: 24px; padding-top: 24px; border-top: 2px solid #0066ff;">
                             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
                                 <label class="form-label" style="margin: 0;">📋 Campos (Fields)</label>
                                 <button type="button" class="btn btn-primary" onclick="addEmbedField(); return false;" style="padding: 8px 16px; font-size: 13px;">+ Adicionar Campo</button>
@@ -1221,7 +1237,7 @@ Você ganhou **{{{{prize}}}}**!
                             <div id="embed-fields-container"></div>
                         </div>
                         
-                        <div style="margin-top: 24px; padding-top: 24px; border-top: 2px solid #ff6600;">
+                        <div style="margin-top: 24px; padding-top: 24px; border-top: 2px solid #0066ff;">
                             <label class="form-label">📌 Footer (opcional)</label>
                             <input type="text" id="embed-footer" class="form-input" placeholder="Texto do footer" onkeyup="updateEmbedPreview()" style="margin-bottom: 10px;">
                             <input type="text" id="embed-footer-icon" class="form-input" placeholder="URL do ícone do footer" onkeyup="updateEmbedPreview()">
@@ -1231,14 +1247,14 @@ Você ganhou **{{{{prize}}}}**!
                             <label class="form-label">🕒 Timestamp</label>
                             <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
                                 <input type="checkbox" id="embed-timestamp" onchange="updateEmbedPreview()">
-                                <span style="color: #ffaa66;">Adicionar timestamp atual</span>
+                                <span style="color: #66aaff;">Adicionar timestamp atual</span>
                             </label>
                         </div>
                         
                         <div class="form-group" style="margin-top: 24px;">
                             <label class="form-label">💬 Mensagem Fora do Embed (opcional)</label>
                             <textarea id="embed-extra-message" class="form-textarea" rows="2" placeholder="Ex: @everyone Novo sorteio!" oninput="updateEmbedPreview()" onkeyup="updateEmbedPreview()"></textarea>
-                            <small style="color: #ffaa66; font-size: 12px;">Esta mensagem aparece ACIMA do embed (use para mencionar @everyone)</small>
+                            <small style="color: #66aaff; font-size: 12px;">Esta mensagem aparece ACIMA do embed (use para mencionar @everyone)</small>
                         </div>
                     </div>
                     
@@ -1689,25 +1705,25 @@ Você ganhou **{{{{prize}}}}**!
                                 ">
                                     <h1 style="
                                         font-size: 64px;
-                                        color: #ff3300;
+                                        color: #0033ff;
                                         margin-bottom: 20px;
-                                        text-shadow: 0 0 30px #ff0000;
+                                        text-shadow: 0 0 30px #0000ff;
                                     ">⚠️ ACESSO REVOGADO</h1>
                                     <p style="
                                         font-size: 24px;
-                                        color: #ff6666;
+                                        color: #6666ff;
                                         margin-bottom: 40px;
                                     ">Suas permissões de administrador foram removidas.</p>
                                     <a href="/login" style="
-                                        background: linear-gradient(135deg, #ff6600, #ff3300);
+                                        background: linear-gradient(135deg, #0066ff, #0033ff);
                                         color: white;
-                                        border: 3px solid #ff3300;
+                                        border: 3px solid #0033ff;
                                         padding: 18px 40px;
                                         font-size: 18px;
                                         font-weight: 700;
                                         text-decoration: none;
                                         display: inline-block;
-                                        box-shadow: 0 8px 24px rgba(255, 50, 0, 0.5);
+                                        box-shadow: 0 8px 24px rgba(0, 100, 255, 0.5);
                                         transition: all 0.3s;
                                     ">← Voltar ao Login</a>
                                 </div>
@@ -1856,16 +1872,16 @@ Você ganhou **{{{{prize}}}}**!
             embedFieldCount++;
             const container = document.getElementById('embed-fields-container');
             const fieldHTML = `
-                <div class="embed-field" id="field-${{embedFieldCount}}" style="border: 2px solid #ff6600; padding: 12px; margin-bottom: 12px; border-radius: 4px; background: rgba(255, 100, 0, 0.05);">
+                <div class="embed-field" id="field-${{embedFieldCount}}" style="border: 2px solid #0066ff; padding: 12px; margin-bottom: 12px; border-radius: 4px; background: rgba(0, 150, 255, 0.05);">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                        <span style="color: #ffcc00; font-weight: 600;">Campo ${{embedFieldCount}}</span>
-                        <button type="button" onclick="removeEmbedField(${{embedFieldCount}}); return false;" style="background: #cc0000; color: white; border: none; padding: 4px 8px; cursor: pointer; border-radius: 2px; font-size: 12px;">❌ Remover</button>
+                        <span style="color: #00ccff; font-weight: 600;">Campo ${{embedFieldCount}}</span>
+                        <button type="button" onclick="removeEmbedField(${{embedFieldCount}}); return false;" style="background: #0000cc; color: white; border: none; padding: 4px 8px; cursor: pointer; border-radius: 2px; font-size: 12px;">❌ Remover</button>
                     </div>
                     <input type="text" class="form-input field-name" placeholder="Nome do campo" oninput="updateEmbedPreview()" onkeyup="updateEmbedPreview()" style="margin-bottom: 8px;">
                     <textarea class="form-textarea field-value" rows="2" placeholder="Valor do campo" oninput="updateEmbedPreview()" onkeyup="updateEmbedPreview()"></textarea>
                     <label style="display: flex; align-items: center; gap: 8px; margin-top: 8px; cursor: pointer;">
                         <input type="checkbox" class="field-inline" onchange="updateEmbedPreview()">
-                        <span style="color: #ffaa66; font-size: 13px;">Inline (lado a lado)</span>
+                        <span style="color: #66aaff; font-size: 13px;">Inline (lado a lado)</span>
                     </label>
                 </div>
             `;
