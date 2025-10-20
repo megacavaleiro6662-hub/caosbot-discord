@@ -2955,21 +2955,28 @@ def send_embed():
             except:
                 embed_dict['color'] = 0xff6600
         
-        if data.get('image'):
+        # Validar URLs antes de adicionar (evita erro 400)
+        def is_valid_url(url):
+            """Verifica se a URL é válida"""
+            if not url or not isinstance(url, str) or not url.strip():
+                return False
+            return url.startswith(('http://', 'https://'))
+        
+        if data.get('image') and is_valid_url(data.get('image')):
             embed_dict['image'] = {'url': data['image']}
         
-        if data.get('thumbnail'):
+        if data.get('thumbnail') and is_valid_url(data.get('thumbnail')):
             embed_dict['thumbnail'] = {'url': data['thumbnail']}
         
         if data.get('author'):
             author_dict = {'name': data['author']}
-            if data.get('author_url'):
+            if data.get('author_url') and is_valid_url(data.get('author_url')):
                 author_dict['url'] = data['author_url']
             embed_dict['author'] = author_dict
         
         if data.get('footer'):
             footer_dict = {'text': data['footer']}
-            if data.get('footer_icon'):
+            if data.get('footer_icon') and is_valid_url(data.get('footer_icon')):
                 footer_dict['icon_url'] = data['footer_icon']
             embed_dict['footer'] = footer_dict
         
