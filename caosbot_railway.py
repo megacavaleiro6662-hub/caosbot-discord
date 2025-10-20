@@ -257,8 +257,8 @@ def login_page():
             width: 100vw;
             height: 100vh;
             object-fit: cover;
-            opacity: 0.3;
-            filter: hue-rotate(200deg) brightness(1.8) saturate(3) contrast(1.2) drop-shadow(0 0 40px rgba(0, 150, 255, 0.9));
+            opacity: 0.35;
+            filter: hue-rotate(240deg) brightness(2) saturate(4) contrast(1.4) sepia(0) drop-shadow(0 0 40px rgba(0, 150, 255, 0.9));
             z-index: 0;
             pointer-events: none;
         }}
@@ -665,7 +665,7 @@ def dashboard():
             top: 0; 
             width: 280px; 
             height: 100vh; 
-            background: linear-gradient(180deg, #000000 0%, #1a0000 100%); 
+            background: linear-gradient(180deg, #000000 0%, #001a33 100%); 
             backdrop-filter: blur(10px); 
             border-right: 3px solid #0033ff; 
             padding: 32px 24px; 
@@ -675,9 +675,9 @@ def dashboard():
         }}
         
         @keyframes hueShift {{
-            0% {{ filter: blur(2px) hue-rotate(200deg) brightness(1.5) saturate(2.5); }}
-            50% {{ filter: blur(2px) hue-rotate(230deg) brightness(1.7) saturate(3); }}
-            100% {{ filter: blur(2px) hue-rotate(200deg) brightness(1.5) saturate(2.5); }}
+            0% {{ filter: blur(2px) hue-rotate(240deg) brightness(2) saturate(4) sepia(0); }}
+            50% {{ filter: blur(2px) hue-rotate(260deg) brightness(2.2) saturate(4.5) sepia(0); }}
+            100% {{ filter: blur(2px) hue-rotate(240deg) brightness(2) saturate(4) sepia(0); }}
         }}
         
         @keyframes pulse {{
@@ -738,7 +738,7 @@ def dashboard():
         .btn-logout {{ padding: 8px 16px; background: linear-gradient(135deg, #0000cc, #000099); color: white; border: 2px solid #0000cc; border-radius: 0; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.3s; box-shadow: 0 4px 12px rgba(0, 100, 200, 0.4); }}
         .btn-logout:hover {{ background: linear-gradient(135deg, #000099, #000066); box-shadow: 0 6px 16px rgba(0, 100, 200, 0.6); transform: translateY(-2px); }}
         .grid {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 24px; }}
-        .card {{ background: linear-gradient(135deg, rgba(0, 0, 0, 0.6) 0%, rgba(50, 0, 0, 0.4) 100%); backdrop-filter: blur(10px); border: 2px solid #0066ff; border-radius: 0; padding: 24px; transition: all 0.3s; box-shadow: 0 4px 16px rgba(0, 100, 255, 0.3); }}
+        .card {{ background: linear-gradient(135deg, rgba(0, 0, 0, 0.6) 0%, rgba(0, 20, 50, 0.4) 100%); backdrop-filter: blur(10px); border: 2px solid #0066ff; border-radius: 0; padding: 24px; transition: all 0.3s; box-shadow: 0 4px 16px rgba(0, 100, 255, 0.3); }}
         .card:hover {{ border-color: #0033ff; transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0, 150, 255, 0.5), 0 0 30px rgba(0, 100, 255, 0.3); }}
         .card-header {{ display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }}
         .card-header h2 {{ font-size: 18px; font-weight: 700; color: #00ccff; text-shadow: 0 0 5px rgba(100, 200, 255, 0.4); }}
@@ -750,7 +750,7 @@ def dashboard():
         .toggle input:checked + label:before {{ transform: translateX(24px); background: linear-gradient(135deg, #00ccff, #ffffff); }}
         .status {{ display: inline-block; padding: 4px 12px; border-radius: 0; font-size: 12px; font-weight: 600; border: 1px solid; }}
         .status-on {{ background: rgba(100, 200, 255, 0.15); color: #00ccff; border-color: #00aaff; text-shadow: 0 0 5px rgba(100, 200, 255, 0.4); }}
-        .status-off {{ background: rgba(100, 0, 0, 0.3); color: #6666ff; border-color: #0033ff; }}
+        .status-off {{ background: rgba(0, 20, 100, 0.3); color: #6666ff; border-color: #0033ff; }}
         .btn {{ padding: 12px 24px; border: 2px solid; border-radius: 0; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.3s; letter-spacing: 0.5px; }}
         .btn-primary {{ background: linear-gradient(135deg, #0066ff, #0033ff); color: white; border-color: #0033ff; box-shadow: 0 4px 15px rgba(0, 100, 255, 0.4); }}
         .btn-primary:hover {{ background: linear-gradient(135deg, #0033ff, #0000cc); box-shadow: 0 6px 20px rgba(0, 100, 255, 0.6), 0 0 20px rgba(0, 150, 255, 0.4); transform: translateY(-2px); }}
@@ -763,9 +763,9 @@ def dashboard():
         .form-group {{ margin-bottom: 16px; }}
         .form-label {{ display: block; margin-bottom: 8px; font-size: 14px; font-weight: 600; color: #66aaff; }}
         .form-input, .form-select, .form-textarea {{ width: 100%; padding: 10px 14px; background: rgba(0, 0, 0, 0.5); border: 2px solid #0066ff; border-radius: 0; color: #00ccff; font-family: 'Inter', 'Roboto', sans-serif; font-size: 14px; transition: all 0.3s; }}
-        .form-input:focus, .form-select:focus, .form-textarea:focus {{ outline: none; border-color: #0033ff; box-shadow: 0 0 10px rgba(0, 100, 255, 0.4), inset 0 0 5px rgba(0, 150, 255, 0.2); background: rgba(20, 0, 0, 0.6); }}
+        .form-input:focus, .form-select:focus, .form-textarea:focus {{ outline: none; border-color: #0033ff; box-shadow: 0 0 10px rgba(0, 100, 255, 0.4), inset 0 0 5px rgba(0, 150, 255, 0.2); background: rgba(0, 10, 30, 0.6); }}
         .form-textarea {{ resize: vertical; min-height: 100px; }}
-        .toast {{ position: fixed; top: 24px; right: 24px; background: linear-gradient(135deg, rgba(0, 0, 0, 0.9), rgba(50, 0, 0, 0.9)); border: 2px solid #0066ff; border-radius: 0; padding: 16px; min-width: 300px; opacity: 0; transform: translateX(400px); transition: all 0.3s; z-index: 1000; box-shadow: 0 8px 32px rgba(0, 100, 255, 0.5), 0 0 20px rgba(0, 150, 255, 0.3); }}
+        .toast {{ position: fixed; top: 24px; right: 24px; background: linear-gradient(135deg, rgba(0, 0, 0, 0.9), rgba(0, 20, 50, 0.9)); border: 2px solid #0066ff; border-radius: 0; padding: 16px; min-width: 300px; opacity: 0; transform: translateX(400px); transition: all 0.3s; z-index: 1000; box-shadow: 0 8px 32px rgba(0, 100, 255, 0.5), 0 0 20px rgba(0, 150, 255, 0.3); }}
         .toast.show {{ opacity: 1; transform: translateX(0); }}
         .toast-success {{ border-color: #00ccff; box-shadow: 0 8px 32px rgba(100, 200, 255, 0.5), 0 0 20px rgba(100, 200, 255, 0.3); }}
         .toast-error {{ border-color: #0033ff; box-shadow: 0 8px 32px rgba(0, 100, 255, 0.6), 0 0 20px rgba(255, 0, 0, 0.4); }}
