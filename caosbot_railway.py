@@ -3515,10 +3515,11 @@ async def on_ready():
         keep_alive.start()
         print('🔄 Sistema anti-hibernação ATIVADO! Bot ficará online 24/7')
     
-    # INICIAR SISTEMA DE AUTO-RELOAD
-    if not reload_configs.is_running():
-        reload_configs.start()
-        print('⚡ Sistema de auto-reload ATIVADO! Configs sincronizam a cada 3s (quase instantâneo!)')
+    # SISTEMA DE AUTO-RELOAD DESATIVADO (causava loop infinito de sincronização)
+    # if not reload_configs.is_running():
+    #     reload_configs.start()
+    #     print('⚡ Sistema de auto-reload ATIVADO! Configs sincronizam a cada 3s (quase instantâneo!)')
+    print('⚡ Sistema de auto-reload DESATIVADO (evita loops)')
     # REGISTRAR PERSISTENT VIEWS (sistema de tickets V2)
     bot.add_view(TicketPanelView())
     print('🎫 Sistema de Tickets V2 registrado (persistent views)')
