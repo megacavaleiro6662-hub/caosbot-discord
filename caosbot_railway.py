@@ -275,7 +275,7 @@ def login_page():
     
     <div class="login-container">
         <img src="https://i.ibb.co/C3gw3z4L/Gemini-Generated-Image-vjef5gvjef5gvjef-1.png" alt="Gilipe Logo" class="logo">
-        <h1>GILIPE HUB</h1>
+        <h1>ROBITO DASHBOARD</h1>
         <p>Sistema Administrativo Avançado</p>
         <a href="{DISCORD_OAUTH_URL}" class="login-btn">🔐 LOGIN COM DISCORD</a>
         <div class="warning">
@@ -700,7 +700,27 @@ def dashboard():
         }}
         
         .sidebar-logo {{ display: flex; align-items: center; justify-content: center; margin-bottom: 40px; position: relative; z-index: 1; }}
-        .sidebar-logo img {{ width: 180px; height: auto; filter: drop-shadow(0 0 20px rgba(0, 150, 255, 0.8)); }}
+        .sidebar-logo img {{ 
+            width: 180px; 
+            height: auto; 
+            filter: drop-shadow(0 0 20px rgba(0, 150, 255, 0.8)); 
+            animation: 
+                sidebarLogoSwing 4s ease-in-out infinite,
+                sidebarLogoFadeSequence 13s ease-in-out infinite;
+        }}
+        
+        @keyframes sidebarLogoSwing {{
+            0%, 100% {{ transform: rotate(-5deg); }}
+            50% {{ transform: rotate(5deg); }}
+        }}
+        
+        @keyframes sidebarLogoFadeSequence {{
+            0%, 15% {{ opacity: 1; transform: translateX(0) rotate(-5deg); }}
+            50%, 61% {{ opacity: 1; transform: translateX(0) rotate(5deg); }}
+            70% {{ opacity: 0; transform: translateX(-100px) rotate(-10deg); }}
+            75%, 80% {{ opacity: 0; transform: translateX(100px) rotate(10deg); }}
+            90%, 100% {{ opacity: 1; transform: translateX(0) rotate(-5deg); }}
+        }}
         .sidebar-nav {{ list-style: none; }}
         .sidebar-nav li {{ margin-bottom: 12px; }}
         .sidebar-nav a {{ display: flex; align-items: center; padding: 14px 18px; color: #66aaff; text-decoration: none; border-radius: 0; border-left: 4px solid transparent; transition: all 0.3s; font-weight: 600; letter-spacing: 0.5px; }}
@@ -724,7 +744,7 @@ def dashboard():
         .card-header h2 {{ font-size: 18px; font-weight: 700; color: #00ccff; text-shadow: 0 0 5px rgba(100, 200, 255, 0.4); }}
         .toggle {{ position: relative; width: 48px; height: 24px; }}
         .toggle input {{ opacity: 0; width: 0; height: 0; }}
-        .toggle label {{ position: absolute; cursor: pointer; inset: 0; background: #330000; transition: 0.3s; border-radius: 0; border: 1px solid #0066ff; }}
+        .toggle label {{ position: absolute; cursor: pointer; inset: 0; background: #000033; transition: 0.3s; border-radius: 0; border: 1px solid #0066ff; }}
         .toggle label:before {{ content: ""; position: absolute; height: 18px; width: 18px; left: 3px; bottom: 3px; background: linear-gradient(135deg, #0066ff, #00ccff); transition: 0.3s; border-radius: 0; box-shadow: 0 0 5px rgba(100, 200, 255, 0.5); }}
         .toggle input:checked + label {{ background: linear-gradient(135deg, #0033ff, #0066ff); box-shadow: 0 0 10px rgba(0, 100, 255, 0.6); }}
         .toggle input:checked + label:before {{ transform: translateX(24px); background: linear-gradient(135deg, #00ccff, #ffffff); }}
@@ -809,7 +829,7 @@ def dashboard():
     <!-- Sidebar -->
     <div class="sidebar">
         <div class="sidebar-logo">
-            <img src="https://i.ibb.co/Fq5Lgzs5/Chat-GPT-Image-7-de-out-de-2025-00-25-49.png" alt="CAOS Hub">
+            <img src="https://i.ibb.co/C3gw3z4L/Gemini-Generated-Image-vjef5gvjef5gvjef-1.png" alt="Robito Dashboard">
         </div>
         <ul class="sidebar-nav">
             <li><a href="#" class="active" onclick="showPage('dashboard')">📊 Dashboard</a></li>
