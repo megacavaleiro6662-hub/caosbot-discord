@@ -3148,18 +3148,73 @@ async def oi(interaction: discord.Interaction):
     embed = discord.Embed(title="👋 Olá!", description=random.choice(saudacoes), color=0x00ff88)
     await interaction.response.send_message(embed=embed)
 
-# Comando beijar
-@bot.tree.command(name="beijar", description="💋 Beije alguém")
+# Comando beijar (COMPLETO - COPIADO DO ORIGINAL)
+@bot.tree.command(name="beijar", description="💋 Dê um beijo em alguém")
 @app_commands.describe(usuario="Usuário para beijar")
-async def beijar(interaction: discord.Interaction, usuario: discord.Member):
+async def beijar_slash(interaction: discord.Interaction, usuario: discord.Member):
     if usuario.id == interaction.user.id:
-        await interaction.response.send_message("❌ Você não pode beijar a si mesmo!", ephemeral=True)
+        embed = discord.Embed(
+            title='😅 Ops!',
+            description='Você não pode beijar a si mesmo!\n*Tente beijar outra pessoa...*',
+            color=0xffa500
+        )
+        await interaction.response.send_message(embed=embed, ephemeral=True)
         return
+    
+    if usuario.bot:
+        embed = discord.Embed(
+            title='🤖 Erro',
+            description='Você não pode beijar um bot!\n*Bots não têm sentimentos...*',
+            color=0xff0000
+        )
+        await interaction.response.send_message(embed=embed, ephemeral=True)
+        return
+    
+    mensagens = [
+        f'💋 **{interaction.user.mention}** deu um beijo em **{usuario.mention}**!',
+        f'😘 **{interaction.user.mention}** beijou **{usuario.mention}** de forma romântica!',
+        f'💕 **{interaction.user.mention}** roubou um beijo de **{usuario.mention}**!',
+        f'😍 **{interaction.user.mention}** beijou **{usuario.mention}** apaixonadamente!',
+        f'❤️ **{interaction.user.mention}** deu um beijinho em **{usuario.mention}**!',
+        f'💖 **{interaction.user.mention}** surpreendeu **{usuario.mention}** com um beijo!',
+        f'🌹 **{interaction.user.mention}** beijou os lábios de **{usuario.mention}**!',
+        f'💝 **{interaction.user.mention}** selou os lábios de **{usuario.mention}** com um beijo!',
+        f'✨ **{interaction.user.mention}** deu um beijo mágico em **{usuario.mention}**!',
+        f'🎀 **{interaction.user.mention}** encheu **{usuario.mention}** de beijos!',
+        f'💐 **{interaction.user.mention}** presenteou **{usuario.mention}** com um beijo!',
+        f'🦋 **{interaction.user.mention}** deu um beijo delicado em **{usuario.mention}**!',
+        f'🌺 **{interaction.user.mention}** beijou **{usuario.mention}** com paixão!'
+    ]
+    
+    reacoes = [
+        "Que momento romântico! 💕",
+        "O amor está no ar! ❤️",
+        "Shippo muito! 💖",
+        "Que casal lindo! 😍",
+        "Ahhh que fofo! 🥰",
+        "Meu coração! 💗",
+        "Amo esse casal! 💝",
+        "Que beijo perfeito! 💋",
+        "Tô morrendo de amor! 💘",
+        "Casem logo! 💍"
+    ]
+    
+    gif = random.choice(INTERACTION_GIFS['kiss'])
+    mensagem = random.choice(mensagens)
+    reacao = random.choice(reacoes)
+    
     embed = discord.Embed(
-        title="💋 Beijo!",
-        description=f'**{interaction.user.display_name}** beijou **{usuario.display_name}**! 💕',
-        color=0xff69b4
+        title='💋 Beijo Romântico',
+        description=mensagem,
+        color=0xff1493
     )
+    embed.add_field(name='💕 Reação', value=reacao, inline=False)
+    embed.set_image(url=gif)
+    embed.set_footer(
+        text=f'Comando usado por {interaction.user.name} • {datetime.now().strftime("%H:%M")}',
+        icon_url=interaction.user.display_avatar.url
+    )
+    
     await interaction.response.send_message(embed=embed)
 
 # Comando kick
