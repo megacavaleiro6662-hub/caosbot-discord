@@ -3545,6 +3545,12 @@ async def on_ready():
     
     # Iniciar rotação de status em background
     bot.loop.create_task(rotate_status())
+    
+    # CARREGAR CONFIGURAÇÕES DO DASHBOARD
+    global welcome_config
+    loaded_config = load_config_dashboard()
+    welcome_config.update(loaded_config)
+    print(f"✅ Configurações do dashboard carregadas: {welcome_config}")
 
 # ========================================
 # EVENTOS DE BOAS-VINDAS/SAÍDA/BAN
