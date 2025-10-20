@@ -2877,8 +2877,8 @@ def send_ticket_panel():
                 )
                 embed.set_footer(text='Sistema de Tickets • Caos Hub')
                 
-                # Usar o novo sistema de BOTÃO (abre dropdowns ephemeral)
-                view = TicketPanelView()
+                # Usar o sistema de BOTÃO com TicketView
+                view = TicketView()
                 
                 await channel.send(embed=embed, view=view)
                 return True
@@ -8594,7 +8594,7 @@ load_ticket_config()
 # Vá em "Tickets" e configure tudo pela interface web!
 
 # TODAS AS VIEWS ANTIGAS DE TICKETS FORAM REMOVIDAS
-# O sistema agora usa APENAS o sistema V2 com TicketPanelView, TicketConfigView (V2), etc
+# O sistema agora usa APENAS o sistema V2 com TicketView, TicketCategoryView, CloseTicketView
 # Essas classes estão definidas mais acima no código
 
 # ========================================
