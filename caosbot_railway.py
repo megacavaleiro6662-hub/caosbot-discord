@@ -1296,10 +1296,12 @@ Você ganhou **{{{{prize}}}}**!
                         <div class="card">
                             <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
                                 <h2>👁️ Preview</h2>
-                                <select id="preview-mode" class="form-select" onchange="updateEmbedPreview()" style="width: auto; padding: 8px; font-size: 13px;">
-                                    <option value="giveaway">🎉 Sorteio</option>
-                                    <option value="winner">🏆 Vencedor</option>
-                                </select>
+                                <div id="preview-mode-container" style="display: none;">
+                                    <select id="preview-mode" class="form-select" onchange="updateEmbedPreview()" style="width: auto; padding: 8px; font-size: 13px;">
+                                        <option value="giveaway">🎉 Sorteio</option>
+                                        <option value="winner">🏆 Vencedor</option>
+                                    </select>
+                                </div>
                             </div>
                             <div id="embed-preview" style="background: #2b2d31; padding: 16px; border-radius: 4px; min-height: 300px; max-height: 600px; overflow-y: auto;">
                                 <div style="color: #b9bbbe; text-align: center; padding: 40px 20px;">
@@ -1849,10 +1851,14 @@ Você ganhou **{{{{prize}}}}**!
             
             // Mostrar/esconder campos específicos
             const giveawayFields = document.getElementById('giveaway-fields');
+            const previewModeContainer = document.getElementById('preview-mode-container');
+            
             if (template === 'giveaway') {{
                 giveawayFields.style.display = 'block';
+                previewModeContainer.style.display = 'block'; // Mostrar botões Sorteio/Vencedor
             }} else {{
                 giveawayFields.style.display = 'none';
+                previewModeContainer.style.display = 'none'; // Esconder botões
             }}
             
             // Se for personalizado, limpar os campos e atualizar preview
