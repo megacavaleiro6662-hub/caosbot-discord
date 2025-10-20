@@ -3411,6 +3411,9 @@ intents.presences = True  # NECESSÁRIO para ver status online/offline dos membr
 # Bot configurado com PREFIXO (.)
 bot = commands.Bot(command_prefix='.', intents=intents)
 
+# Sistema de XP - Cooldown para ganhar XP
+xp_cooldowns = {}
+
 # Nova função COMPLETA com todos os campos
 async def create_ticket_channel_complete(interaction, category_name, category_emoji, priority_name, priority_emoji, assunto, descricao, idioma, info_adicional):
     """Cria canal de ticket COMPLETO igual da imagem"""
@@ -3885,15 +3888,19 @@ async def on_message(message):
                     print(f"❌ Erro ao bloquear comando de música: {e}")
     
     # ========================================
-    # IGNORAR MODERADORES PARA SISTEMAS DE PROTEÇÃO
+    # MODERADORES IGNORAM SISTEMAS DE ANTI-SPAM
     # ========================================
     
-    if message.author.guild_permissions.manage_messages:
+    is_moderator = message.author.guild_permissions.manage_messages
+    
+    # Se for moderador, pular TODAS as verificações de spam/raid
+    if is_moderator:
         await bot.process_commands(message)
         return
     
     # ========================================
     # SISTEMA ANTI-RAID - DETECÇÃO DE FLOOD GLOBAL
+    # (Membros normais passam por aqui e DEPOIS processam comandos)
     # ========================================
     
     # Adicionar mensagem ao histórico global
