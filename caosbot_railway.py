@@ -3774,48 +3774,49 @@ async def on_message(message):
         return
     
     # ========================================
-    # SISTEMA DE XP (ESTILO LORITTA)
+    # SISTEMA DE XP (DESATIVADO TEMPORARIAMENTE)
+    # TODO: Reativar depois quando configurar database
     # ========================================
-    if message.guild:  # Só em servidores
-        user_key = f"{message.author.id}_{message.guild.id}"
-        current_time = time.time()
-        
-        # Verifica cooldown (padrão 60 segundos)
-        if user_key not in xp_cooldowns or current_time - xp_cooldowns[user_key] >= 60:
-            xp_cooldowns[user_key] = current_time
-            
-            # Ganha XP aleatório entre 15-25 (tipo Loritta)
-            xp_gain = random.randint(15, 25)
-            result = add_xp(message.author.id, message.guild.id, xp_gain)
-            
-            # Se subiu de nível, envia notificação
-            if result['level_up']:
-                try:
-                    # Embed de level up
-                    embed = discord.Embed(
-                        title="🎉 LEVEL UP!",
-                        description=f"Parabéns {message.author.mention}!\nVocê subiu para o **Nível {result['new_level']}**! 🔥",
-                        color=0xff6600
-                    )
-                    embed.set_thumbnail(url=message.author.display_avatar.url)
-                    
-                    await message.channel.send(embed=embed, delete_after=10)
-                    
-                    # Sistema de cargos automáticos por nível
-                    conn = sqlite3.connect('xp_database.db')
-                    cursor = conn.cursor()
-                    cursor.execute('SELECT role_id FROM level_roles WHERE guild_id = ? AND level = ?', 
-                                 (str(message.guild.id), result['new_level']))
-                    role_result = cursor.fetchone()
-                    conn.close()
-                    
-                    if role_result:
-                        role = message.guild.get_role(int(role_result[0]))
-                        if role:
-                            await message.author.add_roles(role)
-                            print(f'🎖️ Cargo {role.name} adicionado a {message.author.name} (Nível {result["new_level"]})')
-                except Exception as e:
-                    print(f'❌ Erro ao enviar level up: {e}')
+    # if message.guild:  # Só em servidores
+    #     user_key = f"{message.author.id}_{message.guild.id}"
+    #     current_time = time.time()
+    #     
+    #     # Verifica cooldown (padrão 60 segundos)
+    #     if user_key not in xp_cooldowns or current_time - xp_cooldowns[user_key] >= 60:
+    #         xp_cooldowns[user_key] = current_time
+    #         
+    #         # Ganha XP aleatório entre 15-25 (tipo Loritta)
+    #         xp_gain = random.randint(15, 25)
+    #         result = add_xp(message.author.id, message.guild.id, xp_gain)
+    #         
+    #         # Se subiu de nível, envia notificação
+    #         if result['level_up']:
+    #             try:
+    #                 # Embed de level up
+    #                 embed = discord.Embed(
+    #                     title="🎉 LEVEL UP!",
+    #                     description=f"Parabéns {message.author.mention}!\nVocê subiu para o **Nível {result['new_level']}**! 🔥",
+    #                     color=0xff6600
+    #                 )
+    #                 embed.set_thumbnail(url=message.author.display_avatar.url)
+    #                 
+    #                 await message.channel.send(embed=embed, delete_after=10)
+    #                 
+    #                 # Sistema de cargos automáticos por nível
+    #                 conn = sqlite3.connect('xp_database.db')
+    #                 cursor = conn.cursor()
+    #                 cursor.execute('SELECT role_id FROM level_roles WHERE guild_id = ? AND level = ?', 
+    #                              (str(message.guild.id), result['new_level']))
+    #                 role_result = cursor.fetchone()
+    #                 conn.close()
+    #                 
+    #                 if role_result:
+    #                     role = message.guild.get_role(int(role_result[0]))
+    #                     if role:
+    #                         await message.author.add_roles(role)
+    #                         print(f'🎖️ Cargo {role.name} adicionado a {message.author.name} (Nível {result["new_level"]})')
+    #             except Exception as e:
+    #                 print(f'❌ Erro ao enviar level up: {e}')
     
     # ========================================
     # RESPOSTA QUANDO O BOT É MENCIONADO
