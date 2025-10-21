@@ -868,7 +868,7 @@ def dashboard():
             right: 20px;
             z-index: 999;
             animation: robitoEntryFromCenter 1s cubic-bezier(0.34, 1.56, 0.64, 1) 2s forwards;
-            transition: transform 1s cubic-bezier(0.68, -0.55, 0.265, 1.55), opacity 0.8s ease-in-out;
+            transition: transform 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55), opacity 0.8s ease-in-out;
         }}
         
         .robito-helper.entry-complete {{
@@ -905,12 +905,12 @@ def dashboard():
             max-width: 450px;
             box-shadow: 0 12px 50px rgba(0, 150, 255, 0.7), 0 0 50px rgba(100, 200, 255, 0.5);
             animation: bubblePulse 2s ease-in-out infinite;
-            transition: opacity 0.6s ease-in-out, transform 0.6s ease-in-out;
+            transition: opacity 0.8s ease-in-out, transform 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55);
         }}
         
         .robito-helper.hidden .robito-speech-bubble {{
             opacity: 0;
-            transform: translateY(40px);
+            transform: translateY(50px);
         }}
         
         .robito-speech-bubble::after {{
@@ -955,7 +955,7 @@ def dashboard():
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            transition: transform 1s cubic-bezier(0.68, -0.55, 0.265, 1.55), box-shadow 0.4s ease, background 0.3s ease;
+            transition: transform 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55), box-shadow 0.4s ease, background 0.3s ease;
             box-shadow: 0 8px 25px rgba(0, 100, 255, 0.7);
             animation: robitoEntryFromCenter 1s ease-out 2s both;
         }}
@@ -1649,7 +1649,7 @@ Você ganhou **{{{{prize}}}}**!
             document.getElementById('robito-img').src = robitoData.image;
         }}
         
-        // 🔽 Toggle do Robito (Mostrar/Esconder) - ULTRA FLUIDO
+        // 🔽 Toggle do Robito (Mostrar/Esconder) - ULTRA FLUIDO SINCRONIZADO
         function toggleRobito() {{
             const helper = document.getElementById('robito-helper');
             const toggle = document.getElementById('robito-toggle');
@@ -1657,19 +1657,20 @@ Você ganhou **{{{{prize}}}}**!
             console.log('🎬 Toggle clicado!');
             
             if (helper.classList.contains('hidden')) {{
-                // MOSTRAR - Robito sobe com animação ultra fluida
+                // MOSTRAR - Robito sobe com animação ultra fluida (0.8s)
                 helper.classList.remove('hidden');
                 toggle.classList.remove('rotated');
                 toggle.classList.remove('hidden');
                 
-                // Restaurar animação de flutuação após subir
+                // Restaurar animação de flutuação após subir (0.8s)
                 setTimeout(function() {{
                     helper.classList.add('entry-complete');
-                }}, 1000);
+                    console.log('🔄 Flutuação restaurada');
+                }}, 800);
                 
-                console.log('✅ Robito subindo... ULTRA FLUIDO');
+                console.log('✅ Robito subindo... SINCRONIZADO em 0.8s');
             }} else {{
-                // ESCONDER - Robito desce com animação ultra fluida
+                // ESCONDER - Robito desce com animação ultra fluida (0.8s)
                 helper.classList.add('hidden');
                 toggle.classList.add('rotated');
                 toggle.classList.add('hidden');
@@ -1677,7 +1678,7 @@ Você ganhou **{{{{prize}}}}**!
                 // Remover animação de flutuação antes de descer
                 helper.classList.remove('entry-complete');
                 
-                console.log('⬇️ Robito descendo... ULTRA FLUIDO');
+                console.log('⬇️ Robito descendo... SINCRONIZADO em 0.8s');
             }}
         }}
         
