@@ -867,8 +867,11 @@ def dashboard():
             bottom: 20px;
             right: 20px;
             z-index: 999;
-            animation: robitoEntryFromCenter 1s cubic-bezier(0.34, 1.56, 0.64, 1) 2s forwards;
             transition: transform 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55), opacity 0.8s ease-in-out;
+        }}
+        
+        .robito-helper.initial-entry {{
+            animation: robitoEntryFromCenter 1s cubic-bezier(0.34, 1.56, 0.64, 1) 2s forwards;
         }}
         
         .robito-helper.entry-complete {{
@@ -876,7 +879,7 @@ def dashboard():
         }}
         
         .robito-helper.hidden {{
-            transform: translateY(500px) !important;
+            transform: translateY(500px);
             opacity: 0;
         }}
         
@@ -884,13 +887,12 @@ def dashboard():
             width: 200px;
             height: 200px;
             filter: drop-shadow(0 12px 30px rgba(0, 100, 255, 0.7));
-            animation: robitoSwing 2s ease-in-out infinite;
             cursor: pointer;
             transition: opacity 0.8s ease-in-out, transform 0.8s ease-in-out;
         }}
         
-        .robito-helper.hidden img {{
-            animation: none;
+        .robito-helper.entry-complete img {{
+            animation: robitoSwing 2s ease-in-out infinite;
         }}
         
         .robito-speech-bubble {{
@@ -1656,8 +1658,13 @@ Você ganhou **{{{{prize}}}}**!
             
             console.log('🎬 Toggle clicado!');
             
+            // Garantir que NUNCA rode a animação inicial de novo
+            helper.classList.remove('initial-entry');
+            
             if (helper.classList.contains('hidden')) {{
                 // MOSTRAR - Robito sobe com animação ultra fluida (0.8s)
+                console.log('✅ Robito SUBINDO... com animação de 0.8s');
+                
                 helper.classList.remove('hidden');
                 toggle.classList.remove('rotated');
                 toggle.classList.remove('hidden');
@@ -1668,17 +1675,19 @@ Você ganhou **{{{{prize}}}}**!
                     console.log('🔄 Flutuação restaurada');
                 }}, 800);
                 
-                console.log('✅ Robito subindo... SINCRONIZADO em 0.8s');
             }} else {{
                 // ESCONDER - Robito desce com animação ultra fluida (0.8s)
-                helper.classList.add('hidden');
-                toggle.classList.add('rotated');
-                toggle.classList.add('hidden');
+                console.log('⬇️ Robito DESCENDO... com animação de 0.8s');
                 
-                // Remover animação de flutuação antes de descer
+                // Remover animação de flutuação ANTES de descer
                 helper.classList.remove('entry-complete');
                 
-                console.log('⬇️ Robito descendo... SINCRONIZADO em 0.8s');
+                // Pequeno delay para garantir que a animação pare
+                setTimeout(function() {{
+                    helper.classList.add('hidden');
+                    toggle.classList.add('rotated');
+                    toggle.classList.add('hidden');
+                }}, 10);
             }}
         }}
         
@@ -2992,8 +3001,16 @@ Você ganhou **{{{{prize}}}}**!
             }}
         }};
         
-        // 🎉 INICIALIZAÇÃO DO DASHBOARD COM SPLASH SCREEN
+        // 🎉 INICIALIZAÇÃO DO DASHBOARD COM SPLASH SCREEN (SÓ RODA 1x)
         window.addEventListener('DOMContentLoaded', function() {{
+            const helper = document.getElementById('robito-helper');
+            
+            // Adicionar classe de entrada inicial (SÓ NA PRIMEIRA VEZ)
+            if (helper && !helper.classList.contains('initial-entry')) {{
+                helper.classList.add('initial-entry');
+                console.log('🎬 Animação inicial do Robito começando...');
+            }}
+            
             // Remover splash screen após 2 segundos
             setTimeout(function() {{
                 const splash = document.getElementById('splash-screen');
@@ -3004,8 +3021,8 @@ Você ganhou **{{{{prize}}}}**!
             
             // Marcar animação de entrada como completa após 3 segundos (2s delay + 1s animação)
             setTimeout(function() {{
-                const helper = document.getElementById('robito-helper');
                 if (helper) {{
+                    helper.classList.remove('initial-entry');
                     helper.classList.add('entry-complete');
                     console.log('✅ Robito entrada completa! Animação de flutuação iniciada.');
                 }}
