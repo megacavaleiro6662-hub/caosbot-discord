@@ -8833,7 +8833,8 @@ class TicketCategoryView(discord.ui.View):
         }
         
         self.selected_category = category_map.get(select.values[0], "📁 Geral")
-        await interaction.response.send_message(f"✅ Categoria selecionada: **{self.selected_category}**", ephemeral=True)
+        # NÃO ENVIA MENSAGEM! Apenas confirma silenciosamente
+        await interaction.response.defer()
     
     @discord.ui.select(
         placeholder="⚡ Selecione a Prioridade",
@@ -8857,7 +8858,8 @@ class TicketCategoryView(discord.ui.View):
         }
         
         self.selected_priority = priority_map.get(select.values[0], "🟡 Média")
-        await interaction.response.send_message(f"✅ Prioridade selecionada: **{self.selected_priority}**", ephemeral=True)
+        # NÃO ENVIA MENSAGEM! Apenas confirma silenciosamente
+        await interaction.response.defer()
     
     @discord.ui.button(label="Continuar", style=discord.ButtonStyle.green, emoji="✅", row=2)
     async def continue_button(self, interaction: discord.Interaction, button: discord.ui.Button):
@@ -8869,6 +8871,27 @@ class TicketCategoryView(discord.ui.View):
         modal = TicketModal(self.config, self.category_channel, self.selected_category, self.selected_priority)
         await interaction.response.send_modal(modal)
         self.stop()
+    
+    async def on_timeout(self):
+        """Quando o painel expira (5 minutos), edita a mensagem"""
+        try:
+            # Criar embed de expiração
+            expired_embed = discord.Embed(
+                title="⏱️ PAINEL EXPIRADO",
+                description="**Este painel de criação de ticket expirou!**\n\n"
+                           "❌ Você demorou mais de 5 minutos para responder.\n\n"
+                           "💡 **Para criar um novo ticket:**\n"
+                           "Clique novamente no botão **🎫 Abrir Ticket**",
+                color=0xff0000
+            )
+            expired_embed.set_footer(text="Sistema de Tickets • Caos Hub")
+            
+            # Tentar editar a mensagem original (se possível em ephemeral)
+            # Em mensagens ephemeral, isso pode não funcionar, então apenas desabilita os botões
+            self.clear_items()
+            self.stop()
+        except:
+            pass
 
 # Modal para coletar informações do ticket (com seleções salvas)
 class TicketModal(discord.ui.Modal, title="🎫 Informações do Ticket"):
@@ -8966,20 +8989,9 @@ class TicketModal(discord.ui.Modal, title="🎫 Informações do Ticket"):
                 if role:
                     overwrites[role] = discord.PermissionOverwrite(read_messages=True, send_messages=True)
             
-            # Contar quantos tickets já existem na categoria para numeração
-            ticket_number = 1
-            for channel in target_category.channels:
-                if channel.name.startswith("carrinho-"):
-                    try:
-                        num = int(channel.name.split("-")[1])
-                        if num >= ticket_number:
-                            ticket_number = num + 1
-                    except:
-                        pass
-            
-            # Criar canal com nome numerado
+            # Criar canal com ID do usuário (para verificação anti-duplicata)
             ticket_channel = await target_category.create_text_channel(
-                name=f"⌊🛒⌉-carrinho-{ticket_number}",
+                name=f"⌊🛒⌉-carrinho-{interaction.user.id}",
                 overwrites=overwrites
             )
             
@@ -9049,10 +9061,6 @@ class TicketModal(discord.ui.Modal, title="🎫 Informações do Ticket"):
             close_view = CloseTicketView()
             await ticket_channel.send(f"{interaction.user.mention}", embed=embed, view=close_view)
             
-            # 🔥 SALVAR COOLDOWN (1 MINUTO)
-            import time
-            ticket_user_cooldowns[interaction.user.id] = time.time()
-            
             # Mensagem de confirmação
             await interaction.response.send_message(
                 f"✅ **Ticket criado com sucesso!**\n\n"
@@ -9118,7 +9126,7 @@ class TicketView(discord.ui.View):
             await interaction.response.send_message(f"❌ Categoria não encontrada! ID: {category_id}\nVerifique se a categoria existe ou reconfigure pelo dashboard.", ephemeral=True)
             return
         
-        # 🔥 VERIFICAÇÃO 1: COOLDOWN (1 MINUTO)
+        # 🔥 VERIFICAÇÃO 1: COOLDOWN (1 MINUTO) - ANTES DE MOSTRAR PAINEL!
         import time
         current_time = time.time()
         cooldown_seconds = 60  # 1 minuto
@@ -9128,28 +9136,31 @@ class TicketView(discord.ui.View):
             if time_passed < cooldown_seconds:
                 time_left = int(cooldown_seconds - time_passed)
                 await interaction.response.send_message(
-                    f"⏰ **Aguarde {time_left} segundos** antes de criar outro ticket!",
+                    f"⏰ **Aguarde {time_left} segundos antes de abrir outro ticket!**",
                     ephemeral=True
                 )
                 return
         
-        # 🔥 VERIFICAÇÃO 2: LIMITE DE TICKETS (1 TICKET POR USUÁRIO)
+        # 🔥 VERIFICAÇÃO 2: TICKET JÁ ABERTO (BUSCA EM TODOS OS CANAIS DO SERVIDOR!)
         user_tickets = []
-        for channel in category.channels:
-            if f"-{user_id}" in channel.name:
+        for channel in interaction.guild.text_channels:
+            # Verificar se o nome do canal contém o ID do usuário
+            if channel.name.endswith(f"-{user_id}") or f"carrinho-{user_id}" in channel.name:
                 user_tickets.append(channel)
         
-        max_tickets = 1  # LIMITE FIXO: 1 TICKET
-        if len(user_tickets) >= max_tickets:
+        if len(user_tickets) > 0:
             await interaction.response.send_message(
-                f"❌ **Você já tem {len(user_tickets)} ticket(s) aberto(s)!**\n\n"
-                f"📌 Ticket: {user_tickets[0].mention}\n\n"
+                f"❌ **Você já tem um ticket aberto!**\n\n"
+                f"📌 Canal: {user_tickets[0].mention}\n\n"
                 f"*Feche o ticket atual antes de abrir outro.*",
                 ephemeral=True
             )
             return
         
-        # Mostrar painel de seleção
+        # SALVAR COOLDOWN AGORA (quando mostra o painel)
+        ticket_user_cooldowns[user_id] = current_time
+        
+        # Mostrar painel de seleção (EPHEMERAL com timeout de 5 minutos)
         panel_embed = discord.Embed(
             title="🎫 CONFIGURAR SEU TICKET",
             description="**Selecione as opções abaixo antes de continuar:**\n\n"
@@ -9158,7 +9169,7 @@ class TicketView(discord.ui.View):
                        "*Após selecionar, clique em ✅ Continuar*",
             color=0x00ff88
         )
-        panel_embed.set_footer(text="As seleções são salvas automaticamente")
+        panel_embed.set_footer(text="⏱️ Este painel expira em 5 minutos")
         
         panel_view = TicketCategoryView(config, category, interaction.user)
         await interaction.response.send_message(embed=panel_embed, view=panel_view, ephemeral=True)
