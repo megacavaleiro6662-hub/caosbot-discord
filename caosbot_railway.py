@@ -8803,8 +8803,10 @@ class TicketCategoryView(discord.ui.View):
         self.category_channel = category_channel
         self.user = user
         self.message = message  # Guardar mensagem original para editar
-        self.selected_category = "📁 Geral"
-        self.selected_priority = "🟡 Média"
+        self.selected_category = None
+        self.selected_priority = None
+        self.category_value = None
+        self.priority_value = None
     
     @discord.ui.select(
         placeholder="🏷️ Selecione a Categoria do Ticket",
@@ -8816,7 +8818,8 @@ class TicketCategoryView(discord.ui.View):
             discord.SelectOption(label="Parceria", description="Proposta de parceria", emoji="🤝", value="parceria"),
             discord.SelectOption(label="Financeiro", description="Questões de pagamento", emoji="💰", value="financeiro"),
             discord.SelectOption(label="Moderação", description="Questões de moderação", emoji="🛡️", value="moderacao"),
-        ]
+        ],
+        custom_id="ticket_category_select"
     )
     async def select_category(self, interaction: discord.Interaction, select: discord.ui.Select):
         if interaction.user.id != self.user.id:
@@ -8833,9 +8836,17 @@ class TicketCategoryView(discord.ui.View):
             "moderacao": "🛡️ Moderação"
         }
         
-        self.selected_category = category_map.get(select.values[0], "📁 Geral")
-        # NÃO ENVIA MENSAGEM! Apenas confirma silenciosamente
-        await interaction.response.defer()
+        self.category_value = select.values[0]
+        self.selected_category = category_map.get(self.category_value, "📁 Geral")
+        
+        # Habilitar botão se ambos estiverem selecionados
+        self._update_button()
+        
+        # Atualizar mensagem para refletir mudança no botão
+        try:
+            await interaction.response.edit_message(view=self)
+        except:
+            await interaction.response.defer()
     
     @discord.ui.select(
         placeholder="⚡ Selecione a Prioridade",
@@ -8844,7 +8855,8 @@ class TicketCategoryView(discord.ui.View):
             discord.SelectOption(label="Média", description="Prioridade normal", emoji="🟡", value="media"),
             discord.SelectOption(label="Alta", description="Precisa de atenção", emoji="🟠", value="alta"),
             discord.SelectOption(label="Urgente", description="Muito urgente!", emoji="🔴", value="urgente"),
-        ]
+        ],
+        custom_id="ticket_priority_select"
     )
     async def select_priority(self, interaction: discord.Interaction, select: discord.ui.Select):
         if interaction.user.id != self.user.id:
@@ -8858,14 +8870,34 @@ class TicketCategoryView(discord.ui.View):
             "urgente": "🔴 Urgente"
         }
         
-        self.selected_priority = priority_map.get(select.values[0], "🟡 Média")
-        # NÃO ENVIA MENSAGEM! Apenas confirma silenciosamente
-        await interaction.response.defer()
+        self.priority_value = select.values[0]
+        self.selected_priority = priority_map.get(self.priority_value, "🟡 Média")
+        
+        # Habilitar botão se ambos estiverem selecionados
+        self._update_button()
+        
+        # Atualizar mensagem para refletir mudança no botão
+        try:
+            await interaction.response.edit_message(view=self)
+        except:
+            await interaction.response.defer()
     
-    @discord.ui.button(label="Continuar", style=discord.ButtonStyle.green, emoji="✅", row=2)
+    def _update_button(self):
+        """Habilita ou desabilita o botão Continuar baseado nas seleções"""
+        if self.selected_category and self.selected_priority:
+            self.continue_button.disabled = False
+        else:
+            self.continue_button.disabled = True
+    
+    @discord.ui.button(label="Continuar", style=discord.ButtonStyle.green, emoji="✅", row=2, disabled=True)
     async def continue_button(self, interaction: discord.Interaction, button: discord.ui.Button):
         if interaction.user.id != self.user.id:
             await interaction.response.send_message("❌ Este painel não é seu!", ephemeral=True)
+            return
+        
+        # Verificar se ambos foram selecionados
+        if not self.selected_category or not self.selected_priority:
+            await interaction.response.send_message("❌ Selecione a categoria e prioridade primeiro!", ephemeral=True)
             return
         
         # Abrir modal com as seleções salvas e passar a mensagem
@@ -9242,11 +9274,27 @@ class TicketView(discord.ui.View):
         # 🔥 TASK PARA ATUALIZAR TIMER EM TEMPO REAL
         import asyncio
         async def update_timer():
-            for remaining in range(59, 0, -1):
+            for remaining in range(59, -1, -1):  # 59 → 0
                 await asyncio.sleep(1)
                 try:
-                    panel_embed.set_footer(text=f"⏱️ Tempo restante: {remaining} segundos")
-                    await msg.edit(embed=panel_embed, view=panel_view)
+                    if remaining > 0:
+                        panel_embed.set_footer(text=f"⏱️ Tempo restante: {remaining} segundos")
+                        await msg.edit(embed=panel_embed, view=panel_view)
+                    else:
+                        # ⚡ EXPIROU! EMBED LARANJA INSTANTÂNEO!
+                        expired_embed = discord.Embed(
+                            title="⏱️ PAINEL EXPIRADO",
+                            description="**Este painel de criação de ticket expirou!**\n\n"
+                                       "❌ Você demorou mais de **60 segundos** para responder.\n\n"
+                                       "💡 **Para criar um novo ticket:**\n"
+                                       "Clique novamente no botão **🎫 Abrir Ticket**",
+                            color=0xFFA500,  # LARANJA
+                            timestamp=discord.utils.utcnow()
+                        )
+                        expired_embed.set_footer(text="Sistema de Tickets • Caos Hub • Tempo esgotado")
+                        await msg.edit(embed=expired_embed, view=None)
+                        panel_view.stop()
+                        break
                 except:
                     break
         
