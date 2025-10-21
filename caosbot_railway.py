@@ -8808,19 +8808,8 @@ class TicketCategoryView(discord.ui.View):
         self.category_value = None
         self.priority_value = None
         
-        # Criar selects dinamicamente
+        # Criar selects dinamicamente (cria botão também!)
         self._create_selects()
-        
-        # Botão Continuar (começa desabilitado)
-        self.btn_continue = discord.ui.Button(
-            label="Continuar",
-            style=discord.ButtonStyle.green,
-            emoji="✅",
-            row=2,
-            disabled=True
-        )
-        self.btn_continue.callback = self.continue_callback
-        self.add_item(self.btn_continue)
     
     def _create_selects(self):
         """Cria os selects com as opções corretas (marcando selecionadas)"""
@@ -9248,53 +9237,13 @@ class TicketView(discord.ui.View):
         if user_id in ticket_user_cooldowns:
             time_passed = current_time - ticket_user_cooldowns[user_id]
             if time_passed < cooldown_seconds:
-                time_left = int(cooldown_seconds - time_passed)
-                
-                # 🔥 MOSTRAR PAINEL COM COOLDOWN!
-                cooldown_embed = discord.Embed(
-                    title="⏰ AGUARDE O COOLDOWN!",
-                    description=f"**Você precisa esperar antes de abrir outro ticket!**\n\n"
-                               f"⏱️ **Tempo restante: {time_left} segundos**\n\n"
-                               f"*Este painel atualizará automaticamente.*",
-                    color=0xFFA500,  # LARANJA
-                    timestamp=discord.utils.utcnow()
+                # 🔥 MENSAGEM SIMPLES SEM TIMER!
+                await interaction.response.send_message(
+                    f"⏰ **Aguarde o cooldown antes de abrir outro ticket!**\n\n"
+                    f"💡 **Siga o timer do painel de criação de ticket anterior.**\n\n"
+                    f"*Você poderá criar um novo ticket quando o painel anterior expirar.*",
+                    ephemeral=True
                 )
-                cooldown_embed.set_footer(text=f"⏱️ Aguarde {time_left} segundos")
-                
-                # Enviar painel
-                await interaction.response.send_message(embed=cooldown_embed, ephemeral=True)
-                msg = await interaction.original_response()
-                
-                # 🔥 TASK PARA ATUALIZAR TIMER DO COOLDOWN
-                import asyncio
-                async def update_cooldown_timer():
-                    for remaining in range(time_left - 1, 0, -1):
-                        await asyncio.sleep(1)
-                        try:
-                            cooldown_embed.description = f"**Você precisa esperar antes de abrir outro ticket!**\n\n" \
-                                                         f"⏱️ **Tempo restante: {remaining} segundos**\n\n" \
-                                                         f"*Este painel atualizará automaticamente.*"
-                            cooldown_embed.set_footer(text=f"⏱️ Aguarde {remaining} segundos")
-                            await msg.edit(embed=cooldown_embed)
-                        except:
-                            break
-                    
-                    # Quando acabar o cooldown
-                    try:
-                        ready_embed = discord.Embed(
-                            title="✅ COOLDOWN FINALIZADO!",
-                            description="**Agora você pode abrir um novo ticket!**\n\n"
-                                       "💡 **Para criar um ticket:**\n"
-                                       "Clique novamente no botão **🎫 Abrir Ticket**",
-                            color=0x00ff00,  # VERDE
-                            timestamp=discord.utils.utcnow()
-                        )
-                        ready_embed.set_footer(text="Sistema de Tickets • Caos Hub")
-                        await msg.edit(embed=ready_embed)
-                    except:
-                        pass
-                
-                asyncio.create_task(update_cooldown_timer())
                 return
         
         # 🔥 VERIFICAÇÃO 2: TICKET JÁ ABERTO (VERIFICA TOPIC DO CANAL!)
