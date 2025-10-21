@@ -26,6 +26,34 @@ import sqlite3
 from urllib.parse import urlencode
 
 # ========================================
+# FIGURINHAS DO ROBITO (MASCOTE DO BOT)
+# ========================================
+ROBITO_IMAGES = {
+    'aliviado': 'https://i.ibb.co/QFx0c1bK/robito-aliviado.png',
+    'apaixonado': 'https://i.ibb.co/VY6wnhBp/robito-apaixonado.png',
+    'acenando': 'https://i.ibb.co/h1JQRN8j/robito-ascenando.png',
+    'bravo': 'https://i.ibb.co/67ZRnj18/robito-bravo.png',
+    'cansado': 'https://i.ibb.co/QFwGbL0n/robito-cansado.png',
+    'dab': 'https://i.ibb.co/SXBBWWBL/robito-dab.png',
+    'envergonhado': 'https://i.ibb.co/6770kqjd/robito-envergonhado.png',
+    'facepalm': 'https://i.ibb.co/xK6PgbG6/robito-facepal.png',
+    'feliz': 'https://i.ibb.co/0VD3gmt8/robito-feliz.png',
+    'nervoso': 'https://i.ibb.co/VYHxKzwb/robito-nervoso.png',
+    'piscando': 'https://i.ibb.co/fGxcZqJV/robito-piscando.png',
+    'pulando': 'https://i.ibb.co/6RPb3Dr9/robito-pulando.png',
+    'rei': 'https://i.ibb.co/FqshRWqD/robito-rei.png',
+    'rico': 'https://i.ibb.co/210132NL/robito-rico.png',
+    'rindo': 'https://i.ibb.co/d4QrxLCk/robito-rindo.png',
+    'rockeiro': 'https://i.ibb.co/wZk5ygQW/robito-rockeiro.png',
+    'se_achando': 'https://i.ibb.co/5hQBSLvB/robito-se-achando.png',
+    'surpreso': 'https://i.ibb.co/whLTZcN8/robito-surpreso.png',
+    'tanto_faz': 'https://i.ibb.co/9DQzy98/robito-tanto-faz.png',
+    'triste': 'https://i.ibb.co/RThMr71r/robito-triste.png',
+    'vomitando': 'https://i.ibb.co/QvJBw7J1/robito-vomitando.png',
+    'xingando': 'https://i.ibb.co/V0D8rwPS/robito-xingando.png'
+}
+
+# ========================================
 # SISTEMA DE MÚSICA REMOVIDO
 # ========================================
 # Bot focado em moderação, tickets e administração.
@@ -7087,6 +7115,7 @@ async def kick_command(ctx, usuario: discord.Member = None, *, motivo="Sem motiv
             inline=True
         )
         embed.set_footer(text="Sistema de Moderação • Caos Hub")
+        embed.set_thumbnail(url=ROBITO_IMAGES['nervoso'])
         await ctx.reply(embed=embed)
         
         # Executar kick
@@ -7192,6 +7221,7 @@ async def ban_command(ctx, usuario: discord.Member = None, *, motivo="Sem motivo
             inline=True
         )
         embed.set_footer(text="Sistema de Moderação • Caos Hub")
+        embed.set_thumbnail(url=ROBITO_IMAGES['bravo'])
         await ctx.reply(embed=embed)
         
         await usuario.ban(reason=f"Banido por {ctx.author} | Motivo: {motivo}")
@@ -7815,7 +7845,7 @@ async def help_command(ctx, categoria=None):
         )
         
         embed.set_footer(text="💡 Dica: Use .help [categoria] para ver comandos específicos • Caos Hub")
-        embed.set_thumbnail(url=bot.user.display_avatar.url)
+        embed.set_thumbnail(url=ROBITO_IMAGES['acenando'])
         
         await ctx.reply(embed=embed)
         return
@@ -9143,6 +9173,7 @@ class TicketModal(discord.ui.Modal, title="🎫 Informações do Ticket"):
                 color=0x00ff00,
                 timestamp=discord.utils.utcnow()
             )
+            success_embed.set_thumbnail(url=ROBITO_IMAGES['feliz'])
             
             success_embed.add_field(
                 name="📌 Canal do Ticket",
@@ -9276,6 +9307,7 @@ class TicketView(discord.ui.View):
                 text="Sistema de Tickets • Caos Hub",
                 icon_url=interaction.guild.icon.url if interaction.guild.icon else None
             )
+            ticket_embed.set_thumbnail(url=ROBITO_IMAGES['facepalm'])
             
             await interaction.response.send_message(embed=ticket_embed, ephemeral=True)
             return
