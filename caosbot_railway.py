@@ -2705,6 +2705,11 @@ def toggle_config_api():
         config[key] = not config[key]
         save_config_dashboard(config)
         
+        # ATUALIZAR MEMÓRIA DO BOT (CRÍTICO!)
+        global welcome_config
+        welcome_config[key] = config[key]
+        print(f"🔄 Toggle atualizado: {key} = {config[key]}")
+        
         return jsonify({
             'success': True,
             'key': key,
@@ -2731,6 +2736,12 @@ def update_config_api():
                 updated.append(key)
         
         save_config_dashboard(config)
+        
+        # ATUALIZAR MEMÓRIA DO BOT (CRÍTICO!)
+        global welcome_config
+        for key in updated:
+            welcome_config[key] = config[key]
+        print(f"🔄 Configs atualizadas: {updated}")
         
         return jsonify({
             'success': True,
@@ -9069,9 +9080,14 @@ class TicketView(discord.ui.View):
     async def open_ticket(self, interaction: discord.Interaction, button: discord.ui.Button):
         guild_id = str(interaction.guild.id)
         
-        # Verificar se o sistema está ativado
-        if guild_id not in ticket_config or not ticket_config[guild_id].get('enabled'):
-            await interaction.response.send_message("❌ Sistema de tickets desativado!", ephemeral=True)
+        # Verificar se o sistema está ativado (usa welcome_config que é controlado pelo dashboard)
+        if not is_on('tickets_enabled'):
+            await interaction.response.send_message("❌ Sistema de tickets desativado no dashboard!", ephemeral=True)
+            return
+        
+        # Verificar se tem configuração específica do ticket
+        if guild_id not in ticket_config:
+            await interaction.response.send_message("❌ Sistema de tickets não configurado! Configure pelo dashboard.", ephemeral=True)
             return
         
         config = ticket_config[guild_id]
