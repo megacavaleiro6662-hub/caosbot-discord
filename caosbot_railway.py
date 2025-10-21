@@ -9122,17 +9122,14 @@ class TicketModal(discord.ui.Modal, title="🎫 Informações do Ticket"):
                 icon_url=interaction.guild.icon.url if interaction.guild.icon else None
             )
             
-            # 🔥 RESPONDER INTERACTION PRIMEIRO! (OBRIGATÓRIO)
-            await interaction.response.send_message(
-                f"✅ **Ticket criado!** {ticket_channel.mention}",
-                ephemeral=True
-            )
+            # 🔥 DEFER INTERACTION (NÃO CRIA MENSAGEM NOVA!)
+            await interaction.response.defer(ephemeral=True)
             
             # View com botão para fechar
             close_view = CloseTicketView()
             await ticket_channel.send(f"{interaction.user.mention}", embed=embed, view=close_view)
             
-            # 🔥 EDITAR MENSAGEM ORIGINAL COM EMBED BONITO!
+            # 🔥 CRIAR EMBED DETALHADO PARA O PAINEL!
             success_embed = discord.Embed(
                 title="✅ TICKET CRIADO COM SUCESSO!",
                 description=f"**Seu ticket foi criado e nossa equipe foi notificada!**",
