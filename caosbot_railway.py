@@ -9122,6 +9122,12 @@ class TicketModal(discord.ui.Modal, title="🎫 Informações do Ticket"):
                 icon_url=interaction.guild.icon.url if interaction.guild.icon else None
             )
             
+            # 🔥 RESPONDER INTERACTION PRIMEIRO! (OBRIGATÓRIO)
+            await interaction.response.send_message(
+                f"✅ **Ticket criado!** {ticket_channel.mention}",
+                ephemeral=True
+            )
+            
             # View com botão para fechar
             close_view = CloseTicketView()
             await ticket_channel.send(f"{interaction.user.mention}", embed=embed, view=close_view)
@@ -9163,16 +9169,12 @@ class TicketModal(discord.ui.Modal, title="🎫 Informações do Ticket"):
                 icon_url=interaction.guild.icon.url if interaction.guild.icon else None
             )
             
-            # Editar mensagem original (se existir)
+            # Editar mensagem original (AGORA SEM PROBLEMAS!)
             if self.original_message:
                 try:
                     await self.original_message.edit(embed=success_embed, view=None)
-                except:
-                    # Se não conseguir editar, envia nova
-                    await interaction.response.send_message(embed=success_embed, ephemeral=True)
-            else:
-                # Se não tem mensagem original, envia nova
-                await interaction.response.send_message(embed=success_embed, ephemeral=True)
+                except Exception as e:
+                    print(f"[ERRO EDIT MSG] {e}")
         
         except discord.Forbidden:
             await interaction.response.send_message(
