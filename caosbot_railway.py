@@ -8914,9 +8914,10 @@ class TicketCategoryView(discord.ui.View):
             await interaction.response.send_message("❌ Selecione a categoria e prioridade primeiro!", ephemeral=True)
             return
         
-        modal = TicketModal(self.config, self.category_channel, self.selected_category, self.selected_priority, self.message)
+        # Passar VIEW para o modal poder parar o timer!
+        modal = TicketModal(self.config, self.category_channel, self.selected_category, self.selected_priority, self.message, self)
         await interaction.response.send_modal(modal)
-        self.stop()
+        # NÃO para view aqui! Modal vai parar quando criar ticket
     
     async def on_timeout(self):
         """Quando o painel expira (60 segundos = cooldown), edita com EMBED LARANJA"""
@@ -8944,13 +8945,14 @@ class TicketCategoryView(discord.ui.View):
 
 # Modal para coletar informações do ticket (com seleções salvas)
 class TicketModal(discord.ui.Modal, title="🎫 Informações do Ticket"):
-    def __init__(self, config, category, selected_category, selected_priority, original_message=None):
+    def __init__(self, config, category, selected_category, selected_priority, original_message=None, parent_view=None):
         super().__init__()
         self.config = config
         self.category = category
         self.selected_category = selected_category
         self.selected_priority = selected_priority
         self.original_message = original_message  # Mensagem para editar
+        self.parent_view = parent_view  # View do painel (para parar timer)
         
         # Campo 1: Assunto (OBRIGATÓRIO)
         self.assunto = discord.ui.TextInput(
@@ -9125,6 +9127,11 @@ class TicketModal(discord.ui.Modal, title="🎫 Informações do Ticket"):
             # 🔥 DEFER INTERACTION (NÃO CRIA MENSAGEM NOVA!)
             await interaction.response.defer(ephemeral=True)
             
+            # 🔥 PARAR VIEW DO PAINEL (PARA CANCELAR TIMER!)
+            if self.parent_view:
+                self.parent_view.stop()
+                print("✅ [TICKET] View do painel parada, timer cancelado")
+            
             # View com botão para fechar
             close_view = CloseTicketView()
             await ticket_channel.send(f"{interaction.user.mention}", embed=embed, view=close_view)
@@ -9291,6 +9298,11 @@ class TicketView(discord.ui.View):
             for remaining in range(59, -1, -1):  # 59 → 0
                 await asyncio.sleep(1)
                 try:
+                    # 🔥 VERIFICAR SE VIEW FOI CANCELADA (ticket criado!)
+                    if panel_view.is_finished():
+                        print("⏹️ [TIMER] View finalizada, parando timer")
+                        break
+                    
                     if remaining > 0:
                         panel_embed.set_footer(text=f"⏱️ Tempo restante: {remaining} segundos")
                         await msg.edit(embed=panel_embed, view=panel_view)
@@ -9312,8 +9324,9 @@ class TicketView(discord.ui.View):
                 except:
                     break
         
-        # Iniciar task do timer
-        asyncio.create_task(update_timer())
+        # Iniciar task do timer E salvar referência na view
+        timer_task = asyncio.create_task(update_timer())
+        panel_view.timer_task = timer_task
 
 # View com botão para fechar ticket
 class CloseTicketView(discord.ui.View):
