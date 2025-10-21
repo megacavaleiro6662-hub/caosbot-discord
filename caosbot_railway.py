@@ -8503,6 +8503,9 @@ ticket_config = {}
 # Rastrear cooldown de criação de painel (anti-spam)
 ticket_panel_cooldowns = {}  # {user_id: timestamp}
 
+# Rastrear cooldown de criação de tickets por usuário (1 minuto)
+ticket_user_cooldowns = {}  # {user_id: timestamp}
+
 def get_default_ticket_config(guild_id):
     """Retorna configuração padrão de tickets"""
     return {
@@ -9046,6 +9049,10 @@ class TicketModal(discord.ui.Modal, title="🎫 Informações do Ticket"):
             close_view = CloseTicketView()
             await ticket_channel.send(f"{interaction.user.mention}", embed=embed, view=close_view)
             
+            # 🔥 SALVAR COOLDOWN (1 MINUTO)
+            import time
+            ticket_user_cooldowns[interaction.user.id] = time.time()
+            
             # Mensagem de confirmação
             await interaction.response.send_message(
                 f"✅ **Ticket criado com sucesso!**\n\n"
@@ -9080,6 +9087,7 @@ class TicketView(discord.ui.View):
     @discord.ui.button(label="Abrir Ticket", style=discord.ButtonStyle.green, emoji="🎫", custom_id="open_ticket")
     async def open_ticket(self, interaction: discord.Interaction, button: discord.ui.Button):
         guild_id = str(interaction.guild.id)
+        user_id = interaction.user.id
         
         # Verificar se o sistema está ativado (usa welcome_config que é controlado pelo dashboard)
         if not is_on('tickets_enabled'):
@@ -9110,11 +9118,36 @@ class TicketView(discord.ui.View):
             await interaction.response.send_message(f"❌ Categoria não encontrada! ID: {category_id}\nVerifique se a categoria existe ou reconfigure pelo dashboard.", ephemeral=True)
             return
         
-        # Verificar se o usuário já tem um ticket aberto
-        for channel in category.channels:
-            if channel.name.endswith(f"-{interaction.user.id}"):
-                await interaction.response.send_message(f"❌ Você já tem um ticket aberto: {channel.mention}", ephemeral=True)
+        # 🔥 VERIFICAÇÃO 1: COOLDOWN (1 MINUTO)
+        import time
+        current_time = time.time()
+        cooldown_seconds = 60  # 1 minuto
+        
+        if user_id in ticket_user_cooldowns:
+            time_passed = current_time - ticket_user_cooldowns[user_id]
+            if time_passed < cooldown_seconds:
+                time_left = int(cooldown_seconds - time_passed)
+                await interaction.response.send_message(
+                    f"⏰ **Aguarde {time_left} segundos** antes de criar outro ticket!",
+                    ephemeral=True
+                )
                 return
+        
+        # 🔥 VERIFICAÇÃO 2: LIMITE DE TICKETS (1 TICKET POR USUÁRIO)
+        user_tickets = []
+        for channel in category.channels:
+            if f"-{user_id}" in channel.name:
+                user_tickets.append(channel)
+        
+        max_tickets = 1  # LIMITE FIXO: 1 TICKET
+        if len(user_tickets) >= max_tickets:
+            await interaction.response.send_message(
+                f"❌ **Você já tem {len(user_tickets)} ticket(s) aberto(s)!**\n\n"
+                f"📌 Ticket: {user_tickets[0].mention}\n\n"
+                f"*Feche o ticket atual antes de abrir outro.*",
+                ephemeral=True
+            )
+            return
         
         # Mostrar painel de seleção
         panel_embed = discord.Embed(
