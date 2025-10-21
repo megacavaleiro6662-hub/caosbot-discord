@@ -2865,13 +2865,14 @@ def send_ticket_panel():
         if bot.guilds:
             guild_id = str(bot.guilds[0].id)
             ticket_config[guild_id] = {
-                'category_id': category_id,
-                'log_channel_id': log_channel_id,
-                'staff_roles': staff_roles,
+                'category_id': int(category_id) if category_id else None,
+                'log_channel_id': int(log_channel_id) if log_channel_id else None,
+                'staff_roles': [int(r) if isinstance(r, str) else r for r in staff_roles] if staff_roles else [],
                 'max_tickets_per_user': ticket_config.get(guild_id, {}).get('max_tickets_per_user', 1)
             }
             # Salvar no arquivo
             save_ticket_config()
+            print(f"✅ Config de tickets salva: {ticket_config[guild_id]}")
         
         # Agendar envio do painel
         async def send_panel():
@@ -9094,12 +9095,19 @@ class TicketView(discord.ui.View):
         category_id = config.get('category_id')
         
         if not category_id:
-            await interaction.response.send_message("❌ Sistema não configurado!", ephemeral=True)
+            await interaction.response.send_message("❌ Sistema não configurado! Configure a categoria pelo dashboard.", ephemeral=True)
+            return
+        
+        # Converter para int se vier como string
+        try:
+            category_id = int(category_id)
+        except (ValueError, TypeError):
+            await interaction.response.send_message("❌ ID da categoria inválido! Reconfigure pelo dashboard.", ephemeral=True)
             return
         
         category = interaction.guild.get_channel(category_id)
         if not category:
-            await interaction.response.send_message("❌ Categoria não encontrada!", ephemeral=True)
+            await interaction.response.send_message(f"❌ Categoria não encontrada! ID: {category_id}\nVerifique se a categoria existe ou reconfigure pelo dashboard.", ephemeral=True)
             return
         
         # Verificar se o usuário já tem um ticket aberto
