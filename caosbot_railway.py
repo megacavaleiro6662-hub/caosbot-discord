@@ -8858,6 +8858,18 @@ class TicketCategoryView(discord.ui.View):
         )
         self.select_pri.callback = self.priority_callback
         self.add_item(self.select_pri)
+        
+        # 🔥 RECRIAR BOTÃO CONTINUAR!
+        button_disabled = not (self.selected_category and self.selected_priority)
+        self.btn_continue = discord.ui.Button(
+            label="Continuar",
+            style=discord.ButtonStyle.green,
+            emoji="✅",
+            row=2,
+            disabled=button_disabled
+        )
+        self.btn_continue.callback = self.continue_callback
+        self.add_item(self.btn_continue)
     
     async def category_callback(self, interaction: discord.Interaction):
         if interaction.user.id != self.user.id:
@@ -8877,13 +8889,9 @@ class TicketCategoryView(discord.ui.View):
         self.category_value = self.select_cat.values[0]
         self.selected_category = category_map.get(self.category_value, "📁 Geral")
         
-        # Recriar view com seleção marcada
+        # Recriar view com seleção marcada (botão é recriado automaticamente!)
         self.clear_items()
         self._create_selects()
-        
-        # Habilitar botão se ambos estiverem selecionados
-        if self.selected_category and self.selected_priority:
-            self.btn_continue.disabled = False
         
         await interaction.response.edit_message(view=self)
     
@@ -8902,13 +8910,9 @@ class TicketCategoryView(discord.ui.View):
         self.priority_value = self.select_pri.values[0]
         self.selected_priority = priority_map.get(self.priority_value, "🟡 Média")
         
-        # Recriar view com seleção marcada
+        # Recriar view com seleção marcada (botão é recriado automaticamente!)
         self.clear_items()
         self._create_selects()
-        
-        # Habilitar botão se ambos estiverem selecionados
-        if self.selected_category and self.selected_priority:
-            self.btn_continue.disabled = False
         
         await interaction.response.edit_message(view=self)
     
@@ -9236,7 +9240,7 @@ class TicketView(discord.ui.View):
             await interaction.response.send_message(f"❌ Categoria não encontrada! ID: {category_id}\nVerifique se a categoria existe ou reconfigure pelo dashboard.", ephemeral=True)
             return
         
-        # 🔥 VERIFICAÇÃO 1: COOLDOWN (1 MINUTO) - ANTES DE MOSTRAR PAINEL!
+        # 🔥 VERIFICAÇÃO 1: COOLDOWN (1 MINUTO) - MOSTRAR PAINEL COM TIMER!
         import time
         current_time = time.time()
         cooldown_seconds = 60  # 1 minuto
@@ -9245,10 +9249,52 @@ class TicketView(discord.ui.View):
             time_passed = current_time - ticket_user_cooldowns[user_id]
             if time_passed < cooldown_seconds:
                 time_left = int(cooldown_seconds - time_passed)
-                await interaction.response.send_message(
-                    f"⏰ **Aguarde {time_left} segundos antes de abrir outro ticket!**",
-                    ephemeral=True
+                
+                # 🔥 MOSTRAR PAINEL COM COOLDOWN!
+                cooldown_embed = discord.Embed(
+                    title="⏰ AGUARDE O COOLDOWN!",
+                    description=f"**Você precisa esperar antes de abrir outro ticket!**\n\n"
+                               f"⏱️ **Tempo restante: {time_left} segundos**\n\n"
+                               f"*Este painel atualizará automaticamente.*",
+                    color=0xFFA500,  # LARANJA
+                    timestamp=discord.utils.utcnow()
                 )
+                cooldown_embed.set_footer(text=f"⏱️ Aguarde {time_left} segundos")
+                
+                # Enviar painel
+                await interaction.response.send_message(embed=cooldown_embed, ephemeral=True)
+                msg = await interaction.original_response()
+                
+                # 🔥 TASK PARA ATUALIZAR TIMER DO COOLDOWN
+                import asyncio
+                async def update_cooldown_timer():
+                    for remaining in range(time_left - 1, 0, -1):
+                        await asyncio.sleep(1)
+                        try:
+                            cooldown_embed.description = f"**Você precisa esperar antes de abrir outro ticket!**\n\n" \
+                                                         f"⏱️ **Tempo restante: {remaining} segundos**\n\n" \
+                                                         f"*Este painel atualizará automaticamente.*"
+                            cooldown_embed.set_footer(text=f"⏱️ Aguarde {remaining} segundos")
+                            await msg.edit(embed=cooldown_embed)
+                        except:
+                            break
+                    
+                    # Quando acabar o cooldown
+                    try:
+                        ready_embed = discord.Embed(
+                            title="✅ COOLDOWN FINALIZADO!",
+                            description="**Agora você pode abrir um novo ticket!**\n\n"
+                                       "💡 **Para criar um ticket:**\n"
+                                       "Clique novamente no botão **🎫 Abrir Ticket**",
+                            color=0x00ff00,  # VERDE
+                            timestamp=discord.utils.utcnow()
+                        )
+                        ready_embed.set_footer(text="Sistema de Tickets • Caos Hub")
+                        await msg.edit(embed=ready_embed)
+                    except:
+                        pass
+                
+                asyncio.create_task(update_cooldown_timer())
                 return
         
         # 🔥 VERIFICAÇÃO 2: TICKET JÁ ABERTO (VERIFICA TOPIC DO CANAL!)
