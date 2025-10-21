@@ -867,14 +867,17 @@ def dashboard():
             bottom: 20px;
             right: 20px;
             z-index: 999;
-            animation: robitoEntryFromCenter 1s cubic-bezier(0.34, 1.56, 0.64, 1) 2s both, robitoFloat 3s ease-in-out 3.2s infinite;
+            animation: robitoEntryFromCenter 1s cubic-bezier(0.34, 1.56, 0.64, 1) 2s forwards;
             transition: transform 1s cubic-bezier(0.68, -0.55, 0.265, 1.55), opacity 0.8s ease-in-out;
+        }}
+        
+        .robito-helper.entry-complete {{
+            animation: robitoFloat 3s ease-in-out infinite;
         }}
         
         .robito-helper.hidden {{
             transform: translateY(500px) !important;
             opacity: 0;
-            animation: none !important;
         }}
         
         .robito-helper img {{
@@ -1658,12 +1661,22 @@ Você ganhou **{{{{prize}}}}**!
                 helper.classList.remove('hidden');
                 toggle.classList.remove('rotated');
                 toggle.classList.remove('hidden');
+                
+                // Restaurar animação de flutuação após subir
+                setTimeout(function() {{
+                    helper.classList.add('entry-complete');
+                }}, 1000);
+                
                 console.log('✅ Robito subindo... ULTRA FLUIDO');
             }} else {{
                 // ESCONDER - Robito desce com animação ultra fluida
                 helper.classList.add('hidden');
                 toggle.classList.add('rotated');
                 toggle.classList.add('hidden');
+                
+                // Remover animação de flutuação antes de descer
+                helper.classList.remove('entry-complete');
+                
                 console.log('⬇️ Robito descendo... ULTRA FLUIDO');
             }}
         }}
@@ -2980,13 +2993,22 @@ Você ganhou **{{{{prize}}}}**!
         
         // 🎉 INICIALIZAÇÃO DO DASHBOARD COM SPLASH SCREEN
         window.addEventListener('DOMContentLoaded', function() {{
-            // Remover splash screen após 2 segundos e fazer Robito aparecer do centro
+            // Remover splash screen após 2 segundos
             setTimeout(function() {{
                 const splash = document.getElementById('splash-screen');
                 if (splash) {{
                     splash.style.display = 'none';
                 }}
             }}, 2000);
+            
+            // Marcar animação de entrada como completa após 3 segundos (2s delay + 1s animação)
+            setTimeout(function() {{
+                const helper = document.getElementById('robito-helper');
+                if (helper) {{
+                    helper.classList.add('entry-complete');
+                    console.log('✅ Robito entrada completa! Animação de flutuação iniciada.');
+                }}
+            }}, 3000);
             
             // Carregar dados do usuário
             loadUserData();
