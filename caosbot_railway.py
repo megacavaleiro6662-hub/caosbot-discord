@@ -884,9 +884,12 @@ def dashboard():
     <div class="main">
         <!-- Header -->
         <div class="header">
-            <div class="header-left">
-                <h1>Painel de Controle</h1>
-                <p>Gerencie seu bot Discord de forma profissional</p>
+            <div class="header-left" style="display: flex; align-items: center; gap: 20px;">
+                <img src="{ROBITO_IMAGES['acenando']}" alt="Robito" style="width: 80px; height: 80px; border-radius: 50%; border: 3px solid #0066ff; box-shadow: 0 0 20px rgba(0, 100, 255, 0.5);">
+                <div>
+                    <h1>Painel de Controle</h1>
+                    <p>Gerencie seu bot Discord de forma profissional</p>
+                </div>
             </div>
             <div class="user-profile">
                 <div class="user-info">
@@ -1453,7 +1456,24 @@ Você ganhou **{{{{prize}}}}**!
         function showToast(message, type = 'success') {{
             const toast = document.getElementById('toast');
             const sound = document.getElementById('notif-sound');
-            toast.textContent = message;
+            
+            // Escolher figurinha do Robito baseada no tipo
+            const robitoImages = {{
+                'success': '{ROBITO_IMAGES['feliz']}',
+                'error': '{ROBITO_IMAGES['triste']}',
+                'warning': '{ROBITO_IMAGES['nervoso']}',
+                'info': '{ROBITO_IMAGES['piscando']}'
+            }};
+            
+            const robitoImg = robitoImages[type] || robitoImages['success'];
+            
+            // Adicionar imagem do Robito + mensagem
+            toast.innerHTML = `
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <img src="${{robitoImg}}" alt="Robito" style="width: 40px; height: 40px; border-radius: 50%; border: 2px solid currentColor;">
+                    <span>${{message}}</span>
+                </div>
+            `;
             toast.className = `toast toast-${{type}} show`;
             sound.play().catch(() => {{}});
             setTimeout(() => toast.classList.remove('show'), 3000);
