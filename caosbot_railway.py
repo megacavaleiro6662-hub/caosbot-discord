@@ -946,20 +946,20 @@ def dashboard():
         .robito-toggle {{
             position: fixed;
             bottom: 0px;
-            right: 180px;
+            right: 200px;
             z-index: 1000;
-            width: 90px;
-            height: 45px;
+            width: 65px;
+            height: 38px;
             background: linear-gradient(135deg, #0066ff, #0099ff);
-            border: 3px solid #00ccff;
+            border: 2px solid #00ccff;
             border-bottom: none;
-            border-radius: 20px 20px 0 0;
+            border-radius: 15px 15px 0 0;
             display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
             transition: transform 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55), box-shadow 0.4s ease, background 0.3s ease;
-            box-shadow: 0 -5px 25px rgba(0, 100, 255, 0.7), 0 0 40px rgba(0, 150, 255, 0.4);
+            box-shadow: 0 -4px 20px rgba(0, 100, 255, 0.6), 0 0 30px rgba(0, 150, 255, 0.3);
             animation: robitoEntryFromCenter 1s ease-out 2s both;
         }}
         
@@ -976,7 +976,7 @@ def dashboard():
         .robito-toggle::before {{
             content: '▼';
             color: #ffffff;
-            font-size: 28px;
+            font-size: 22px;
             font-weight: bold;
             transition: transform 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55);
             display: block;
