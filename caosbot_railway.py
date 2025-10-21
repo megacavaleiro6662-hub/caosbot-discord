@@ -861,18 +861,19 @@ def dashboard():
             100% {{ opacity: 0; pointer-events: none; }}
         }}
         
-        /* 🤖 ROBITO HELPER - ASSISTENTE GIGANTE NO CANTO */
+        /* 🤖 ROBITO HELPER - ASSISTENTE GIGANTE NO CANTO - ULTRA FLUIDO */
         .robito-helper {{
             position: fixed;
             bottom: 20px;
             right: 20px;
             z-index: 999;
-            animation: robitoEntryFromCenter 1s ease-out 2s both, robitoFloat 3s ease-in-out 3s infinite;
-            transition: transform 0.6s ease-in-out !important;
+            animation: robitoEntryFromCenter 1s cubic-bezier(0.34, 1.56, 0.64, 1) 2s both, robitoFloat 3s ease-in-out 3.2s infinite;
+            transition: transform 1s cubic-bezier(0.68, -0.55, 0.265, 1.55), opacity 0.8s ease-in-out;
         }}
         
         .robito-helper.hidden {{
-            transform: translateY(450px) !important;
+            transform: translateY(500px) !important;
+            opacity: 0;
             animation: none !important;
         }}
         
@@ -882,6 +883,11 @@ def dashboard():
             filter: drop-shadow(0 12px 30px rgba(0, 100, 255, 0.7));
             animation: robitoSwing 2s ease-in-out infinite;
             cursor: pointer;
+            transition: opacity 0.8s ease-in-out, transform 0.8s ease-in-out;
+        }}
+        
+        .robito-helper.hidden img {{
+            animation: none;
         }}
         
         .robito-speech-bubble {{
@@ -896,6 +902,12 @@ def dashboard():
             max-width: 450px;
             box-shadow: 0 12px 50px rgba(0, 150, 255, 0.7), 0 0 50px rgba(100, 200, 255, 0.5);
             animation: bubblePulse 2s ease-in-out infinite;
+            transition: opacity 0.6s ease-in-out, transform 0.6s ease-in-out;
+        }}
+        
+        .robito-helper.hidden .robito-speech-bubble {{
+            opacity: 0;
+            transform: translateY(40px);
         }}
         
         .robito-speech-bubble::after {{
@@ -925,7 +937,7 @@ def dashboard():
             text-shadow: 0 0 15px rgba(255, 255, 0, 0.8);
         }}
         
-        /* 🔽 BOTÃO TOGGLE DO ROBITO */
+        /* 🔽 BOTÃO TOGGLE DO ROBITO - ULTRA FLUIDO */
         .robito-toggle {{
             position: fixed;
             bottom: 80px;
@@ -940,30 +952,32 @@ def dashboard():
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            transition: transform 0.5s ease-in-out, box-shadow 0.3s;
+            transition: transform 1s cubic-bezier(0.68, -0.55, 0.265, 1.55), box-shadow 0.4s ease, background 0.3s ease;
             box-shadow: 0 8px 25px rgba(0, 100, 255, 0.7);
             animation: robitoEntryFromCenter 1s ease-out 2s both;
         }}
         
         .robito-toggle:hover {{
-            transform: scale(1.1);
-            box-shadow: 0 12px 40px rgba(0, 150, 255, 0.9);
+            transform: scale(1.15) rotate(5deg);
+            box-shadow: 0 15px 45px rgba(0, 150, 255, 0.95);
+            background: linear-gradient(135deg, #0080ff, #00b3ff);
         }}
         
         .robito-toggle.hidden {{
-            transform: translateY(350px);
+            transform: translateY(400px) scale(0.8);
         }}
         
         .robito-toggle::before {{
             content: '▼';
             color: #ffffff;
-            font-size: 26px;
+            font-size: 28px;
             font-weight: bold;
-            transition: all 0.3s;
+            transition: transform 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            display: block;
         }}
         
         .robito-toggle.rotated::before {{
-            content: '▲';
+            transform: rotate(180deg);
         }}
         
         @keyframes robitoEntryFromCenter {{
@@ -1632,25 +1646,25 @@ Você ganhou **{{{{prize}}}}**!
             document.getElementById('robito-img').src = robitoData.image;
         }}
         
-        // 🔽 Toggle do Robito (Mostrar/Esconder) - ANIMAÇÃO PRA BAIXO
+        // 🔽 Toggle do Robito (Mostrar/Esconder) - ULTRA FLUIDO
         function toggleRobito() {{
             const helper = document.getElementById('robito-helper');
             const toggle = document.getElementById('robito-toggle');
             
-            console.log('🔽 Toggle clicado!'); // DEBUG
-            console.log('Helper element:', helper); // DEBUG
-            console.log('Toggle element:', toggle); // DEBUG
+            console.log('🎬 Toggle clicado!');
             
             if (helper.classList.contains('hidden')) {{
-                // MOSTRAR - Robito sobe
+                // MOSTRAR - Robito sobe com animação ultra fluida
                 helper.classList.remove('hidden');
                 toggle.classList.remove('rotated');
-                console.log('✅ Robito APARECENDO (subindo)');
+                toggle.classList.remove('hidden');
+                console.log('✅ Robito subindo... ULTRA FLUIDO');
             }} else {{
-                // ESCONDER - Robito desce
+                // ESCONDER - Robito desce com animação ultra fluida
                 helper.classList.add('hidden');
                 toggle.classList.add('rotated');
-                console.log('❌ Robito SUMINDO (descendo)');
+                toggle.classList.add('hidden');
+                console.log('⬇️ Robito descendo... ULTRA FLUIDO');
             }}
         }}
         
