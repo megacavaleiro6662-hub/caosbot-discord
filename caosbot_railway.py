@@ -3836,10 +3836,10 @@ async def on_message(message):
         
         if not content_without_mentions or (not has_command and not has_other_mention):
             embed = discord.Embed(
-                title='👋 Olá! Eu sou o CAOS Bot!',
+                title='👋 Olá! Eu sou o Robito!',
                 description=f'Oi **{message.author.mention}**! Precisa de ajuda?\n\n'
                            f'Use o comando **`.help`** para ver todos os meus comandos!',
-                color=0xff6600
+                color=0x3498db
             )
             embed.set_footer(
                 text=f'Prefixo: . (ponto) • Digite .help para mais informações',
