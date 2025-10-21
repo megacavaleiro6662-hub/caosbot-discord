@@ -8802,26 +8802,64 @@ class TicketCategoryView(discord.ui.View):
         self.config = config
         self.category_channel = category_channel
         self.user = user
-        self.message = message  # Guardar mensagem original para editar
+        self.message = message
         self.selected_category = None
         self.selected_priority = None
         self.category_value = None
         self.priority_value = None
+        
+        # Criar selects dinamicamente
+        self._create_selects()
+        
+        # Botão Continuar (começa desabilitado)
+        self.btn_continue = discord.ui.Button(
+            label="Continuar",
+            style=discord.ButtonStyle.green,
+            emoji="✅",
+            row=2,
+            disabled=True
+        )
+        self.btn_continue.callback = self.continue_callback
+        self.add_item(self.btn_continue)
     
-    @discord.ui.select(
-        placeholder="🏷️ Selecione a Categoria do Ticket",
-        options=[
-            discord.SelectOption(label="Geral", description="Assuntos gerais", emoji="📁", value="geral"),
-            discord.SelectOption(label="Compras", description="Dúvidas sobre compras", emoji="🛒", value="compras"),
-            discord.SelectOption(label="Suporte Técnico", description="Problemas técnicos", emoji="🔧", value="tecnico"),
-            discord.SelectOption(label="Denúncia", description="Reportar usuário/conteúdo", emoji="🚨", value="denuncia"),
-            discord.SelectOption(label="Parceria", description="Proposta de parceria", emoji="🤝", value="parceria"),
-            discord.SelectOption(label="Financeiro", description="Questões de pagamento", emoji="💰", value="financeiro"),
-            discord.SelectOption(label="Moderação", description="Questões de moderação", emoji="🛡️", value="moderacao"),
-        ],
-        custom_id="ticket_category_select"
-    )
-    async def select_category(self, interaction: discord.Interaction, select: discord.ui.Select):
+    def _create_selects(self):
+        """Cria os selects com as opções corretas (marcando selecionadas)"""
+        # SELECT DE CATEGORIA
+        category_options = [
+            discord.SelectOption(label="Geral", description="Assuntos gerais", emoji="📁", value="geral", default=(self.category_value=="geral")),
+            discord.SelectOption(label="Compras", description="Dúvidas sobre compras", emoji="🛒", value="compras", default=(self.category_value=="compras")),
+            discord.SelectOption(label="Suporte Técnico", description="Problemas técnicos", emoji="🔧", value="tecnico", default=(self.category_value=="tecnico")),
+            discord.SelectOption(label="Denúncia", description="Reportar usuário/conteúdo", emoji="🚨", value="denuncia", default=(self.category_value=="denuncia")),
+            discord.SelectOption(label="Parceria", description="Proposta de parceria", emoji="🤝", value="parceria", default=(self.category_value=="parceria")),
+            discord.SelectOption(label="Financeiro", description="Questões de pagamento", emoji="💰", value="financeiro", default=(self.category_value=="financeiro")),
+            discord.SelectOption(label="Moderação", description="Questões de moderação", emoji="🛡️", value="moderacao", default=(self.category_value=="moderacao")),
+        ]
+        
+        self.select_cat = discord.ui.Select(
+            placeholder="🏷️ Selecione a Categoria do Ticket",
+            options=category_options,
+            row=0
+        )
+        self.select_cat.callback = self.category_callback
+        self.add_item(self.select_cat)
+        
+        # SELECT DE PRIORIDADE
+        priority_options = [
+            discord.SelectOption(label="Baixa", description="Não é urgente", emoji="🟢", value="baixa", default=(self.priority_value=="baixa")),
+            discord.SelectOption(label="Média", description="Prioridade normal", emoji="🟡", value="media", default=(self.priority_value=="media")),
+            discord.SelectOption(label="Alta", description="Precisa de atenção", emoji="🟠", value="alta", default=(self.priority_value=="alta")),
+            discord.SelectOption(label="Urgente", description="Muito urgente!", emoji="🔴", value="urgente", default=(self.priority_value=="urgente")),
+        ]
+        
+        self.select_pri = discord.ui.Select(
+            placeholder="⚡ Selecione a Prioridade",
+            options=priority_options,
+            row=1
+        )
+        self.select_pri.callback = self.priority_callback
+        self.add_item(self.select_pri)
+    
+    async def category_callback(self, interaction: discord.Interaction):
         if interaction.user.id != self.user.id:
             await interaction.response.send_message("❌ Este painel não é seu!", ephemeral=True)
             return
@@ -8836,29 +8874,20 @@ class TicketCategoryView(discord.ui.View):
             "moderacao": "🛡️ Moderação"
         }
         
-        self.category_value = select.values[0]
+        self.category_value = self.select_cat.values[0]
         self.selected_category = category_map.get(self.category_value, "📁 Geral")
         
-        # Habilitar botão se ambos estiverem selecionados
-        self._update_button()
+        # Recriar view com seleção marcada
+        self.clear_items()
+        self._create_selects()
         
-        # Atualizar mensagem para refletir mudança no botão
-        try:
-            await interaction.response.edit_message(view=self)
-        except:
-            await interaction.response.defer()
+        # Habilitar botão se ambos estiverem selecionados
+        if self.selected_category and self.selected_priority:
+            self.btn_continue.disabled = False
+        
+        await interaction.response.edit_message(view=self)
     
-    @discord.ui.select(
-        placeholder="⚡ Selecione a Prioridade",
-        options=[
-            discord.SelectOption(label="Baixa", description="Não é urgente", emoji="🟢", value="baixa"),
-            discord.SelectOption(label="Média", description="Prioridade normal", emoji="🟡", value="media"),
-            discord.SelectOption(label="Alta", description="Precisa de atenção", emoji="🟠", value="alta"),
-            discord.SelectOption(label="Urgente", description="Muito urgente!", emoji="🔴", value="urgente"),
-        ],
-        custom_id="ticket_priority_select"
-    )
-    async def select_priority(self, interaction: discord.Interaction, select: discord.ui.Select):
+    async def priority_callback(self, interaction: discord.Interaction):
         if interaction.user.id != self.user.id:
             await interaction.response.send_message("❌ Este painel não é seu!", ephemeral=True)
             return
@@ -8870,37 +8899,28 @@ class TicketCategoryView(discord.ui.View):
             "urgente": "🔴 Urgente"
         }
         
-        self.priority_value = select.values[0]
+        self.priority_value = self.select_pri.values[0]
         self.selected_priority = priority_map.get(self.priority_value, "🟡 Média")
         
-        # Habilitar botão se ambos estiverem selecionados
-        self._update_button()
+        # Recriar view com seleção marcada
+        self.clear_items()
+        self._create_selects()
         
-        # Atualizar mensagem para refletir mudança no botão
-        try:
-            await interaction.response.edit_message(view=self)
-        except:
-            await interaction.response.defer()
-    
-    def _update_button(self):
-        """Habilita ou desabilita o botão Continuar baseado nas seleções"""
+        # Habilitar botão se ambos estiverem selecionados
         if self.selected_category and self.selected_priority:
-            self.continue_button.disabled = False
-        else:
-            self.continue_button.disabled = True
+            self.btn_continue.disabled = False
+        
+        await interaction.response.edit_message(view=self)
     
-    @discord.ui.button(label="Continuar", style=discord.ButtonStyle.green, emoji="✅", row=2, disabled=True)
-    async def continue_button(self, interaction: discord.Interaction, button: discord.ui.Button):
+    async def continue_callback(self, interaction: discord.Interaction):
         if interaction.user.id != self.user.id:
             await interaction.response.send_message("❌ Este painel não é seu!", ephemeral=True)
             return
         
-        # Verificar se ambos foram selecionados
         if not self.selected_category or not self.selected_priority:
             await interaction.response.send_message("❌ Selecione a categoria e prioridade primeiro!", ephemeral=True)
             return
         
-        # Abrir modal com as seleções salvas e passar a mensagem
         modal = TicketModal(self.config, self.category_channel, self.selected_category, self.selected_priority, self.message)
         await interaction.response.send_modal(modal)
         self.stop()
