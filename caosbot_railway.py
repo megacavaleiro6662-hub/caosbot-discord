@@ -9229,15 +9229,15 @@ class TicketView(discord.ui.View):
         )
         panel_embed.set_footer(text="⏱️ Tempo restante: 60 segundos")
         
-        # Enviar mensagem e guardar referência
-        await interaction.response.send_message(embed=panel_embed, view=None, ephemeral=True)
+        # Criar View ANTES de enviar
+        panel_view = TicketCategoryView(config, category, interaction.user, None)
+        
+        # Enviar mensagem COM A VIEW!
+        await interaction.response.send_message(embed=panel_embed, view=panel_view, ephemeral=True)
         msg = await interaction.original_response()
         
-        # Criar View com referência à mensagem
-        panel_view = TicketCategoryView(config, category, interaction.user, msg)
-        
-        # Atualizar mensagem com a View
-        await msg.edit(view=panel_view)
+        # Atualizar referência da mensagem na View
+        panel_view.message = msg
         
         # 🔥 TASK PARA ATUALIZAR TIMER EM TEMPO REAL
         import asyncio
