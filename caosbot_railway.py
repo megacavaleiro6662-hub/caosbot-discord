@@ -8532,16 +8532,16 @@ def get_default_ticket_config(guild_id):
             'bug': True
         },
         
-        # Customização de Categorias
+        # Customização de Categorias (com sistema de ativar/desativar)
         'categories_custom': {
-            'geral': {'emoji': '📁', 'name': 'Geral', 'description': 'Assuntos gerais'},
-            'compras': {'emoji': '🛒', 'name': 'Compras', 'description': 'Dúvidas sobre compras'},
-            'suporte': {'emoji': '🔧', 'name': 'Suporte Técnico', 'description': 'Problemas técnicos'},
-            'denuncia': {'emoji': '🚨', 'name': 'Denúncia', 'description': 'Reportar usuário/conteúdo'},
-            'parceria': {'emoji': '🤝', 'name': 'Parceria', 'description': 'Proposta de parceria'},
-            'financeiro': {'emoji': '💰', 'name': 'Financeiro', 'description': 'Questões de pagamento'},
-            'moderacao': {'emoji': '🛡️', 'name': 'Moderação', 'description': 'Questões de moderação'},
-            'bug': {'emoji': '🐛', 'name': 'Bug', 'description': 'Reportar bugs'}
+            'geral': {'emoji': '📁', 'name': 'Geral', 'description': 'Assuntos gerais', 'enabled': True},
+            'compras': {'emoji': '🛒', 'name': 'Compras', 'description': 'Dúvidas sobre compras', 'enabled': True},
+            'suporte': {'emoji': '🔧', 'name': 'Suporte Técnico', 'description': 'Problemas técnicos', 'enabled': True},
+            'denuncia': {'emoji': '🚨', 'name': 'Denúncia', 'description': 'Reportar usuário/conteúdo', 'enabled': True},
+            'parceria': {'emoji': '🤝', 'name': 'Parceria', 'description': 'Proposta de parceria', 'enabled': True},
+            'financeiro': {'emoji': '💰', 'name': 'Financeiro', 'description': 'Questões de pagamento', 'enabled': True},
+            'moderacao': {'emoji': '🛡️', 'name': 'Moderação', 'description': 'Questões de moderação', 'enabled': True},
+            'bug': {'emoji': '🐛', 'name': 'Bug', 'description': 'Reportar bugs', 'enabled': True}
         },
         
         # Sistema de Prioridades
@@ -8813,16 +8813,28 @@ class TicketCategoryView(discord.ui.View):
     
     def _create_selects(self):
         """Cria os selects com as opções corretas (marcando selecionadas)"""
-        # SELECT DE CATEGORIA
-        category_options = [
-            discord.SelectOption(label="Geral", description="Assuntos gerais", emoji="📁", value="geral", default=(self.category_value=="geral")),
-            discord.SelectOption(label="Compras", description="Dúvidas sobre compras", emoji="🛒", value="compras", default=(self.category_value=="compras")),
-            discord.SelectOption(label="Suporte Técnico", description="Problemas técnicos", emoji="🔧", value="tecnico", default=(self.category_value=="tecnico")),
-            discord.SelectOption(label="Denúncia", description="Reportar usuário/conteúdo", emoji="🚨", value="denuncia", default=(self.category_value=="denuncia")),
-            discord.SelectOption(label="Parceria", description="Proposta de parceria", emoji="🤝", value="parceria", default=(self.category_value=="parceria")),
-            discord.SelectOption(label="Financeiro", description="Questões de pagamento", emoji="💰", value="financeiro", default=(self.category_value=="financeiro")),
-            discord.SelectOption(label="Moderação", description="Questões de moderação", emoji="🛡️", value="moderacao", default=(self.category_value=="moderacao")),
-        ]
+        # 🔥 SELECT DE CATEGORIA (LÊ DO CONFIG!)
+        category_options = []
+        categories_custom = self.config.get('categories_custom', {})
+        
+        for cat_id, cat_data in categories_custom.items():
+            # ✅ SÓ ADICIONA SE ESTIVER HABILITADA!
+            if cat_data.get('enabled', True):
+                category_options.append(
+                    discord.SelectOption(
+                        label=cat_data.get('name', cat_id),
+                        description=cat_data.get('description', ''),
+                        emoji=cat_data.get('emoji', '📁'),
+                        value=cat_id,
+                        default=(self.category_value == cat_id)
+                    )
+                )
+        
+        # Se não tem nenhuma categoria habilitada, adiciona "Geral" como fallback
+        if not category_options:
+            category_options.append(
+                discord.SelectOption(label="Geral", description="Assuntos gerais", emoji="📁", value="geral", default=True)
+            )
         
         self.select_cat = discord.ui.Select(
             placeholder="🏷️ Selecione a Categoria do Ticket",
@@ -8832,13 +8844,26 @@ class TicketCategoryView(discord.ui.View):
         self.select_cat.callback = self.category_callback
         self.add_item(self.select_cat)
         
-        # SELECT DE PRIORIDADE
-        priority_options = [
-            discord.SelectOption(label="Baixa", description="Não é urgente", emoji="🟢", value="baixa", default=(self.priority_value=="baixa")),
-            discord.SelectOption(label="Média", description="Prioridade normal", emoji="🟡", value="media", default=(self.priority_value=="media")),
-            discord.SelectOption(label="Alta", description="Precisa de atenção", emoji="🟠", value="alta", default=(self.priority_value=="alta")),
-            discord.SelectOption(label="Urgente", description="Muito urgente!", emoji="🔴", value="urgente", default=(self.priority_value=="urgente")),
-        ]
+        # 🔥 SELECT DE PRIORIDADE (LÊ DO CONFIG!)
+        priority_options = []
+        priority_custom = self.config.get('priority_custom', {})
+        
+        for pri_id, pri_data in priority_custom.items():
+            priority_options.append(
+                discord.SelectOption(
+                    label=pri_data.get('name', pri_id),
+                    description=pri_data.get('description', ''),
+                    emoji=pri_data.get('emoji', '⚡'),
+                    value=pri_id,
+                    default=(self.priority_value == pri_id)
+                )
+            )
+        
+        # Se não tem nenhuma prioridade, adiciona fallback
+        if not priority_options:
+            priority_options.append(
+                discord.SelectOption(label="Média", description="Prioridade normal", emoji="🟡", value="media", default=True)
+            )
         
         self.select_pri = discord.ui.Select(
             placeholder="⚡ Selecione a Prioridade",
@@ -8865,15 +8890,13 @@ class TicketCategoryView(discord.ui.View):
             await interaction.response.send_message("❌ Este painel não é seu!", ephemeral=True)
             return
         
-        category_map = {
-            "geral": "📁 Geral",
-            "compras": "🛒 Compras",
-            "tecnico": "🔧 Suporte Técnico",
-            "denuncia": "🚨 Denúncia",
-            "parceria": "🤝 Parceria",
-            "financeiro": "💰 Financeiro",
-            "moderacao": "🛡️ Moderação"
-        }
+        # 🔥 CONSTRUIR CATEGORY_MAP DO CONFIG!
+        category_map = {}
+        categories_custom = self.config.get('categories_custom', {})
+        for cat_id, cat_data in categories_custom.items():
+            emoji = cat_data.get('emoji', '📁')
+            name = cat_data.get('name', cat_id)
+            category_map[cat_id] = f"{emoji} {name}"
         
         self.category_value = self.select_cat.values[0]
         self.selected_category = category_map.get(self.category_value, "📁 Geral")
@@ -8889,12 +8912,13 @@ class TicketCategoryView(discord.ui.View):
             await interaction.response.send_message("❌ Este painel não é seu!", ephemeral=True)
             return
         
-        priority_map = {
-            "baixa": "🟢 Baixa",
-            "media": "🟡 Média",
-            "alta": "🟠 Alta",
-            "urgente": "🔴 Urgente"
-        }
+        # 🔥 CONSTRUIR PRIORITY_MAP DO CONFIG!
+        priority_map = {}
+        priority_custom = self.config.get('priority_custom', {})
+        for pri_id, pri_data in priority_custom.items():
+            emoji = pri_data.get('emoji', '⚡')
+            name = pri_data.get('name', pri_id)
+            priority_map[pri_id] = f"{emoji} {name}"
         
         self.priority_value = self.select_pri.values[0]
         self.selected_priority = priority_map.get(self.priority_value, "🟡 Média")
