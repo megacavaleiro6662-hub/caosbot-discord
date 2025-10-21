@@ -9235,7 +9235,52 @@ class TicketView(discord.ui.View):
             await interaction.response.send_message(f"❌ Categoria não encontrada! ID: {category_id}\nVerifique se a categoria existe ou reconfigure pelo dashboard.", ephemeral=True)
             return
         
-        # 🔥 VERIFICAÇÃO 1: COOLDOWN (1 MINUTO) - MOSTRAR PAINEL COM TIMER!
+        # 🔥 VERIFICAÇÃO 1: TICKET JÁ ABERTO (VERIFICA TOPIC DO CANAL!)
+        user_tickets = []
+        for channel in interaction.guild.text_channels:
+            # Verificar se o tópico contém o ID do usuário
+            if channel.topic and f"Ticket de {user_id}" in channel.topic:
+                user_tickets.append(channel)
+        
+        if len(user_tickets) > 0:
+            # 🔥 EMBED ULTRA DETALHADO!
+            ticket_embed = discord.Embed(
+                title="🎫 TICKET JÁ ABERTO",
+                description=f"**Você já possui um ticket ativo no servidor!**\n\n"
+                           f"*Você precisa fechar o ticket atual antes de abrir outro.*",
+                color=0xff6600,  # LARANJA
+                timestamp=discord.utils.utcnow()
+            )
+            
+            ticket_embed.add_field(
+                name="📌 Canal do Ticket",
+                value=f"{user_tickets[0].mention}",
+                inline=False
+            )
+            
+            ticket_embed.add_field(
+                name="🔗 Link Direto",
+                value=f"[Clique aqui para ir ao ticket](https://discord.com/channels/{interaction.guild.id}/{user_tickets[0].id})",
+                inline=False
+            )
+            
+            ticket_embed.add_field(
+                name="❓ Como fechar o ticket?",
+                value="1️⃣ Vá até o canal do ticket\n"
+                     "2️⃣ Clique no botão **🔒 Fechar Ticket**\n"
+                     "3️⃣ Um staff fechará o ticket para você",
+                inline=False
+            )
+            
+            ticket_embed.set_footer(
+                text="Sistema de Tickets • Caos Hub",
+                icon_url=interaction.guild.icon.url if interaction.guild.icon else None
+            )
+            
+            await interaction.response.send_message(embed=ticket_embed, ephemeral=True)
+            return
+        
+        # 🔥 VERIFICAÇÃO 2: COOLDOWN (1 MINUTO)
         import time
         current_time = time.time()
         cooldown_seconds = 60  # 1 minuto
@@ -9251,22 +9296,6 @@ class TicketView(discord.ui.View):
                     ephemeral=True
                 )
                 return
-        
-        # 🔥 VERIFICAÇÃO 2: TICKET JÁ ABERTO (VERIFICA TOPIC DO CANAL!)
-        user_tickets = []
-        for channel in interaction.guild.text_channels:
-            # Verificar se o tópico contém o ID do usuário
-            if channel.topic and f"Ticket de {user_id}" in channel.topic:
-                user_tickets.append(channel)
-        
-        if len(user_tickets) > 0:
-            await interaction.response.send_message(
-                f"❌ **Você já tem um ticket aberto!**\n\n"
-                f"📌 Canal: {user_tickets[0].mention}\n\n"
-                f"*Feche o ticket atual antes de abrir outro.*",
-                ephemeral=True
-            )
-            return
         
         # SALVAR COOLDOWN AGORA (quando mostra o painel)
         ticket_user_cooldowns[user_id] = current_time
