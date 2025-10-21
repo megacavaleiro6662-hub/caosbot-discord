@@ -811,136 +811,175 @@ def dashboard():
         .toast-success {{ border-color: #00ccff; box-shadow: 0 8px 32px rgba(100, 200, 255, 0.5), 0 0 20px rgba(100, 200, 255, 0.3); }}
         .toast-error {{ border-color: #0033ff; box-shadow: 0 8px 32px rgba(0, 100, 255, 0.6), 0 0 20px rgba(255, 0, 0, 0.4); }}
         
-        /* 🤖 ROBITO HELPER - ASSISTENTE ANIMADO */
+        /* 🎉 SPLASH SCREEN - ANIMAÇÃO INICIAL */
+        .robito-splash {{
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: linear-gradient(135deg, rgba(0, 0, 50, 0.98), rgba(0, 20, 80, 0.98));
+            backdrop-filter: blur(10px);
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            animation: splashFadeOut 2s ease-in-out forwards;
+            animation-delay: 1.8s;
+        }}
+        
+        .robito-splash img {{
+            width: 300px;
+            height: 300px;
+            filter: drop-shadow(0 20px 60px rgba(0, 150, 255, 0.8));
+            animation: splashRobitoEntry 1s ease-out;
+        }}
+        
+        .robito-splash h1 {{
+            margin-top: 30px;
+            font-size: 48px;
+            font-weight: 800;
+            color: #00ccff;
+            text-shadow: 0 0 30px rgba(0, 200, 255, 0.8), 0 0 60px rgba(0, 150, 255, 0.5);
+            animation: splashTextEntry 1s ease-out 0.3s both;
+        }}
+        
+        @keyframes splashRobitoEntry {{
+            0% {{ transform: scale(0) rotate(-180deg); opacity: 0; }}
+            60% {{ transform: scale(1.1) rotate(10deg); }}
+            100% {{ transform: scale(1) rotate(0deg); opacity: 1; }}
+        }}
+        
+        @keyframes splashTextEntry {{
+            0% {{ transform: translateY(50px); opacity: 0; }}
+            100% {{ transform: translateY(0); opacity: 1; }}
+        }}
+        
+        @keyframes splashFadeOut {{
+            0% {{ opacity: 1; }}
+            100% {{ opacity: 0; pointer-events: none; }}
+        }}
+        
+        /* 🤖 ROBITO HELPER - ASSISTENTE GIGANTE NO CANTO */
         .robito-helper {{
             position: fixed;
-            bottom: 30px;
-            right: 30px;
+            bottom: 20px;
+            right: 20px;
             z-index: 999;
-            animation: robitoFloat 3s ease-in-out infinite;
+            animation: robitoEntryFromCenter 1s ease-out 2s both, robitoFloat 3s ease-in-out 3s infinite;
+            transition: transform 0.5s ease-in-out;
+        }}
+        
+        .robito-helper.hidden {{
+            transform: translateX(500px);
         }}
         
         .robito-helper img {{
-            width: 120px;
-            height: 120px;
-            filter: drop-shadow(0 8px 16px rgba(0, 100, 255, 0.6));
+            width: 200px;
+            height: 200px;
+            filter: drop-shadow(0 12px 30px rgba(0, 100, 255, 0.7));
             animation: robitoSwing 2s ease-in-out infinite;
+            cursor: pointer;
         }}
         
         .robito-speech-bubble {{
             position: absolute;
-            bottom: 140px;
+            bottom: 220px;
             right: 0;
-            background: linear-gradient(135deg, rgba(0, 100, 255, 0.95), rgba(0, 150, 255, 0.95));
-            border: 3px solid #00ccff;
-            border-radius: 20px;
-            padding: 16px 20px;
-            min-width: 280px;
-            max-width: 350px;
-            box-shadow: 0 8px 32px rgba(0, 150, 255, 0.6), 0 0 30px rgba(100, 200, 255, 0.4);
+            background: linear-gradient(135deg, rgba(0, 100, 255, 0.98), rgba(0, 150, 255, 0.98));
+            border: 4px solid #00ccff;
+            border-radius: 25px;
+            padding: 20px 26px;
+            min-width: 380px;
+            max-width: 450px;
+            box-shadow: 0 12px 50px rgba(0, 150, 255, 0.7), 0 0 50px rgba(100, 200, 255, 0.5);
             animation: bubblePulse 2s ease-in-out infinite;
         }}
         
         .robito-speech-bubble::after {{
             content: '';
             position: absolute;
-            bottom: -20px;
-            right: 40px;
+            bottom: -25px;
+            right: 60px;
             width: 0;
             height: 0;
-            border-left: 20px solid transparent;
-            border-right: 20px solid transparent;
-            border-top: 20px solid #00ccff;
-            filter: drop-shadow(0 4px 8px rgba(0, 100, 255, 0.4));
+            border-left: 25px solid transparent;
+            border-right: 25px solid transparent;
+            border-top: 25px solid #00ccff;
+            filter: drop-shadow(0 6px 12px rgba(0, 100, 255, 0.5));
         }}
         
         .robito-speech-bubble p {{
             margin: 0;
             color: #ffffff;
-            font-size: 15px;
-            font-weight: 600;
-            line-height: 1.5;
-            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+            font-size: 16px;
+            font-weight: 700;
+            line-height: 1.6;
+            text-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
         }}
         
         .robito-speech-bubble strong {{
             color: #ffff00;
-            text-shadow: 0 0 10px rgba(255, 255, 0, 0.6);
+            text-shadow: 0 0 15px rgba(255, 255, 0, 0.8);
+        }}
+        
+        /* 🔽 BOTÃO TOGGLE DO ROBITO */
+        .robito-toggle {{
+            position: fixed;
+            bottom: 100px;
+            right: 20px;
+            z-index: 998;
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #0066ff, #0099ff);
+            border: 3px solid #00ccff;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 6px 20px rgba(0, 100, 255, 0.6);
+            animation: robitoEntryFromCenter 1s ease-out 2s both;
+        }}
+        
+        .robito-toggle:hover {{
+            transform: scale(1.1);
+            box-shadow: 0 8px 30px rgba(0, 150, 255, 0.8);
+        }}
+        
+        .robito-toggle::before {{
+            content: '◀';
+            color: #ffffff;
+            font-size: 24px;
+            font-weight: bold;
+            transition: transform 0.3s;
+        }}
+        
+        .robito-toggle.rotated::before {{
+            transform: rotate(180deg);
+            display: inline-block;
+        }}
+        
+        @keyframes robitoEntryFromCenter {{
+            0% {{ transform: translate(-50vw, -50vh) scale(1.5); }}
+            100% {{ transform: translate(0, 0) scale(1); }}
         }}
         
         @keyframes robitoFloat {{
             0%, 100% {{ transform: translateY(0px); }}
-            50% {{ transform: translateY(-15px); }}
+            50% {{ transform: translateY(-20px); }}
         }}
         
         @keyframes robitoSwing {{
-            0%, 100% {{ transform: rotate(-8deg); }}
-            50% {{ transform: rotate(8deg); }}
+            0%, 100% {{ transform: rotate(-10deg); }}
+            50% {{ transform: rotate(10deg); }}
         }}
         
         @keyframes bubblePulse {{
-            0%, 100% {{ transform: scale(1); box-shadow: 0 8px 32px rgba(0, 150, 255, 0.6), 0 0 30px rgba(100, 200, 255, 0.4); }}
-            50% {{ transform: scale(1.02); box-shadow: 0 12px 40px rgba(0, 150, 255, 0.8), 0 0 40px rgba(100, 200, 255, 0.6); }}
-        }}
-        
-        /* 🎨 ROBITO EM CADA SEÇÃO */
-        .section-robito {{
-            position: absolute;
-            top: -60px;
-            right: 20px;
-            z-index: 10;
-        }}
-        
-        .section-robito img {{
-            width: 100px;
-            height: 100px;
-            filter: drop-shadow(0 4px 12px rgba(0, 100, 255, 0.5));
-            animation: sectionRobitoSwing 2.5s ease-in-out infinite;
-        }}
-        
-        .section-robito-bubble {{
-            position: absolute;
-            top: 10px;
-            right: 110px;
-            background: linear-gradient(135deg, rgba(0, 50, 150, 0.95), rgba(0, 100, 200, 0.95));
-            border: 2px solid #0099ff;
-            border-radius: 15px;
-            padding: 12px 16px;
-            min-width: 220px;
-            max-width: 300px;
-            box-shadow: 0 6px 24px rgba(0, 100, 255, 0.5);
-            animation: sectionBubblePulse 2.5s ease-in-out infinite;
-        }}
-        
-        .section-robito-bubble::after {{
-            content: '';
-            position: absolute;
-            top: 50%;
-            right: -15px;
-            transform: translateY(-50%);
-            width: 0;
-            height: 0;
-            border-top: 10px solid transparent;
-            border-bottom: 10px solid transparent;
-            border-left: 15px solid #0099ff;
-        }}
-        
-        .section-robito-bubble p {{
-            margin: 0;
-            color: #ffffff;
-            font-size: 13px;
-            font-weight: 600;
-            line-height: 1.4;
-        }}
-        
-        @keyframes sectionRobitoSwing {{
-            0%, 100% {{ transform: rotate(-5deg) translateY(0px); }}
-            50% {{ transform: rotate(5deg) translateY(-8px); }}
-        }}
-        
-        @keyframes sectionBubblePulse {{
-            0%, 100% {{ opacity: 1; transform: scale(1); }}
-            50% {{ opacity: 0.95; transform: scale(1.03); }}
+            0%, 100% {{ transform: scale(1); box-shadow: 0 12px 50px rgba(0, 150, 255, 0.7), 0 0 50px rgba(100, 200, 255, 0.5); }}
+            50% {{ transform: scale(1.03); box-shadow: 0 16px 60px rgba(0, 150, 255, 0.9), 0 0 60px rgba(100, 200, 255, 0.7); }}
         }}
     </style>
 </head>
@@ -999,6 +1038,12 @@ def dashboard():
         <div class="particle"></div>
     </div>
     
+    <!-- 🎉 SPLASH SCREEN - ANIMAÇÃO INICIAL -->
+    <div class="robito-splash" id="splash-screen">
+        <img src="{ROBITO_IMAGES['feliz']}" alt="Robito">
+        <h1>✨ Dashboard Carregado! ✨</h1>
+    </div>
+    
     <!-- Sidebar -->
     <div class="sidebar">
         <div class="sidebar-logo">
@@ -1035,14 +1080,7 @@ def dashboard():
         
         <!-- Dashboard Page -->
         <div id="dashboard-page" class="page active">
-            <div class="section" style="position: relative;">
-                <!-- 🤖 Robito explicando a seção -->
-                <div class="section-robito">
-                    <div class="section-robito-bubble">
-                        <p>⚙️ Aqui você ativa/desativa as principais funções do servidor!</p>
-                    </div>
-                    <img src="{ROBITO_IMAGES['piscando']}" alt="Robito">
-                </div>
+            <div class="section">
                 <h2 class="section-title">Configurações do Servidor</h2>
                 <div class="grid">
                     <div class="card">
@@ -1099,14 +1137,7 @@ def dashboard():
         
         <!-- Tickets Page -->
         <div id="tickets-page" class="page">
-            <div class="section" style="position: relative;">
-                <!-- 🤖 Robito explicando Tickets -->
-                <div class="section-robito">
-                    <div class="section-robito-bubble">
-                        <p>🎫 Configure o sistema completo de tickets aqui!</p>
-                    </div>
-                    <img src="{ROBITO_IMAGES['feliz']}" alt="Robito">
-                </div>
+            <div class="section">
                 <h2 class="section-title">🎫 Configuração Completa de Tickets</h2>
                 
                 <!-- Sub-tabs -->
@@ -1330,14 +1361,7 @@ def dashboard():
         
         <!-- Embeds Page -->
         <div id="embeds-page" class="page">
-            <div class="section" style="position: relative;">
-                <!-- 🤖 Robito explicando Embeds -->
-                <div class="section-robito">
-                    <div class="section-robito-bubble">
-                        <p>📋 Crie mensagens embed lindas e personalizadas!</p>
-                    </div>
-                    <img src="{ROBITO_IMAGES['rico']}" alt="Robito">
-                </div>
+            <div class="section">
                 <h2 class="section-title">📋 Gerador de Embeds Visual</h2>
                 
                 <!-- Seletor de Template -->
@@ -1542,14 +1566,7 @@ Você ganhou **{{{{prize}}}}**!
         
         <!-- Stats Page -->
         <div id="stats-page" class="page">
-            <div class="section" style="position: relative;">
-                <!-- 🤖 Robito explicando Stats -->
-                <div class="section-robito">
-                    <div class="section-robito-bubble">
-                        <p>📈 Veja as estatísticas do servidor em tempo real!</p>
-                    </div>
-                    <img src="{ROBITO_IMAGES['rei']}" alt="Robito">
-                </div>
+            <div class="section">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
                     <h2 class="section-title" style="margin: 0;">📈 Estatísticas do Servidor</h2>
                     <span style="color: #22c55e; font-size: 13px; display: flex; align-items: center; gap: 6px;">
@@ -1565,14 +1582,17 @@ Você ganhou **{{{{prize}}}}**!
     </div>
     
     <!-- 🤖 ROBITO HELPER - ASSISTENTE FLUTUANTE -->
-    <div class="robito-helper">
+    <div class="robito-helper" id="robito-helper">
         <div class="robito-speech-bubble" id="robito-bubble">
             <p id="robito-message">
-                👋 <strong>Olá!</strong> Sou o Robito, seu assistente! Estou aqui para te ajudar a configurar tudo!
+                👋 <strong>Olá!</strong> Sou o Robito, seu assistente pessoal! Estou aqui para te guiar e ajudar a configurar tudo no dashboard do jeito certo. Qualquer dúvida, só me chamar! 😊
             </p>
         </div>
         <img src="{ROBITO_IMAGES['acenando']}" alt="Robito Helper" id="robito-img">
     </div>
+    
+    <!-- 🔽 BOTÃO TOGGLE ROBITO -->
+    <div class="robito-toggle" id="robito-toggle" onclick="toggleRobito()"></div>
     
     <!-- Toast Notification -->
     <div id="toast" class="toast"></div>
@@ -1581,22 +1601,22 @@ Você ganhou **{{{{prize}}}}**!
     <audio id="notif-sound" preload="auto">
         <source src="https://cdn.pixabay.com/download/audio/2022/03/10/audio_c8c6c7c579.mp3" type="audio/mpeg">
     <script>
-        // 🤖 Mensagens do Robito Helper por página
+        // 🤖 Mensagens do Robito Helper por página (DETALHADAS)
         const robitoMessages = {{
             'dashboard': {{
-                message: '⚙️ <strong>Dashboard!</strong> Aqui você controla as principais configurações do servidor!',
+                message: '⚙️ <strong>Painel Principal!</strong> Aqui você pode ativar ou desativar as funções principais do servidor como: Boas-vindas automáticas, sistema de autorole, tickets de suporte e muito mais. Use os toggles para ligar/desligar cada função! 🎛️',
                 image: '{ROBITO_IMAGES['piscando']}'
             }},
             'tickets': {{
-                message: '🎫 <strong>Sistema de Tickets!</strong> Configure tudo sobre os tickets de suporte aqui!',
+                message: '🎫 <strong>Sistema de Tickets Completo!</strong> Configure categorias personalizadas, crie painéis interativos, defina prioridades, mensagens automáticas e campos personalizados. Seu sistema de suporte profissional começa aqui! 🛠️',
                 image: '{ROBITO_IMAGES['feliz']}'
             }},
             'embeds': {{
-                message: '📋 <strong>Gerador de Embeds!</strong> Crie mensagens lindas e profissionais!',
+                message: '📋 <strong>Gerador de Embeds Visual!</strong> Crie mensagens embed incríveis com pré-visualização em tempo real! Escolha templates prontos ou crie do zero. Personalize cores, títulos, descrições, campos e até rodapé. Depois é só enviar para o canal! ✨',
                 image: '{ROBITO_IMAGES['rico']}'
             }},
             'stats': {{
-                message: '📈 <strong>Estatísticas!</strong> Veja tudo que acontece no servidor em tempo real!',
+                message: '📈 <strong>Estatísticas em Tempo Real!</strong> Acompanhe tudo que acontece no seu servidor: total de membros, canais, cargos, mensagens enviadas e muito mais. Os dados são atualizados automaticamente a cada 5 segundos! 🔴 LIVE',
                 image: '{ROBITO_IMAGES['rei']}'
             }}
         }};
@@ -1606,6 +1626,20 @@ Você ganhou **{{{{prize}}}}**!
             const robitoData = robitoMessages[page] || robitoMessages['dashboard'];
             document.getElementById('robito-message').innerHTML = robitoData.message;
             document.getElementById('robito-img').src = robitoData.image;
+        }}
+        
+        // 🔽 Toggle do Robito (Mostrar/Esconder)
+        function toggleRobito() {{
+            const helper = document.getElementById('robito-helper');
+            const toggle = document.getElementById('robito-toggle');
+            
+            if (helper.classList.contains('hidden')) {{
+                helper.classList.remove('hidden');
+                toggle.classList.remove('rotated');
+            }} else {{
+                helper.classList.add('hidden');
+                toggle.classList.add('rotated');
+            }}
         }}
         
         // Navegação entre páginas
@@ -2917,6 +2951,20 @@ Você ganhou **{{{{prize}}}}**!
                 updateSavedEmbedsList(); // Carregar lista de embeds salvos
             }}
         }};
+        
+        // 🎉 INICIALIZAÇÃO DO DASHBOARD COM SPLASH SCREEN
+        window.addEventListener('DOMContentLoaded', function() {{
+            // Remover splash screen após 2 segundos e fazer Robito aparecer do centro
+            setTimeout(function() {{
+                const splash = document.getElementById('splash-screen');
+                if (splash) {{
+                    splash.style.display = 'none';
+                }}
+            }}, 2000);
+            
+            // Carregar dados do usuário
+            loadUserData();
+        }});
     </script>
 </body>
 </html>
