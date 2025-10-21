@@ -942,34 +942,35 @@ def dashboard():
             text-shadow: 0 0 15px rgba(255, 255, 0, 0.8);
         }}
         
-        /* 🔽 BOTÃO TOGGLE DO ROBITO - ULTRA FLUIDO */
+        /* 🔽 BOTÃO TOGGLE DO ROBITO - ABA NA BORDA INFERIOR */
         .robito-toggle {{
             position: fixed;
-            bottom: 80px;
-            right: 240px;
+            bottom: 0px;
+            right: 180px;
             z-index: 1000;
-            width: 60px;
-            height: 60px;
+            width: 90px;
+            height: 45px;
             background: linear-gradient(135deg, #0066ff, #0099ff);
             border: 3px solid #00ccff;
-            border-radius: 50%;
+            border-bottom: none;
+            border-radius: 20px 20px 0 0;
             display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
             transition: transform 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55), box-shadow 0.4s ease, background 0.3s ease;
-            box-shadow: 0 8px 25px rgba(0, 100, 255, 0.7);
+            box-shadow: 0 -5px 25px rgba(0, 100, 255, 0.7), 0 0 40px rgba(0, 150, 255, 0.4);
             animation: robitoEntryFromCenter 1s ease-out 2s both;
         }}
         
         .robito-toggle:hover {{
-            transform: scale(1.15) rotate(5deg);
-            box-shadow: 0 15px 45px rgba(0, 150, 255, 0.95);
+            transform: translateY(-8px);
+            box-shadow: 0 -10px 45px rgba(0, 150, 255, 0.95), 0 0 60px rgba(0, 200, 255, 0.6);
             background: linear-gradient(135deg, #0080ff, #00b3ff);
         }}
         
         .robito-toggle.hidden {{
-            transform: translateY(400px) scale(0.8);
+            transform: translateY(350px);
         }}
         
         .robito-toggle::before {{
