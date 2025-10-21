@@ -8797,11 +8797,12 @@ class PlaceholderOldTicketConfigView_REMOVED(discord.ui.View):
 
 # Painel de seleção de categoria
 class TicketCategoryView(discord.ui.View):
-    def __init__(self, config, category_channel, user):
-        super().__init__(timeout=300)  # 5 minutos
+    def __init__(self, config, category_channel, user, message=None):
+        super().__init__(timeout=60)  # 60 segundos (cooldown)
         self.config = config
         self.category_channel = category_channel
         self.user = user
+        self.message = message  # Guardar mensagem original para editar
         self.selected_category = "📁 Geral"
         self.selected_priority = "🟡 Média"
     
@@ -8867,40 +8868,44 @@ class TicketCategoryView(discord.ui.View):
             await interaction.response.send_message("❌ Este painel não é seu!", ephemeral=True)
             return
         
-        # Abrir modal com as seleções salvas
-        modal = TicketModal(self.config, self.category_channel, self.selected_category, self.selected_priority)
+        # Abrir modal com as seleções salvas e passar a mensagem
+        modal = TicketModal(self.config, self.category_channel, self.selected_category, self.selected_priority, self.message)
         await interaction.response.send_modal(modal)
         self.stop()
     
     async def on_timeout(self):
-        """Quando o painel expira (5 minutos), edita a mensagem"""
+        """Quando o painel expira (60 segundos = cooldown), edita com EMBED LARANJA"""
         try:
-            # Criar embed de expiração
+            # 🔥 EMBED LARANJA DE EXPIRAÇÃO
             expired_embed = discord.Embed(
                 title="⏱️ PAINEL EXPIRADO",
                 description="**Este painel de criação de ticket expirou!**\n\n"
-                           "❌ Você demorou mais de 5 minutos para responder.\n\n"
+                           "❌ Você demorou mais de **60 segundos** para responder.\n\n"
                            "💡 **Para criar um novo ticket:**\n"
                            "Clique novamente no botão **🎫 Abrir Ticket**",
-                color=0xff0000
+                color=0xFFA500,  # LARANJA
+                timestamp=discord.utils.utcnow()
             )
-            expired_embed.set_footer(text="Sistema de Tickets • Caos Hub")
+            expired_embed.set_footer(text="Sistema de Tickets • Caos Hub • Tempo esgotado")
             
-            # Tentar editar a mensagem original (se possível em ephemeral)
-            # Em mensagens ephemeral, isso pode não funcionar, então apenas desabilita os botões
-            self.clear_items()
+            # Editar mensagem original com embed laranja
+            if self.message:
+                await self.message.edit(embed=expired_embed, view=None)
+            
             self.stop()
-        except:
+        except Exception as e:
+            print(f"[ERRO TIMEOUT] {e}")
             pass
 
 # Modal para coletar informações do ticket (com seleções salvas)
 class TicketModal(discord.ui.Modal, title="🎫 Informações do Ticket"):
-    def __init__(self, config, category, selected_category, selected_priority):
+    def __init__(self, config, category, selected_category, selected_priority, original_message=None):
         super().__init__()
         self.config = config
         self.category = category
         self.selected_category = selected_category
         self.selected_priority = selected_priority
+        self.original_message = original_message  # Mensagem para editar
         
         # Campo 1: Assunto (OBRIGATÓRIO)
         self.assunto = discord.ui.TextInput(
@@ -8989,10 +8994,25 @@ class TicketModal(discord.ui.Modal, title="🎫 Informações do Ticket"):
                 if role:
                     overwrites[role] = discord.PermissionOverwrite(read_messages=True, send_messages=True)
             
-            # Criar canal com ID do usuário (para verificação anti-duplicata)
+            # Contar quantos tickets já existem para numeração sequencial
+            ticket_number = 1
+            for channel in target_category.channels:
+                if "carrinho-" in channel.name:
+                    try:
+                        # Extrair número do formato: ⌊🛒⌉-carrinho-5
+                        parts = channel.name.split("-")
+                        if len(parts) >= 2:
+                            num = int(parts[-1])
+                            if num >= ticket_number:
+                                ticket_number = num + 1
+                    except:
+                        pass
+            
+            # Criar canal com numeração sequencial
             ticket_channel = await target_category.create_text_channel(
-                name=f"⌊🛒⌉-carrinho-{interaction.user.id}",
-                overwrites=overwrites
+                name=f"⌊🛒⌉-carrinho-{ticket_number}",
+                overwrites=overwrites,
+                topic=f"Ticket de {interaction.user.id}"  # Salvar user_id no tópico para verificação
             )
             
             # Embed BONITO com todas as informações
@@ -9061,15 +9081,53 @@ class TicketModal(discord.ui.Modal, title="🎫 Informações do Ticket"):
             close_view = CloseTicketView()
             await ticket_channel.send(f"{interaction.user.mention}", embed=embed, view=close_view)
             
-            # Mensagem de confirmação
-            await interaction.response.send_message(
-                f"✅ **Ticket criado com sucesso!**\n\n"
-                f"📌 Canal: {ticket_channel.mention}\n"
-                f"🏷️ Categoria: **{categoria_valor}**\n"
-                f"⚡ Prioridade: **{prioridade_valor}**\n\n"
-                f"*Nossa equipe foi notificada e responderá em breve!*",
-                ephemeral=True
+            # 🔥 EDITAR MENSAGEM ORIGINAL COM EMBED BONITO!
+            success_embed = discord.Embed(
+                title="✅ TICKET CRIADO COM SUCESSO!",
+                description=f"**Seu ticket foi criado e nossa equipe foi notificada!**",
+                color=0x00ff00,
+                timestamp=discord.utils.utcnow()
             )
+            
+            success_embed.add_field(
+                name="📌 Canal do Ticket",
+                value=f"{ticket_channel.mention}",
+                inline=False
+            )
+            
+            success_embed.add_field(
+                name="🏷️ Categoria",
+                value=f"**{categoria_valor}**",
+                inline=True
+            )
+            
+            success_embed.add_field(
+                name="⚡ Prioridade",
+                value=f"**{prioridade_valor}**",
+                inline=True
+            )
+            
+            success_embed.add_field(
+                name="📋 Assunto",
+                value=f"```{self.assunto.value}```",
+                inline=False
+            )
+            
+            success_embed.set_footer(
+                text="Sistema de Tickets • Caos Hub",
+                icon_url=interaction.guild.icon.url if interaction.guild.icon else None
+            )
+            
+            # Editar mensagem original (se existir)
+            if self.original_message:
+                try:
+                    await self.original_message.edit(embed=success_embed, view=None)
+                except:
+                    # Se não conseguir editar, envia nova
+                    await interaction.response.send_message(embed=success_embed, ephemeral=True)
+            else:
+                # Se não tem mensagem original, envia nova
+                await interaction.response.send_message(embed=success_embed, ephemeral=True)
         
         except discord.Forbidden:
             await interaction.response.send_message(
@@ -9141,11 +9199,11 @@ class TicketView(discord.ui.View):
                 )
                 return
         
-        # 🔥 VERIFICAÇÃO 2: TICKET JÁ ABERTO (BUSCA EM TODOS OS CANAIS DO SERVIDOR!)
+        # 🔥 VERIFICAÇÃO 2: TICKET JÁ ABERTO (VERIFICA TOPIC DO CANAL!)
         user_tickets = []
         for channel in interaction.guild.text_channels:
-            # Verificar se o nome do canal contém o ID do usuário
-            if channel.name.endswith(f"-{user_id}") or f"carrinho-{user_id}" in channel.name:
+            # Verificar se o tópico contém o ID do usuário
+            if channel.topic and f"Ticket de {user_id}" in channel.topic:
                 user_tickets.append(channel)
         
         if len(user_tickets) > 0:
@@ -9160,7 +9218,7 @@ class TicketView(discord.ui.View):
         # SALVAR COOLDOWN AGORA (quando mostra o painel)
         ticket_user_cooldowns[user_id] = current_time
         
-        # Mostrar painel de seleção (EPHEMERAL com timeout de 5 minutos)
+        # Mostrar painel de seleção (EPHEMERAL com timeout de 60 segundos)
         panel_embed = discord.Embed(
             title="🎫 CONFIGURAR SEU TICKET",
             description="**Selecione as opções abaixo antes de continuar:**\n\n"
@@ -9169,10 +9227,31 @@ class TicketView(discord.ui.View):
                        "*Após selecionar, clique em ✅ Continuar*",
             color=0x00ff88
         )
-        panel_embed.set_footer(text="⏱️ Este painel expira em 5 minutos")
+        panel_embed.set_footer(text="⏱️ Tempo restante: 60 segundos")
         
-        panel_view = TicketCategoryView(config, category, interaction.user)
-        await interaction.response.send_message(embed=panel_embed, view=panel_view, ephemeral=True)
+        # Enviar mensagem e guardar referência
+        await interaction.response.send_message(embed=panel_embed, view=None, ephemeral=True)
+        msg = await interaction.original_response()
+        
+        # Criar View com referência à mensagem
+        panel_view = TicketCategoryView(config, category, interaction.user, msg)
+        
+        # Atualizar mensagem com a View
+        await msg.edit(view=panel_view)
+        
+        # 🔥 TASK PARA ATUALIZAR TIMER EM TEMPO REAL
+        import asyncio
+        async def update_timer():
+            for remaining in range(59, 0, -1):
+                await asyncio.sleep(1)
+                try:
+                    panel_embed.set_footer(text=f"⏱️ Tempo restante: {remaining} segundos")
+                    await msg.edit(embed=panel_embed, view=panel_view)
+                except:
+                    break
+        
+        # Iniciar task do timer
+        asyncio.create_task(update_timer())
 
 # View com botão para fechar ticket
 class CloseTicketView(discord.ui.View):
