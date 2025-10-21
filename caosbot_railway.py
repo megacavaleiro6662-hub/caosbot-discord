@@ -872,7 +872,7 @@ def dashboard():
         }}
         
         .robito-helper.hidden {{
-            transform: translateX(500px);
+            transform: translateY(400px);
         }}
         
         .robito-helper img {{
@@ -927,11 +927,11 @@ def dashboard():
         /* 🔽 BOTÃO TOGGLE DO ROBITO */
         .robito-toggle {{
             position: fixed;
-            bottom: 100px;
-            right: 20px;
+            bottom: 20px;
+            right: 90px;
             z-index: 998;
-            width: 50px;
-            height: 50px;
+            width: 55px;
+            height: 55px;
             background: linear-gradient(135deg, #0066ff, #0099ff);
             border: 3px solid #00ccff;
             border-radius: 50%;
@@ -939,27 +939,29 @@ def dashboard():
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            transition: all 0.3s;
+            transition: transform 0.5s ease-in-out, box-shadow 0.3s;
             box-shadow: 0 6px 20px rgba(0, 100, 255, 0.6);
             animation: robitoEntryFromCenter 1s ease-out 2s both;
         }}
         
         .robito-toggle:hover {{
-            transform: scale(1.1);
-            box-shadow: 0 8px 30px rgba(0, 150, 255, 0.8);
+            box-shadow: 0 10px 35px rgba(0, 150, 255, 0.9);
+        }}
+        
+        .robito-toggle.hidden {{
+            transform: translateY(100px);
         }}
         
         .robito-toggle::before {{
-            content: '◀';
+            content: '▼';
             color: #ffffff;
-            font-size: 24px;
+            font-size: 26px;
             font-weight: bold;
-            transition: transform 0.3s;
+            transition: all 0.3s;
         }}
         
         .robito-toggle.rotated::before {{
-            transform: rotate(180deg);
-            display: inline-block;
+            content: '▲';
         }}
         
         @keyframes robitoEntryFromCenter {{
@@ -1628,17 +1630,25 @@ Você ganhou **{{{{prize}}}}**!
             document.getElementById('robito-img').src = robitoData.image;
         }}
         
-        // 🔽 Toggle do Robito (Mostrar/Esconder)
+        // 🔽 Toggle do Robito (Mostrar/Esconder) - ANIMAÇÃO PRA BAIXO
         function toggleRobito() {{
             const helper = document.getElementById('robito-helper');
             const toggle = document.getElementById('robito-toggle');
             
+            console.log('Toggle clicado!'); // DEBUG
+            
             if (helper.classList.contains('hidden')) {{
+                // MOSTRAR - Robito sobe
                 helper.classList.remove('hidden');
                 toggle.classList.remove('rotated');
+                toggle.classList.remove('hidden');
+                console.log('Robito APARECENDO (subindo)');
             }} else {{
+                // ESCONDER - Robito desce
                 helper.classList.add('hidden');
                 toggle.classList.add('rotated');
+                toggle.classList.add('hidden');
+                console.log('Robito SUMINDO (descendo)');
             }}
         }}
         
