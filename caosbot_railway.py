@@ -881,6 +881,7 @@ def dashboard():
         .robito-helper.hidden {{
             transform: translateY(500px);
             opacity: 0;
+            /* Mantém a animação durante a saída! */
         }}
         
         .robito-helper img {{
@@ -1652,7 +1653,7 @@ Você ganhou **{{{{prize}}}}**!
             document.getElementById('robito-img').src = robitoData.image;
         }}
         
-        // 🔽 Toggle do Robito (Mostrar/Esconder) - ULTRA FLUIDO SINCRONIZADO
+        // 🔽 Toggle do Robito (Mostrar/Esconder) - ANIMAÇÕES CONTÍNUAS
         function toggleRobito() {{
             const helper = document.getElementById('robito-helper');
             const toggle = document.getElementById('robito-toggle');
@@ -1663,32 +1664,27 @@ Você ganhou **{{{{prize}}}}**!
             helper.classList.remove('initial-entry');
             
             if (helper.classList.contains('hidden')) {{
-                // MOSTRAR - Robito sobe com animação ultra fluida (0.8s)
-                console.log('✅ Robito SUBINDO... com animação de 0.8s');
+                // MOSTRAR - Robito sobe com animação rodando
+                console.log('✅ Robito SUBINDO... animações contínuas');
+                
+                // Adicionar animação ANTES de remover hidden
+                if (!helper.classList.contains('entry-complete')) {{
+                    helper.classList.add('entry-complete');
+                }}
                 
                 helper.classList.remove('hidden');
                 toggle.classList.remove('rotated');
                 toggle.classList.remove('hidden');
                 
-                // Restaurar animação de flutuação após subir (0.8s)
-                setTimeout(function() {{
-                    helper.classList.add('entry-complete');
-                    console.log('🔄 Flutuação restaurada');
-                }}, 800);
-                
             }} else {{
-                // ESCONDER - Robito desce com animação ultra fluida (0.8s)
-                console.log('⬇️ Robito DESCENDO... com animação de 0.8s');
+                // ESCONDER - Robito desce com animação rodando
+                console.log('⬇️ Robito DESCENDO... animações contínuas');
                 
-                // Remover animação de flutuação ANTES de descer
-                helper.classList.remove('entry-complete');
-                
-                // Pequeno delay para garantir que a animação pare
-                setTimeout(function() {{
-                    helper.classList.add('hidden');
-                    toggle.classList.add('rotated');
-                    toggle.classList.add('hidden');
-                }}, 10);
+                // MANTÉM 'entry-complete' para animação continuar durante descida
+                // Só adiciona hidden (animação continua rodando!)
+                helper.classList.add('hidden');
+                toggle.classList.add('rotated');
+                toggle.classList.add('hidden');
             }}
         }}
         
