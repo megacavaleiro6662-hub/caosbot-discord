@@ -404,6 +404,74 @@ def login_page():
             position: relative;
             z-index: 10;
         }}
+        
+        /* ========================================
+           📱 RESPONSIVO - LOGIN MOBILE
+           ======================================== */
+        
+        /* 📱 MOBILE (até 768px) */
+        @media (max-width: 768px) {{
+            .login-container {{
+                padding: 40px 30px;
+                max-width: 90%;
+                margin: 20px;
+            }}
+            
+            .logo {{
+                width: 200px;
+                margin-bottom: 20px;
+            }}
+            
+            h1 {{
+                font-size: 28px;
+                letter-spacing: 2px;
+            }}
+            
+            p {{
+                font-size: 14px;
+                margin-bottom: 30px;
+            }}
+            
+            .login-btn {{
+                padding: 16px 32px;
+                font-size: 16px;
+                letter-spacing: 1.5px;
+                width: 100%;
+            }}
+            
+            .warning {{
+                font-size: 13px;
+                padding: 12px;
+            }}
+        }}
+        
+        /* 📱 MOBILE PEQUENO (até 480px) */
+        @media (max-width: 480px) {{
+            .login-container {{
+                padding: 30px 20px;
+            }}
+            
+            .logo {{
+                width: 160px;
+            }}
+            
+            h1 {{
+                font-size: 24px;
+            }}
+            
+            p {{
+                font-size: 13px;
+            }}
+            
+            .login-btn {{
+                padding: 14px 28px;
+                font-size: 15px;
+            }}
+            
+            .warning {{
+                font-size: 12px;
+            }}
+        }}
     </style>
 </head>
 <body>
