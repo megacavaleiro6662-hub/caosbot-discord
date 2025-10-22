@@ -537,12 +537,12 @@ def login_page():
         <div class="quality-selector">
             <label for="quality">⚙️ QUALIDADE GRÁFICA:</label>
             <select id="quality" class="quality-select">
-                <option value="ultra">🔥 ULTRA (120 FPS - PC)</option>
-                <option value="alto">⚡ ALTO (90 FPS)</option>
-                <option value="medio" selected>💎 MÉDIO (60 FPS)</option>
-                <option value="baixo">🚀 BAIXO (Mobile)</option>
-                <option value="muito-baixo">⚡ MUITO BAIXO (Mobile Antigo)</option>
-                <option value="potato">🥔 POTATO (Tudo desligado)</option>
+                <option value="ultra">🔥 ULTRA</option>
+                <option value="alto">⚡ ALTO</option>
+                <option value="medio" selected>💎 MÉDIO</option>
+                <option value="baixo">🚀 BAIXO</option>
+                <option value="muito-baixo">⚡ MUITO BAIXO</option>
+                <option value="potato">🥔 POTATO</option>
             </select>
         </div>
         
@@ -805,6 +805,11 @@ def dashboard():
             50% {{ opacity: 1; }}
         }}
         
+        html, body {{
+            overflow-x: hidden;
+            max-width: 100vw;
+        }}
+        
         body {{ 
             font-family: 'Inter', 'Roboto', sans-serif; 
             background: linear-gradient(135deg, #000000 0%, #001a33 25%, #003366 50%, #001a33 75%, #000000 100%);
@@ -990,6 +995,7 @@ def dashboard():
             z-index: 10; 
             box-shadow: 5px 0 30px rgba(0, 100, 255, 0.3);
             overflow-y: auto;
+            overflow-x: hidden;
             will-change: transform;
             transform: translateZ(0);
             contain: layout style;
@@ -1097,7 +1103,7 @@ def dashboard():
             padding: 10px;
         }}
         
-        .main {{ margin-left: 280px; padding: 32px; position: relative; z-index: 1; will-change: auto; transform: translateZ(0); isolation: isolate; }}
+        .main {{ margin-left: 280px; padding: 32px; position: relative; z-index: 1; will-change: auto; transform: translateZ(0); isolation: isolate; max-width: calc(100vw - 280px); box-sizing: border-box; }}
         .header {{ background: linear-gradient(135deg, rgba(0, 100, 255, 0.15) 0%, rgba(0, 150, 255, 0.1) 100%); backdrop-filter: blur(10px); border: 2px solid #0066ff; border-radius: 0; padding: 32px; margin-bottom: 32px; box-shadow: 0 8px 32px rgba(0, 100, 255, 0.4); display: flex; justify-content: space-between; align-items: center; will-change: auto; transform: translateZ(0); isolation: isolate; }}
         .header-left h1 {{ font-size: 32px; font-weight: 800; margin-bottom: 8px; text-shadow: 0 0 10px rgba(0, 150, 255, 0.5), 0 0 20px rgba(0, 100, 255, 0.3); color: #00ccff; }}
         .header-left p {{ color: #66aaff; font-size: 16px; }}
@@ -1108,7 +1114,7 @@ def dashboard():
         .user-role {{ font-size: 13px; color: #66aaff; margin-top: 4px; }}
         .btn-logout {{ padding: 8px 16px; background: linear-gradient(135deg, #0000cc, #000099); color: white; border: 2px solid #0000cc; border-radius: 0; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.3s; box-shadow: 0 4px 12px rgba(0, 100, 200, 0.4); }}
         .btn-logout:hover {{ background: linear-gradient(135deg, #000099, #000066); box-shadow: 0 6px 16px rgba(0, 100, 200, 0.6); transform: translateY(-2px); }}
-        .grid {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 24px; will-change: auto; transform: translateZ(0); }}
+        .grid {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 24px; will-change: auto; transform: translateZ(0); width: 100%; box-sizing: border-box; }}
         .card {{ background: linear-gradient(135deg, rgba(0, 0, 0, 0.6) 0%, rgba(0, 20, 50, 0.4) 100%); backdrop-filter: blur(10px); border: 2px solid #0066ff; border-radius: 0; padding: 24px; transition: all 0.3s; box-shadow: 0 4px 16px rgba(0, 100, 255, 0.3); will-change: transform; transform: translateZ(0); contain: layout style paint; }}
         .card:hover {{ border-color: #0033ff; transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0, 150, 255, 0.5), 0 0 30px rgba(0, 100, 255, 0.3); }}
         .card-header {{ display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }}
@@ -1127,9 +1133,9 @@ def dashboard():
         .btn-primary:hover {{ background: linear-gradient(135deg, #0033ff, #0000cc); box-shadow: 0 6px 20px rgba(0, 100, 255, 0.6), 0 0 20px rgba(0, 150, 255, 0.4); transform: translateY(-2px); }}
         .btn-danger {{ background: linear-gradient(135deg, #0000cc, #000099); color: white; border-color: #0000cc; box-shadow: 0 4px 15px rgba(0, 100, 200, 0.4); }}
         .btn-danger:hover {{ background: linear-gradient(135deg, #000099, #000066); box-shadow: 0 6px 20px rgba(0, 100, 200, 0.6); transform: translateY(-2px); }}
-        .section {{ margin-bottom: 32px; }}
+        .section {{ margin-bottom: 32px; width: 100%; box-sizing: border-box; }}
         .section-title {{ font-size: 20px; font-weight: 700; margin-bottom: 16px; color: #00ccff; text-shadow: 0 0 8px rgba(100, 200, 255, 0.4); }}
-        .page {{ display: none; }}
+        .page {{ display: none; width: 100%; box-sizing: border-box; }}
         .page.active {{ display: block; }}
         .form-group {{ margin-bottom: 16px; }}
         .form-label {{ display: block; margin-bottom: 8px; font-size: 14px; font-weight: 600; color: #66aaff; }}
@@ -1551,49 +1557,57 @@ def dashboard():
            ⚙️ NÍVEIS DE QUALIDADE GRÁFICA
            ======================================== */
         
-        /* 🔥 ULTRA - 120 FPS (Tudo ativado) */
+        /* 🔥 ULTRA - Tudo ativado (50 partículas) */
         body.quality-ultra .particle:nth-child(n+51) {{ display: none; }}
-        body.quality-ultra .header {{ backdrop-filter: blur(10px); }}
-        body.quality-ultra .card {{ backdrop-filter: blur(10px); }}
-        body.quality-ultra .robito-splash {{ backdrop-filter: blur(10px); }}
+        body.quality-ultra .header {{ backdrop-filter: blur(12px); }}
+        body.quality-ultra .card {{ backdrop-filter: blur(12px); box-shadow: 0 4px 16px rgba(0, 100, 255, 0.4); }}
+        body.quality-ultra .robito-splash {{ backdrop-filter: blur(12px); }}
+        body.quality-ultra .sidebar {{ backdrop-filter: blur(12px); }}
         
-        /* ⚡ ALTO - 90 FPS (35 partículas, blur 8px) */
-        body.quality-alto .particle:nth-child(n+36) {{ display: none; }}
-        body.quality-alto .header {{ backdrop-filter: blur(8px); }}
-        body.quality-alto .card {{ backdrop-filter: blur(8px); }}
-        body.quality-alto .robito-splash {{ backdrop-filter: blur(8px); }}
-        body.quality-alto .sidebar {{ backdrop-filter: blur(8px); }}
+        /* ⚡ ALTO - 30 partículas, blur 7px, sombras reduzidas */
+        body.quality-alto .particle:nth-child(n+31) {{ display: none; }}
+        body.quality-alto .header {{ backdrop-filter: blur(7px); }}
+        body.quality-alto .card {{ backdrop-filter: blur(7px); box-shadow: 0 4px 12px rgba(0, 100, 255, 0.3); }}
+        body.quality-alto .robito-splash {{ backdrop-filter: blur(7px); }}
+        body.quality-alto .sidebar {{ backdrop-filter: blur(7px); }}
+        body.quality-alto .sidebar::before {{ animation-duration: 25s; }}
         
-        /* 💎 MÉDIO - 60 FPS (25 partículas, blur 6px) */
-        body.quality-medio .particle:nth-child(n+26) {{ display: none; }}
-        body.quality-medio .header {{ backdrop-filter: blur(6px); }}
-        body.quality-medio .card {{ backdrop-filter: blur(6px); }}
-        body.quality-medio .robito-splash {{ backdrop-filter: blur(6px); }}
-        body.quality-medio .sidebar {{ backdrop-filter: blur(6px); }}
+        /* 💎 MÉDIO - 18 partículas, blur 5px, animações lentas */
+        body.quality-medio .particle:nth-child(n+19) {{ display: none; }}
+        body.quality-medio .header {{ backdrop-filter: blur(5px); }}
+        body.quality-medio .card {{ backdrop-filter: blur(5px); box-shadow: 0 4px 10px rgba(0, 100, 255, 0.25); }}
+        body.quality-medio .robito-splash {{ backdrop-filter: blur(5px); }}
+        body.quality-medio .sidebar {{ backdrop-filter: blur(5px); }}
+        body.quality-medio body::before,
+        body.quality-medio body::after {{ animation-duration: 25s; }}
+        body.quality-medio .sidebar::before {{ animation-duration: 30s; }}
         
-        /* 🚀 BAIXO - 60 FPS Mobile (15 partículas, blur 4px) */
-        body.quality-baixo .particle:nth-child(n+16) {{ display: none; }}
-        body.quality-baixo .header {{ backdrop-filter: blur(4px); }}
-        body.quality-baixo .card {{ backdrop-filter: blur(4px); }}
-        body.quality-baixo .robito-splash {{ backdrop-filter: blur(4px); }}
-        body.quality-baixo .sidebar {{ backdrop-filter: blur(4px); }}
+        /* 🚀 BAIXO - 10 partículas, blur 3px, poucas animações */
+        body.quality-baixo .particle:nth-child(n+11) {{ display: none; }}
+        body.quality-baixo .header {{ backdrop-filter: blur(3px); }}
+        body.quality-baixo .card {{ backdrop-filter: blur(3px); box-shadow: 0 2px 8px rgba(0, 100, 255, 0.2); }}
+        body.quality-baixo .robito-splash {{ backdrop-filter: blur(3px); }}
+        body.quality-baixo .sidebar {{ backdrop-filter: blur(3px); }}
         body.quality-baixo body::before,
-        body.quality-baixo body::after {{ animation-duration: 30s; }}
+        body.quality-baixo body::after {{ animation-duration: 40s; opacity: 0.5; }}
+        body.quality-baixo .sidebar::before {{ animation-duration: 40s; }}
+        body.quality-baixo .animated-bg {{ opacity: 0.15; }}
         
-        /* ⚡ MUITO BAIXO - 60 FPS Mobile Antigo (8 partículas, blur 2px) */
-        body.quality-muito-baixo .particle:nth-child(n+9) {{ display: none; }}
-        body.quality-muito-baixo .header {{ backdrop-filter: blur(2px); }}
-        body.quality-muito-baixo .card {{ backdrop-filter: blur(2px); }}
-        body.quality-muito-baixo .robito-splash {{ backdrop-filter: blur(2px); }}
-        body.quality-muito-baixo .sidebar {{ backdrop-filter: blur(2px); }}
+        /* ⚡ MUITO BAIXO - 5 partículas, blur 1px, quase sem animações */
+        body.quality-muito-baixo .particle:nth-child(n+6) {{ display: none; }}
+        body.quality-muito-baixo .header {{ backdrop-filter: blur(1px); }}
+        body.quality-muito-baixo .card {{ backdrop-filter: blur(1px); box-shadow: 0 2px 6px rgba(0, 100, 255, 0.15); }}
+        body.quality-muito-baixo .robito-splash {{ backdrop-filter: blur(1px); }}
+        body.quality-muito-baixo .sidebar {{ backdrop-filter: blur(1px); }}
         body.quality-muito-baixo body::before,
-        body.quality-muito-baixo body::after {{ animation: none; }}
+        body.quality-muito-baixo body::after {{ animation: none; opacity: 0.3; }}
         body.quality-muito-baixo .sidebar::before {{ animation: none; }}
+        body.quality-muito-baixo .animated-bg {{ opacity: 0.1; }}
         
-        /* 🥔 POTATO - 60 FPS Tudo (0 partículas, sem blur, sem animações) */
+        /* 🥔 POTATO - 0 partículas, sem blur, sem animações, sem GIF */
         body.quality-potato .fire-particles {{ display: none; }}
-        body.quality-potato .header {{ backdrop-filter: none; background: rgba(0, 0, 0, 0.85); }}
-        body.quality-potato .card {{ backdrop-filter: none; background: rgba(0, 0, 0, 0.75); }}
+        body.quality-potato .header {{ backdrop-filter: none; background: rgba(0, 0, 0, 0.9); box-shadow: none; }}
+        body.quality-potato .card {{ backdrop-filter: none; background: rgba(0, 0, 0, 0.8); box-shadow: none; }}
         body.quality-potato .robito-splash {{ backdrop-filter: none; background: rgba(0, 20, 80, 0.98); }}
         body.quality-potato .sidebar {{ backdrop-filter: none; background: #000000; }}
         body.quality-potato body::before,
@@ -2601,12 +2615,12 @@ Você ganhou **{{{{prize}}}}**!
                     
                     // Feedback visual
                     const qualityNames = {{
-                        'ultra': '🔥 ULTRA - 120 FPS',
-                        'alto': '⚡ ALTO - 90 FPS',
-                        'medio': '💎 MÉDIO - 60 FPS',
-                        'baixo': '🚀 BAIXO - Mobile',
+                        'ultra': '🔥 ULTRA',
+                        'alto': '⚡ ALTO',
+                        'medio': '💎 MÉDIO',
+                        'baixo': '🚀 BAIXO',
                         'muito-baixo': '⚡ MUITO BAIXO',
-                        'potato': '🥔 POTATO - Máxima Performance'
+                        'potato': '🥔 POTATO'
                     }};
                     
                     console.log('✅ Qualidade alterada para: ' + qualityNames[newQuality]);
