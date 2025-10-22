@@ -691,6 +691,21 @@ def dashboard():
     <style>
         * {{ margin: 0; padding: 0; box-sizing: border-box; font-family: 'Orbitron', 'Rajdhani', sans-serif; }}
         
+        /* ⚡ OTIMIZAÇÕES DE PERFORMANCE */
+        * {{
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }}
+        
+        html {{
+            scroll-behavior: smooth;
+        }}
+        
+        img, video {{
+            transform: translateZ(0);
+            backface-visibility: hidden;
+        }}
+        
         /* Animação de oceano no fundo */
         @keyframes oceanGlow {{
             0%, 100% {{ background-position: 0% 50%; }}
@@ -776,6 +791,9 @@ def dashboard():
             opacity: 0;
             animation: rise 15s linear infinite;
             box-shadow: 0 0 10px #0066ff, 0 0 20px #0033ff;
+            will-change: transform, opacity;
+            transform: translateZ(0);
+            pointer-events: none;
         }}
         
         /* Partículas vermelhas */
@@ -877,6 +895,9 @@ def dashboard():
             z-index: 10; 
             box-shadow: 5px 0 30px rgba(0, 100, 255, 0.3);
             overflow-y: auto;
+            will-change: transform;
+            transform: translateZ(0);
+            contain: layout style;
         }}
         
         @keyframes hueShift {{
@@ -943,7 +964,7 @@ def dashboard():
         .btn-logout {{ padding: 8px 16px; background: linear-gradient(135deg, #0000cc, #000099); color: white; border: 2px solid #0000cc; border-radius: 0; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.3s; box-shadow: 0 4px 12px rgba(0, 100, 200, 0.4); }}
         .btn-logout:hover {{ background: linear-gradient(135deg, #000099, #000066); box-shadow: 0 6px 16px rgba(0, 100, 200, 0.6); transform: translateY(-2px); }}
         .grid {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 24px; }}
-        .card {{ background: linear-gradient(135deg, rgba(0, 0, 0, 0.6) 0%, rgba(0, 20, 50, 0.4) 100%); backdrop-filter: blur(10px); border: 2px solid #0066ff; border-radius: 0; padding: 24px; transition: all 0.3s; box-shadow: 0 4px 16px rgba(0, 100, 255, 0.3); }}
+        .card {{ background: linear-gradient(135deg, rgba(0, 0, 0, 0.6) 0%, rgba(0, 20, 50, 0.4) 100%); backdrop-filter: blur(10px); border: 2px solid #0066ff; border-radius: 0; padding: 24px; transition: all 0.3s; box-shadow: 0 4px 16px rgba(0, 100, 255, 0.3); will-change: transform; transform: translateZ(0); contain: layout style paint; }}
         .card:hover {{ border-color: #0033ff; transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0, 150, 255, 0.5), 0 0 30px rgba(0, 100, 255, 0.3); }}
         .card-header {{ display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }}
         .card-header h2 {{ font-size: 18px; font-weight: 700; color: #00ccff; text-shadow: 0 0 5px rgba(100, 200, 255, 0.4); }}
@@ -1610,6 +1631,15 @@ def dashboard():
             /* Partículas menos densas no mobile (performance) */
             .particle:nth-child(n+26) {{
                 display: none;
+            }}
+            
+            /* Desabilitar animações pesadas no mobile (performance) */
+            body::before, body::after {{
+                animation: none;
+            }}
+            
+            .sidebar::before {{
+                animation-duration: 12s;
             }}
             
             /* Splash screen ajustado */
