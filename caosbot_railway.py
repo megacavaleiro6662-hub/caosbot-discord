@@ -1104,7 +1104,7 @@ def dashboard():
         }}
         
         .main {{ margin-left: 280px; padding: 32px; position: relative; z-index: 1; will-change: auto; transform: translateZ(0); isolation: isolate; max-width: calc(100vw - 280px); box-sizing: border-box; }}
-        .header {{ background: linear-gradient(135deg, rgba(0, 100, 255, 0.15) 0%, rgba(0, 150, 255, 0.1) 100%); backdrop-filter: blur(10px); border: 2px solid #0066ff; border-radius: 0; padding: 32px; margin-bottom: 32px; box-shadow: 0 8px 32px rgba(0, 100, 255, 0.4); display: flex; justify-content: space-between; align-items: center; will-change: auto; transform: translateZ(0); isolation: isolate; }}
+        .header {{ background: linear-gradient(135deg, rgba(0, 100, 255, 0.15) 0%, rgba(0, 150, 255, 0.1) 100%); backdrop-filter: blur(10px); border: 2px solid #0066ff; border-radius: 0; padding: 32px; margin-bottom: 32px; box-shadow: 0 8px 32px rgba(0, 100, 255, 0.4); display: flex; justify-content: space-between; align-items: center; will-change: auto; transform: translateZ(0); isolation: isolate; width: 100%; box-sizing: border-box; max-width: 100%; }}
         .header-left h1 {{ font-size: 32px; font-weight: 800; margin-bottom: 8px; text-shadow: 0 0 10px rgba(0, 150, 255, 0.5), 0 0 20px rgba(0, 100, 255, 0.3); color: #00ccff; }}
         .header-left p {{ color: #66aaff; font-size: 16px; }}
         .user-profile {{ display: flex; align-items: center; gap: 16px; }}
@@ -1114,11 +1114,11 @@ def dashboard():
         .user-role {{ font-size: 13px; color: #66aaff; margin-top: 4px; }}
         .btn-logout {{ padding: 8px 16px; background: linear-gradient(135deg, #0000cc, #000099); color: white; border: 2px solid #0000cc; border-radius: 0; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.3s; box-shadow: 0 4px 12px rgba(0, 100, 200, 0.4); }}
         .btn-logout:hover {{ background: linear-gradient(135deg, #000099, #000066); box-shadow: 0 6px 16px rgba(0, 100, 200, 0.6); transform: translateY(-2px); }}
-        .grid {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 24px; will-change: auto; transform: translateZ(0); width: 100%; box-sizing: border-box; }}
-        .card {{ background: linear-gradient(135deg, rgba(0, 0, 0, 0.6) 0%, rgba(0, 20, 50, 0.4) 100%); backdrop-filter: blur(10px); border: 2px solid #0066ff; border-radius: 0; padding: 24px; transition: all 0.3s; box-shadow: 0 4px 16px rgba(0, 100, 255, 0.3); will-change: transform; transform: translateZ(0); contain: layout style paint; }}
+        .grid {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(min(320px, 100%), 1fr)); gap: 24px; will-change: auto; transform: translateZ(0); width: 100%; box-sizing: border-box; }}
+        .card {{ background: linear-gradient(135deg, rgba(0, 0, 0, 0.6) 0%, rgba(0, 20, 50, 0.4) 100%); backdrop-filter: blur(10px); border: 2px solid #0066ff; border-radius: 0; padding: 24px; transition: all 0.3s; box-shadow: 0 4px 16px rgba(0, 100, 255, 0.3); will-change: transform; transform: translateZ(0); contain: layout style paint; width: 100%; max-width: 100%; box-sizing: border-box; word-wrap: break-word; overflow-wrap: break-word; }}
         .card:hover {{ border-color: #0033ff; transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0, 150, 255, 0.5), 0 0 30px rgba(0, 100, 255, 0.3); }}
-        .card-header {{ display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }}
-        .card-header h2 {{ font-size: 18px; font-weight: 700; color: #00ccff; text-shadow: 0 0 5px rgba(100, 200, 255, 0.4); }}
+        .card-header {{ display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 12px; }}
+        .card-header h2 {{ font-size: 18px; font-weight: 700; color: #00ccff; text-shadow: 0 0 5px rgba(100, 200, 255, 0.4); word-wrap: break-word; overflow-wrap: break-word; max-width: 100%; }}
         .toggle {{ position: relative; width: 48px; height: 24px; }}
         .toggle input {{ opacity: 0; width: 0; height: 0; }}
         .toggle label {{ position: absolute; cursor: pointer; inset: 0; background: #000033; transition: 0.3s; border-radius: 0; border: 1px solid #0066ff; }}
@@ -1128,18 +1128,18 @@ def dashboard():
         .status {{ display: inline-block; padding: 4px 12px; border-radius: 0; font-size: 12px; font-weight: 600; border: 1px solid; }}
         .status-on {{ background: rgba(100, 200, 255, 0.15); color: #00ccff; border-color: #00aaff; text-shadow: 0 0 5px rgba(100, 200, 255, 0.4); }}
         .status-off {{ background: rgba(0, 20, 100, 0.3); color: #6666ff; border-color: #0033ff; }}
-        .btn {{ padding: 12px 24px; border: 2px solid; border-radius: 0; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.3s; letter-spacing: 0.5px; }}
+        .btn {{ padding: 12px 24px; border: 2px solid; border-radius: 0; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.3s; letter-spacing: 0.5px; box-sizing: border-box; max-width: 100%; word-wrap: break-word; }}
         .btn-primary {{ background: linear-gradient(135deg, #0066ff, #0033ff); color: white; border-color: #0033ff; box-shadow: 0 4px 15px rgba(0, 100, 255, 0.4); }}
         .btn-primary:hover {{ background: linear-gradient(135deg, #0033ff, #0000cc); box-shadow: 0 6px 20px rgba(0, 100, 255, 0.6), 0 0 20px rgba(0, 150, 255, 0.4); transform: translateY(-2px); }}
         .btn-danger {{ background: linear-gradient(135deg, #0000cc, #000099); color: white; border-color: #0000cc; box-shadow: 0 4px 15px rgba(0, 100, 200, 0.4); }}
         .btn-danger:hover {{ background: linear-gradient(135deg, #000099, #000066); box-shadow: 0 6px 20px rgba(0, 100, 200, 0.6); transform: translateY(-2px); }}
-        .section {{ margin-bottom: 32px; width: 100%; box-sizing: border-box; }}
-        .section-title {{ font-size: 20px; font-weight: 700; margin-bottom: 16px; color: #00ccff; text-shadow: 0 0 8px rgba(100, 200, 255, 0.4); }}
-        .page {{ display: none; width: 100%; box-sizing: border-box; }}
+        .section {{ margin-bottom: 32px; width: 100%; box-sizing: border-box; max-width: 100%; }}
+        .section-title {{ font-size: 20px; font-weight: 700; margin-bottom: 16px; color: #00ccff; text-shadow: 0 0 8px rgba(100, 200, 255, 0.4); word-wrap: break-word; overflow-wrap: break-word; max-width: 100%; }}
+        .page {{ display: none; width: 100%; box-sizing: border-box; max-width: 100%; }}
         .page.active {{ display: block; }}
-        .form-group {{ margin-bottom: 16px; }}
-        .form-label {{ display: block; margin-bottom: 8px; font-size: 14px; font-weight: 600; color: #66aaff; }}
-        .form-input, .form-select, .form-textarea {{ width: 100%; padding: 10px 14px; background: rgba(0, 0, 0, 0.5); border: 2px solid #0066ff; border-radius: 0; color: #00ccff; font-family: 'Inter', 'Roboto', sans-serif; font-size: 14px; transition: all 0.3s; }}
+        .form-group {{ margin-bottom: 16px; width: 100%; max-width: 100%; box-sizing: border-box; }}
+        .form-label {{ display: block; margin-bottom: 8px; font-size: 14px; font-weight: 600; color: #66aaff; word-wrap: break-word; overflow-wrap: break-word; max-width: 100%; }}
+        .form-input, .form-select, .form-textarea {{ width: 100%; max-width: 100%; padding: 10px 14px; background: rgba(0, 0, 0, 0.5); border: 2px solid #0066ff; border-radius: 0; color: #00ccff; font-family: 'Inter', 'Roboto', sans-serif; font-size: 14px; transition: all 0.3s; box-sizing: border-box; }}
         .form-input:focus, .form-select:focus, .form-textarea:focus {{ outline: none; border-color: #0033ff; box-shadow: 0 0 10px rgba(0, 100, 255, 0.4), inset 0 0 5px rgba(0, 150, 255, 0.2); background: rgba(0, 10, 30, 0.6); }}
         .form-textarea {{ resize: vertical; min-height: 100px; }}
         .toast {{ position: fixed; top: 24px; right: 24px; background: linear-gradient(135deg, rgba(0, 0, 0, 0.9), rgba(0, 20, 50, 0.9)); border: 2px solid #0066ff; border-radius: 0; padding: 16px; min-width: 300px; opacity: 0; transform: translateX(400px); transition: all 0.3s; z-index: 1000; box-shadow: 0 8px 32px rgba(0, 100, 255, 0.5), 0 0 20px rgba(0, 150, 255, 0.3); }}
@@ -1674,6 +1674,8 @@ def dashboard():
             .main {{
                 margin-left: 0;
                 padding: 80px 16px 16px 16px;
+                max-width: 100vw;
+                width: 100%;
             }}
             
             /* Header com botão hamburger */
@@ -1682,6 +1684,8 @@ def dashboard():
                 gap: 16px;
                 padding: 20px 16px;
                 position: relative;
+                width: 100%;
+                max-width: 100%;
             }}
             
             .header-left {{
@@ -1757,11 +1761,15 @@ def dashboard():
             .grid {{
                 grid-template-columns: 1fr;
                 gap: 16px;
+                width: 100%;
+                max-width: 100%;
             }}
             
             /* Cards */
             .card {{
                 padding: 20px;
+                width: 100%;
+                max-width: 100%;
             }}
             
             .card-header h2 {{
@@ -1875,12 +1883,35 @@ def dashboard():
         
         /* 📱 MOBILE PEQUENO (até 480px) */
         @media (max-width: 480px) {{
+            .main {{
+                padding: 70px 12px 12px 12px;
+            }}
+            
+            .header {{
+                padding: 16px 12px;
+            }}
+            
             .header-left h1 {{
                 font-size: 20px;
+                word-break: break-word;
+            }}
+            
+            .header-left p {{
+                font-size: 13px;
+            }}
+            
+            .card {{
+                padding: 16px;
             }}
             
             .card-header h2 {{
                 font-size: 14px;
+                word-break: break-word;
+            }}
+            
+            .grid {{
+                grid-template-columns: 1fr;
+                gap: 12px;
             }}
             
             .robito-helper img {{
@@ -1889,11 +1920,28 @@ def dashboard():
             }}
             
             .robito-speech-bubble {{
-                min-width: 240px;
-                max-width: 280px;
+                min-width: 200px;
+                max-width: calc(100vw - 40px);
                 font-size: 13px;
                 padding: 14px 18px;
                 bottom: 120px;
+                word-wrap: break-word;
+            }}
+            
+            .form-input, .form-select, .form-textarea {{
+                font-size: 16px;
+            }}
+            
+            .mobile-menu-btn {{
+                width: 45px;
+                height: 45px;
+                top: 12px;
+                left: 12px;
+            }}
+            
+            .mobile-menu-btn span {{
+                width: 24px;
+                height: 2.5px;
             }}
             
             .robito-toggle {{
