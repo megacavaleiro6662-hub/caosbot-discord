@@ -3267,45 +3267,24 @@ Você ganhou **{{{{prize}}}}**!
             
             function updateLoadingMessage() {{
                 if (currentMessageIndex >= loadingMessages.length) {{
-                    // TODAS MENSAGENS EXIBIDAS - MOSTRAR "DASHBOARD CARREGADO"
+                    // TODAS MENSAGENS EXIBIDAS - IR DIRETO PARA DASHBOARD
                     setTimeout(function() {{
-                        // Fade out texto/logo atuais
-                        splashText.classList.add('fade-transition');
-                        splashLogo.classList.add('fade-transition');
-                        
-                        setTimeout(function() {{
-                            // Mostrar mensagem final
-                            splashText.textContent = '✨ DASHBOARD CARREGADO! ✨';
-                            splashText.style.fontSize = '28px';
-                            splashText.style.fontWeight = '800';
-                            splashLogo.src = '{ROBITO_IMAGES["dab"]}';
+                        if (splash) {{
+                            splash.classList.add('fade-out');
+                            console.log('🎆 Transição para dashboard...');
                             
-                            // Fade in
-                            splashText.classList.remove('fade-transition');
-                            splashLogo.classList.remove('fade-transition');
-                            
-                            console.log('✨ DASHBOARD CARREGADO!');
-                            
-                            // Após 2 segundos, iniciar fade-out do splash
                             setTimeout(function() {{
-                                if (splash) {{
-                                    splash.classList.add('fade-out');
-                                    console.log('🎆 Transição para dashboard...');
-                                    
-                                    setTimeout(function() {{
-                                        splash.style.display = 'none';
-                                        console.log('✅ Splash removido!');
-                                    }}, 1500);
-                                }}
-                                
-                                // Ativar Robito
-                                if (helper) {{
-                                    helper.classList.add('entry-complete');
-                                    console.log('🤖 Robito ativo!');
-                                }}
-                            }}, 2000);
-                        }}, 400);
-                    }}, 800);
+                                splash.style.display = 'none';
+                                console.log('✅ Dashboard carregado!');
+                            }}, 1500);
+                        }}
+                        
+                        // Ativar Robito
+                        if (helper) {{
+                            helper.classList.add('entry-complete');
+                            console.log('🤖 Robito ativo!');
+                        }}
+                    }}, 1000);
                     return;
                 }}
                 
