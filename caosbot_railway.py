@@ -3267,56 +3267,81 @@ Você ganhou **{{{{prize}}}}**!
             
             function updateLoadingMessage() {{
                 if (currentMessageIndex >= loadingMessages.length) {{
-                    // Todas as mensagens exibidas - iniciar transição
+                    // TODAS MENSAGENS EXIBIDAS - MOSTRAR "DASHBOARD CARREGADO"
                     setTimeout(function() {{
-                        if (splash) {{
-                            splash.classList.add('fade-out');
-                            console.log('🎆 Transição épica iniciando...');
+                        // Fade out texto/logo atuais
+                        splashText.classList.add('fade-transition');
+                        splashLogo.classList.add('fade-transition');
+                        
+                        setTimeout(function() {{
+                            // Mostrar mensagem final
+                            splashText.textContent = '✨ DASHBOARD CARREGADO! ✨';
+                            splashText.style.fontSize = '28px';
+                            splashText.style.fontWeight = '800';
+                            splashLogo.src = '{ROBITO_IMAGES["dab"]}';
                             
+                            // Fade in
+                            splashText.classList.remove('fade-transition');
+                            splashLogo.classList.remove('fade-transition');
+                            
+                            console.log('✨ DASHBOARD CARREGADO!');
+                            
+                            // Após 2 segundos, iniciar fade-out do splash
                             setTimeout(function() {{
-                                splash.style.display = 'none';
-                                console.log('✅ Dashboard carregado com sucesso!');
-                            }}, 1500);
-                        }}
-                    }}, 1000);
-                    
-                    // Ativar Robito
-                    setTimeout(function() {{
-                        if (helper) {{
-                            helper.classList.add('entry-complete');
-                            console.log('🤖 Robito ativo!');
-                        }}
-                    }}, 2000);
+                                if (splash) {{
+                                    splash.classList.add('fade-out');
+                                    console.log('🎆 Transição para dashboard...');
+                                    
+                                    setTimeout(function() {{
+                                        splash.style.display = 'none';
+                                        console.log('✅ Splash removido!');
+                                    }}, 1500);
+                                }}
+                                
+                                // Ativar Robito
+                                if (helper) {{
+                                    helper.classList.add('entry-complete');
+                                    console.log('🤖 Robito ativo!');
+                                }}
+                            }}, 2000);
+                        }}, 400);
+                    }}, 800);
                     return;
                 }}
                 
                 const message = loadingMessages[currentMessageIndex];
                 
-                // Fade out
-                splashText.classList.add('fade-transition');
-                splashLogo.classList.add('fade-transition');
+                // Fade out SINCRONIZADO
+                requestAnimationFrame(() => {{
+                    splashText.classList.add('fade-transition');
+                    splashLogo.classList.add('fade-transition');
+                }});
                 
                 setTimeout(function() {{
-                    // Atualizar conteúdo
-                    splashText.textContent = message.text;
-                    splashLogo.src = message.img;
-                    progressBar.style.width = message.progress + '%';
-                    
-                    // Fade in
-                    splashText.classList.remove('fade-transition');
-                    splashLogo.classList.remove('fade-transition');
+                    // Atualizar conteúdo SINCRONIZADO
+                    requestAnimationFrame(() => {{
+                        splashText.textContent = message.text;
+                        splashLogo.src = message.img;
+                        progressBar.style.width = message.progress + '%';
+                        
+                        // Fade in
+                        setTimeout(() => {{
+                            splashText.classList.remove('fade-transition');
+                            splashLogo.classList.remove('fade-transition');
+                        }}, 50);
+                    }});
                     
                     console.log('📝 ' + message.text + ' (' + message.progress + '%)');
                     
                     currentMessageIndex++;
                     
-                    // Próxima mensagem em 1.6 segundos
-                    setTimeout(updateLoadingMessage, 1600);
-                }}, 600);
+                    // Próxima mensagem em 1.2 segundos (MENOS LAG)
+                    setTimeout(updateLoadingMessage, 1200);
+                }}, 400);
             }}
             
-            // Iniciar rotação de mensagens após 500ms
-            setTimeout(updateLoadingMessage, 500);
+            // Iniciar rotação de mensagens após 300ms
+            setTimeout(updateLoadingMessage, 300);
             
             // Carregar dados do usuário
             loadUserData();
