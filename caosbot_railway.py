@@ -947,7 +947,7 @@ def dashboard():
             text-shadow: 0 0 15px rgba(255, 255, 0, 0.8);
         }}
         
-        /* 🔽 BOTÃO TOGGLE DO ROBITO - ABA NA BORDA INFERIOR (SEMPRE VISÍVEL) */
+        /* 🔽 BOTÃO TOGGLE DO ROBITO - ABA NA BORDA INFERIOR (SEMPRE VISÍVEL, SEM CORTAR) */
         .robito-toggle {{
             position: fixed;
             bottom: 0px;
@@ -963,13 +963,16 @@ def dashboard():
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            transition: transform 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55), box-shadow 0.4s ease, background 0.3s ease;
+            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
             box-shadow: 0 -4px 20px rgba(0, 100, 255, 0.6), 0 0 30px rgba(0, 150, 255, 0.3);
+            overflow: visible;
         }}
         
         .robito-toggle:hover {{
-            transform: translateY(-8px);
-            box-shadow: 0 -10px 45px rgba(0, 150, 255, 0.95), 0 0 60px rgba(0, 200, 255, 0.6);
+            bottom: 8px;
+            height: 46px;
+            width: 70px;
+            box-shadow: 0 -12px 50px rgba(0, 150, 255, 0.95), 0 0 70px rgba(0, 200, 255, 0.8);
             background: linear-gradient(135deg, #0080ff, #00b3ff);
         }}
         
@@ -1121,6 +1124,12 @@ def dashboard():
             animation: logoEntrance 1s ease-out forwards, logoFloat 3s ease-in-out 1s infinite;
             filter: drop-shadow(0 0 40px rgba(0, 150, 255, 0.9));
             z-index: 2;
+            transition: opacity 0.6s ease-in-out, transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }}
+        
+        #splash-screen .splash-logo.fade-transition {{
+            opacity: 0;
+            transform: scale(0.8) rotate(10deg);
         }}
         
         @keyframes logoEntrance {{
@@ -1136,12 +1145,19 @@ def dashboard():
         
         .splash-text {{
             color: #ffffff;
-            font-size: 32px;
+            font-size: 28px;
             font-weight: 700;
             text-align: center;
             margin-bottom: 30px;
+            min-height: 40px;
             animation: textGlow 2s ease-in-out infinite;
             text-shadow: 0 0 20px rgba(0, 150, 255, 0.8), 0 0 40px rgba(0, 150, 255, 0.6), 0 0 60px rgba(0, 150, 255, 0.4);
+            transition: opacity 0.6s ease-in-out, transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }}
+        
+        .splash-text.fade-transition {{
+            opacity: 0;
+            transform: translateY(-15px) scale(0.95);
         }}
         
         @keyframes textGlow {{
@@ -1164,8 +1180,10 @@ def dashboard():
             background: linear-gradient(90deg, #0066ff 0%, #00ccff 50%, #0066ff 100%);
             background-size: 200% 100%;
             border-radius: 10px;
-            animation: progressFill 2.5s ease-out forwards, progressShine 1.5s linear infinite;
+            width: 0%;
+            animation: progressShine 1.5s linear infinite;
             box-shadow: 0 0 20px rgba(0, 150, 255, 0.8), inset 0 0 10px rgba(255, 255, 255, 0.3);
+            transition: width 0.3s ease-out;
         }}
         
         @keyframes progressFill {{
@@ -1225,7 +1243,7 @@ def dashboard():
         </div>
         
         <!-- Texto -->
-        <div class="splash-text">Carregando Dashboard...</div>
+        <div class="splash-text">⚡ Inicializando sistemas...</div>
         
         <!-- Barra de progresso -->
         <div class="splash-progress">
@@ -3234,27 +3252,72 @@ Você ganhou **{{{{prize}}}}**!
             
             console.log('🚀 Iniciando carregamento épico...');
             
-            // Remover splash com transição épica após 8 segundos
-            setTimeout(function() {{
-                if (splash) {{
-                    splash.classList.add('fade-out');
-                    console.log('🎆 Transição iniciando...');
-                    
-                    // Remover do DOM após animação (1.5s)
-                    setTimeout(function() {{
-                        splash.style.display = 'none';
-                        console.log('✅ Dashboard carregado com sucesso!');
-                    }}, 1500);
-                }}
-            }}, 8000);
+            // 🎬 SISTEMA DE MENSAGENS E IMAGENS ROTATIVAS
+            const loadingMessages = [
+                {{ text: '⚡ Inicializando sistemas...', img: '{ROBITO_IMAGES["acenando"]}', progress: 20 }},
+                {{ text: '🔧 Configurando módulos...', img: '{ROBITO_IMAGES["explicando"]}', progress: 40 }},
+                {{ text: '📊 Coletando informações...', img: '{ROBITO_IMAGES["pensando"]}', progress: 60 }},
+                {{ text: '🎨 Preparando interface...', img: '{ROBITO_IMAGES["feliz"]}', progress: 80 }},
+                {{ text: '✅ Finalizando carregamento...', img: '{ROBITO_IMAGES["comemorando"]}', progress: 100 }}
+            ];
             
-            // Iniciar animação de flutuação do Robito (após splash)
-            setTimeout(function() {{
-                if (helper) {{
-                    helper.classList.add('entry-complete');
-                    console.log('🤖 Robito ativo e flutuando!');
+            let currentMessageIndex = 0;
+            const splashText = document.querySelector('.splash-text');
+            const splashLogo = document.querySelector('.splash-logo');
+            const progressBar = document.querySelector('.splash-progress-bar');
+            
+            function updateLoadingMessage() {{
+                if (currentMessageIndex >= loadingMessages.length) {{
+                    // Todas as mensagens exibidas - iniciar transição
+                    setTimeout(function() {{
+                        if (splash) {{
+                            splash.classList.add('fade-out');
+                            console.log('🎆 Transição épica iniciando...');
+                            
+                            setTimeout(function() {{
+                                splash.style.display = 'none';
+                                console.log('✅ Dashboard carregado com sucesso!');
+                            }}, 1500);
+                        }}
+                    }}, 1000);
+                    
+                    // Ativar Robito
+                    setTimeout(function() {{
+                        if (helper) {{
+                            helper.classList.add('entry-complete');
+                            console.log('🤖 Robito ativo!');
+                        }}
+                    }}, 2000);
+                    return;
                 }}
-            }}, 9000);
+                
+                const message = loadingMessages[currentMessageIndex];
+                
+                // Fade out
+                splashText.classList.add('fade-transition');
+                splashLogo.classList.add('fade-transition');
+                
+                setTimeout(function() {{
+                    // Atualizar conteúdo
+                    splashText.textContent = message.text;
+                    splashLogo.src = message.img;
+                    progressBar.style.width = message.progress + '%';
+                    
+                    // Fade in
+                    splashText.classList.remove('fade-transition');
+                    splashLogo.classList.remove('fade-transition');
+                    
+                    console.log('📝 ' + message.text + ' (' + message.progress + '%)');
+                    
+                    currentMessageIndex++;
+                    
+                    // Próxima mensagem em 1.6 segundos
+                    setTimeout(updateLoadingMessage, 1600);
+                }}, 600);
+            }}
+            
+            // Iniciar rotação de mensagens após 500ms
+            setTimeout(updateLoadingMessage, 500);
             
             // Carregar dados do usuário
             loadUserData();
