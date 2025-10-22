@@ -947,7 +947,7 @@ def dashboard():
             text-shadow: 0 0 15px rgba(255, 255, 0, 0.8);
         }}
         
-        /* 🔽 BOTÃO TOGGLE DO ROBITO - ABA NA BORDA INFERIOR */
+        /* 🔽 BOTÃO TOGGLE DO ROBITO - ABA NA BORDA INFERIOR (SEMPRE VISÍVEL) */
         .robito-toggle {{
             position: fixed;
             bottom: 0px;
@@ -965,7 +965,6 @@ def dashboard():
             cursor: pointer;
             transition: transform 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55), box-shadow 0.4s ease, background 0.3s ease;
             box-shadow: 0 -4px 20px rgba(0, 100, 255, 0.6), 0 0 30px rgba(0, 150, 255, 0.3);
-            animation: robitoEntryFromCenter 1s ease-out 2s both;
         }}
         
         .robito-toggle:hover {{
@@ -974,9 +973,7 @@ def dashboard():
             background: linear-gradient(135deg, #0080ff, #00b3ff);
         }}
         
-        .robito-toggle.hidden {{
-            transform: translateY(350px);
-        }}
+        /* Seta NÃO desce mais - classe hidden removida */
         
         .robito-toggle::before {{
             content: '▼';
@@ -1024,12 +1021,26 @@ def dashboard():
         }}
         
         #splash-screen.fade-out {{
-            animation: splashFadeOut 1s ease-out forwards;
+            animation: splashFadeOut 1.5s ease-out forwards;
         }}
         
         @keyframes splashFadeOut {{
-            0% {{ opacity: 1; transform: scale(1); }}
-            100% {{ opacity: 0; transform: scale(1.05); pointer-events: none; }}
+            0% {{ 
+                opacity: 1; 
+                transform: scale(1);
+                filter: blur(0px);
+            }}
+            70% {{
+                opacity: 0.3;
+                transform: scale(1.03);
+                filter: blur(5px);
+            }}
+            100% {{ 
+                opacity: 0; 
+                transform: scale(1.08);
+                filter: blur(15px);
+                pointer-events: none;
+            }}
         }}
         
         .splash-particles {{
@@ -1868,7 +1879,7 @@ Você ganhou **{{{{prize}}}}**!
             document.getElementById('robito-img').src = robitoData.image;
         }}
         
-        // 🔽 Toggle do Robito (Mostrar/Esconder) - ANIMAÇÕES CONTÍNUAS
+        // 🔽 Toggle do Robito (Mostrar/Esconder) - SETA FICA VISÍVEL
         function toggleRobito() {{
             const helper = document.getElementById('robito-helper');
             const toggle = document.getElementById('robito-toggle');
@@ -1889,7 +1900,7 @@ Você ganhou **{{{{prize}}}}**!
                 
                 helper.classList.remove('hidden');
                 toggle.classList.remove('rotated');
-                toggle.classList.remove('hidden');
+                // NÃO remove 'hidden' da seta - ela fica visível sempre!
                 
             }} else {{
                 // ESCONDER - Robito desce com animação rodando
@@ -1899,7 +1910,7 @@ Você ganhou **{{{{prize}}}}**!
                 // Só adiciona hidden (animação continua rodando!)
                 helper.classList.add('hidden');
                 toggle.classList.add('rotated');
-                toggle.classList.add('hidden');
+                // NÃO adiciona 'hidden' na seta - ela fica visível sempre!
             }}
         }}
         
@@ -3223,26 +3234,27 @@ Você ganhou **{{{{prize}}}}**!
             
             console.log('🚀 Iniciando carregamento épico...');
             
-            // Remover splash com transição suave após 3 segundos
+            // Remover splash com transição épica após 8 segundos
             setTimeout(function() {{
                 if (splash) {{
                     splash.classList.add('fade-out');
+                    console.log('🎆 Transição iniciando...');
                     
-                    // Remover do DOM após animação
+                    // Remover do DOM após animação (1.5s)
                     setTimeout(function() {{
                         splash.style.display = 'none';
-                        console.log('✅ Dashboard carregado!');
-                    }}, 1000);
+                        console.log('✅ Dashboard carregado com sucesso!');
+                    }}, 1500);
                 }}
-            }}, 3000);
+            }}, 8000);
             
-            // Iniciar animação de flutuação do Robito
+            // Iniciar animação de flutuação do Robito (após splash)
             setTimeout(function() {{
                 if (helper) {{
                     helper.classList.add('entry-complete');
-                    console.log('🤖 Robito ativo!');
+                    console.log('🤖 Robito ativo e flutuando!');
                 }}
-            }}, 3500);
+            }}, 9000);
             
             // Carregar dados do usuário
             loadUserData();
