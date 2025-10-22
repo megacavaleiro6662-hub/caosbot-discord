@@ -1302,12 +1302,6 @@ def dashboard():
         <div class="particle"></div>
     </div>
     
-    <!-- 🎉 SPLASH SCREEN - ANIMAÇÃO INICIAL -->
-    <div class="robito-splash" id="splash-screen">
-        <img src="{ROBITO_IMAGES['feliz']}" alt="Robito">
-        <h1>✨ Dashboard Carregado! ✨</h1>
-    </div>
-    
     <!-- Sidebar -->
     <div class="sidebar">
         <div class="sidebar-logo">
