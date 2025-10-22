@@ -1369,6 +1369,21 @@ def dashboard():
             width: 100%;
         }}
         
+        /* 📝 GRID EDITOR DE EMBEDS - RESPONSIVO */
+        .embed-editor-grid {{
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            width: 100%;
+            box-sizing: border-box;
+        }}
+        
+        /* 👁️ PREVIEW CONTAINER - STICKY EM DESKTOP */
+        .embed-preview-container {{
+            position: sticky;
+            top: 20px;
+        }}
+        
         #splash-screen.fade-out {{
             animation: splashFadeOut 1.5s ease-out forwards;
         }}
@@ -1629,6 +1644,20 @@ def dashboard():
            📱 RESPONSIVO - MOBILE & TABLET
            ======================================== */
         
+        /* 💻 TELAS ESTREITAS (até 1200px) */
+        @media (max-width: 1200px) {{
+            /* 📝 Embed editor - 1 coluna em telas estreitas */
+            .embed-editor-grid {{
+                grid-template-columns: 1fr;
+            }}
+            
+            /* 👁️ Preview não sticky em telas estreitas */
+            .embed-preview-container {{
+                position: relative;
+                top: 0;
+            }}
+        }}
+        
         /* 📲 TABLET (768px - 1024px) */
         @media (max-width: 1024px) {{
             .sidebar {{
@@ -1772,6 +1801,12 @@ def dashboard():
                 gap: 16px;
                 width: 100%;
                 max-width: 100%;
+            }}
+            
+            /* 📝 Embed editor - 1 coluna no mobile */
+            .embed-editor-grid {{
+                grid-template-columns: 1fr;
+                gap: 16px;
             }}
             
             /* Cards */
@@ -2420,7 +2455,7 @@ def dashboard():
                 </div>
                 
                 <!-- Grid Editor + Preview -->
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+                <div class="embed-editor-grid">
                     
                     <!-- Editor -->
                     <div class="card">
@@ -2537,7 +2572,7 @@ Você ganhou **{{{{prize}}}}**!
                     </div>
                     
                     <!-- Preview -->
-                    <div style="position: sticky; top: 20px;">
+                    <div class="embed-preview-container">
                         <div class="card">
                             <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
                                 <h2>👁️ Preview</h2>
