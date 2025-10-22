@@ -946,7 +946,7 @@ def dashboard():
             text-shadow: 0 0 15px rgba(255, 255, 0, 0.8);
         }}
         
-        /* 🔽 BOTÃO TOGGLE DO ROBITO - ABA NA BORDA INFERIOR (SEMPRE VISÍVEL, SEM CORTAR) */
+        /* 🔽 BOTÃO TOGGLE DO ROBITO - SEM CORTAR AO CRESCER */
         .robito-toggle {{
             position: fixed;
             bottom: 0px;
@@ -964,13 +964,11 @@ def dashboard():
             cursor: pointer;
             transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
             box-shadow: 0 -4px 20px rgba(0, 100, 255, 0.6), 0 0 30px rgba(0, 150, 255, 0.3);
-            overflow: visible;
+            transform-origin: bottom center;
         }}
         
         .robito-toggle:hover {{
-            bottom: 8px;
-            height: 46px;
-            width: 70px;
+            transform: translateY(-10px) scale(1.15);
             box-shadow: 0 -12px 50px rgba(0, 150, 255, 0.95), 0 0 70px rgba(0, 200, 255, 0.8);
             background: linear-gradient(135deg, #0080ff, #00b3ff);
         }}
