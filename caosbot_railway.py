@@ -373,6 +373,56 @@ def login_page():
             font-size: 14px;
         }}
         
+        /* Seletor de Qualidade Gráfica */
+        .quality-selector {{
+            margin: 30px 0;
+            text-align: center;
+        }}
+        
+        .quality-selector label {{
+            display: block;
+            color: #00ccff;
+            font-size: 14px;
+            font-weight: 700;
+            margin-bottom: 12px;
+            letter-spacing: 1.5px;
+            text-shadow: 0 0 10px rgba(0, 200, 255, 0.4);
+        }}
+        
+        .quality-select {{
+            width: 100%;
+            max-width: 350px;
+            padding: 14px 20px;
+            background: linear-gradient(135deg, rgba(0, 0, 0, 0.8), rgba(0, 20, 50, 0.8));
+            border: 2px solid #0066ff;
+            border-radius: 0;
+            color: #00ccff;
+            font-size: 15px;
+            font-weight: 600;
+            font-family: 'Orbitron', sans-serif;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 16px rgba(0, 100, 255, 0.3);
+            outline: none;
+        }}
+        
+        .quality-select:hover {{
+            border-color: #00ccff;
+            box-shadow: 0 6px 20px rgba(0, 150, 255, 0.5);
+            transform: translateY(-2px);
+        }}
+        
+        .quality-select:focus {{
+            border-color: #00ccff;
+            box-shadow: 0 0 20px rgba(0, 200, 255, 0.6);
+        }}
+        
+        .quality-select option {{
+            background: #001a33;
+            color: #00ccff;
+            padding: 12px;
+        }}
+        
         /* GIF de fundo tela toda */
         .animated-bg {{
             position: fixed;
@@ -482,12 +532,43 @@ def login_page():
         <img src="https://i.ibb.co/C3gw3z4L/Gemini-Generated-Image-vjef5gvjef5gvjef-1.png" alt="Gilipe Logo" class="logo">
         <h1>ROBITO DASHBOARD</h1>
         <p>Sistema Administrativo Avançado</p>
-        <a href="{DISCORD_OAUTH_URL}" class="login-btn">🔐 LOGIN COM DISCORD</a>
+        
+        <!-- Seletor de Qualidade Gráfica -->
+        <div class="quality-selector">
+            <label for="quality">⚙️ QUALIDADE GRÁFICA:</label>
+            <select id="quality" class="quality-select">
+                <option value="ultra">🔥 ULTRA (120 FPS - PC)</option>
+                <option value="alto">⚡ ALTO (90 FPS)</option>
+                <option value="medio" selected>💎 MÉDIO (60 FPS)</option>
+                <option value="baixo">🚀 BAIXO (Mobile)</option>
+                <option value="muito-baixo">⚡ MUITO BAIXO (Mobile Antigo)</option>
+                <option value="potato">🥔 POTATO (Tudo desligado)</option>
+            </select>
+        </div>
+        
+        <a href="{DISCORD_OAUTH_URL}" class="login-btn" id="loginBtn">🔐 LOGIN COM DISCORD</a>
         <div class="warning">
             ⚠️ <strong>ACESSO RESTRITO</strong><br>
             Apenas administradores podem acessar este painel.
         </div>
     </div>
+    
+    <script>
+        // Carrega qualidade salva
+        const savedQuality = localStorage.getItem('graphicsQuality') || 'medio';
+        document.getElementById('quality').value = savedQuality;
+        
+        // Salva qualidade ao mudar
+        document.getElementById('quality').addEventListener('change', function() {{
+            localStorage.setItem('graphicsQuality', this.value);
+        }});
+        
+        // Salva qualidade antes de fazer login
+        document.getElementById('loginBtn').addEventListener('click', function() {{
+            const quality = document.getElementById('quality').value;
+            localStorage.setItem('graphicsQuality', quality);
+        }});
+    </script>
 </body>
 </html>
     """
@@ -966,6 +1047,56 @@ def dashboard():
         .sidebar-nav a {{ display: flex; align-items: center; padding: 14px 18px; color: #66aaff; text-decoration: none; border-radius: 0; border-left: 4px solid transparent; transition: all 0.3s; font-weight: 600; letter-spacing: 0.5px; }}
         .sidebar-nav a:hover {{ background: rgba(0, 150, 255, 0.15); color: #00ccff; border-left-color: #0066ff; box-shadow: inset 0 0 10px rgba(0, 150, 255, 0.2); }}
         .sidebar-nav a.active {{ background: rgba(0, 100, 255, 0.25); color: #ffffff; border-left-color: #0033ff; box-shadow: inset 0 0 15px rgba(0, 100, 255, 0.3); }}
+        
+        /* Seletor de Qualidade na Sidebar */
+        .quality-selector-sidebar {{
+            margin-top: 30px;
+            padding: 20px 18px;
+            border-top: 2px solid rgba(0, 100, 255, 0.3);
+        }}
+        
+        .quality-selector-sidebar label {{
+            display: block;
+            color: #00ccff;
+            font-size: 12px;
+            font-weight: 700;
+            margin-bottom: 10px;
+            letter-spacing: 1px;
+            text-shadow: 0 0 8px rgba(0, 200, 255, 0.4);
+        }}
+        
+        .quality-select-sidebar {{
+            width: 100%;
+            padding: 10px 14px;
+            background: linear-gradient(135deg, rgba(0, 0, 0, 0.8), rgba(0, 20, 50, 0.8));
+            border: 2px solid #0066ff;
+            border-radius: 0;
+            color: #00ccff;
+            font-size: 13px;
+            font-weight: 600;
+            font-family: 'Orbitron', sans-serif;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 12px rgba(0, 100, 255, 0.3);
+            outline: none;
+        }}
+        
+        .quality-select-sidebar:hover {{
+            border-color: #00ccff;
+            box-shadow: 0 6px 16px rgba(0, 150, 255, 0.5);
+        }}
+        
+        .quality-select-sidebar:focus {{
+            border-color: #00ccff;
+            box-shadow: 0 0 16px rgba(0, 200, 255, 0.6);
+        }}
+        
+        .quality-select-sidebar option {{
+            background: #001a33;
+            color: #00ccff;
+            padding: 10px;
+        }}
+        
         .main {{ margin-left: 280px; padding: 32px; position: relative; z-index: 1; will-change: auto; transform: translateZ(0); isolation: isolate; }}
         .header {{ background: linear-gradient(135deg, rgba(0, 100, 255, 0.15) 0%, rgba(0, 150, 255, 0.1) 100%); backdrop-filter: blur(10px); border: 2px solid #0066ff; border-radius: 0; padding: 32px; margin-bottom: 32px; box-shadow: 0 8px 32px rgba(0, 100, 255, 0.4); display: flex; justify-content: space-between; align-items: center; will-change: auto; transform: translateZ(0); isolation: isolate; }}
         .header-left h1 {{ font-size: 32px; font-weight: 800; margin-bottom: 8px; text-shadow: 0 0 10px rgba(0, 150, 255, 0.5), 0 0 20px rgba(0, 100, 255, 0.3); color: #00ccff; }}
@@ -1417,6 +1548,61 @@ def dashboard():
         }}
         
         /* ========================================
+           ⚙️ NÍVEIS DE QUALIDADE GRÁFICA
+           ======================================== */
+        
+        /* 🔥 ULTRA - 120 FPS (Tudo ativado) */
+        body.quality-ultra .particle:nth-child(n+51) {{ display: none; }}
+        body.quality-ultra .header {{ backdrop-filter: blur(10px); }}
+        body.quality-ultra .card {{ backdrop-filter: blur(10px); }}
+        body.quality-ultra .robito-splash {{ backdrop-filter: blur(10px); }}
+        
+        /* ⚡ ALTO - 90 FPS (35 partículas, blur 8px) */
+        body.quality-alto .particle:nth-child(n+36) {{ display: none; }}
+        body.quality-alto .header {{ backdrop-filter: blur(8px); }}
+        body.quality-alto .card {{ backdrop-filter: blur(8px); }}
+        body.quality-alto .robito-splash {{ backdrop-filter: blur(8px); }}
+        body.quality-alto .sidebar {{ backdrop-filter: blur(8px); }}
+        
+        /* 💎 MÉDIO - 60 FPS (25 partículas, blur 6px) */
+        body.quality-medio .particle:nth-child(n+26) {{ display: none; }}
+        body.quality-medio .header {{ backdrop-filter: blur(6px); }}
+        body.quality-medio .card {{ backdrop-filter: blur(6px); }}
+        body.quality-medio .robito-splash {{ backdrop-filter: blur(6px); }}
+        body.quality-medio .sidebar {{ backdrop-filter: blur(6px); }}
+        
+        /* 🚀 BAIXO - 60 FPS Mobile (15 partículas, blur 4px) */
+        body.quality-baixo .particle:nth-child(n+16) {{ display: none; }}
+        body.quality-baixo .header {{ backdrop-filter: blur(4px); }}
+        body.quality-baixo .card {{ backdrop-filter: blur(4px); }}
+        body.quality-baixo .robito-splash {{ backdrop-filter: blur(4px); }}
+        body.quality-baixo .sidebar {{ backdrop-filter: blur(4px); }}
+        body.quality-baixo body::before,
+        body.quality-baixo body::after {{ animation-duration: 30s; }}
+        
+        /* ⚡ MUITO BAIXO - 60 FPS Mobile Antigo (8 partículas, blur 2px) */
+        body.quality-muito-baixo .particle:nth-child(n+9) {{ display: none; }}
+        body.quality-muito-baixo .header {{ backdrop-filter: blur(2px); }}
+        body.quality-muito-baixo .card {{ backdrop-filter: blur(2px); }}
+        body.quality-muito-baixo .robito-splash {{ backdrop-filter: blur(2px); }}
+        body.quality-muito-baixo .sidebar {{ backdrop-filter: blur(2px); }}
+        body.quality-muito-baixo body::before,
+        body.quality-muito-baixo body::after {{ animation: none; }}
+        body.quality-muito-baixo .sidebar::before {{ animation: none; }}
+        
+        /* 🥔 POTATO - 60 FPS Tudo (0 partículas, sem blur, sem animações) */
+        body.quality-potato .fire-particles {{ display: none; }}
+        body.quality-potato .header {{ backdrop-filter: none; background: rgba(0, 0, 0, 0.85); }}
+        body.quality-potato .card {{ backdrop-filter: none; background: rgba(0, 0, 0, 0.75); }}
+        body.quality-potato .robito-splash {{ backdrop-filter: none; background: rgba(0, 20, 80, 0.98); }}
+        body.quality-potato .sidebar {{ backdrop-filter: none; background: #000000; }}
+        body.quality-potato body::before,
+        body.quality-potato body::after {{ display: none; }}
+        body.quality-potato .sidebar::before {{ display: none; }}
+        body.quality-potato .animated-bg {{ display: none; }}
+        body.quality-potato * {{ animation: none !important; }}
+        
+        /* ========================================
            📱 RESPONSIVO - MOBILE & TABLET
            ======================================== */
         
@@ -1822,6 +2008,19 @@ def dashboard():
             <li><a href="#" onclick="showPage('embeds')">📋 Embeds</a></li>
             <li><a href="#" onclick="showPage('stats')">📈 Estatísticas</a></li>
         </ul>
+        
+        <!-- Seletor de Qualidade Gráfica na Sidebar -->
+        <div class="quality-selector-sidebar">
+            <label for="quality-dashboard">⚙️ QUALIDADE:</label>
+            <select id="quality-dashboard" class="quality-select-sidebar">
+                <option value="ultra">🔥 ULTRA</option>
+                <option value="alto">⚡ ALTO</option>
+                <option value="medio">💎 MÉDIO</option>
+                <option value="baixo">🚀 BAIXO</option>
+                <option value="muito-baixo">⚡ MUITO BAIXO</option>
+                <option value="potato">🥔 POTATO</option>
+            </select>
+        </div>
     </div>
     
     <!-- Main Content -->
@@ -2370,6 +2569,51 @@ Você ganhou **{{{{prize}}}}**!
     <audio id="notif-sound" preload="auto">
         <source src="https://cdn.pixabay.com/download/audio/2022/03/10/audio_c8c6c7c579.mp3" type="audio/mpeg">
     <script>
+        // ⚙️ SISTEMA DE QUALIDADE GRÁFICA
+        (function() {{
+            // Carrega qualidade do localStorage ao iniciar
+            const savedQuality = localStorage.getItem('graphicsQuality') || 'medio';
+            
+            // Aplica classe no body
+            document.body.className = 'quality-' + savedQuality;
+            
+            // Atualiza o select do dashboard
+            const qualitySelect = document.getElementById('quality-dashboard');
+            if (qualitySelect) {{
+                qualitySelect.value = savedQuality;
+            }}
+            
+            // Listener para mudança de qualidade no dashboard
+            if (qualitySelect) {{
+                qualitySelect.addEventListener('change', function() {{
+                    const newQuality = this.value;
+                    
+                    // Remove todas as classes de qualidade
+                    document.body.className = document.body.className
+                        .replace(/quality-[a-z-]+/g, '')
+                        .trim();
+                    
+                    // Adiciona nova classe
+                    document.body.classList.add('quality-' + newQuality);
+                    
+                    // Salva no localStorage
+                    localStorage.setItem('graphicsQuality', newQuality);
+                    
+                    // Feedback visual
+                    const qualityNames = {{
+                        'ultra': '🔥 ULTRA - 120 FPS',
+                        'alto': '⚡ ALTO - 90 FPS',
+                        'medio': '💎 MÉDIO - 60 FPS',
+                        'baixo': '🚀 BAIXO - Mobile',
+                        'muito-baixo': '⚡ MUITO BAIXO',
+                        'potato': '🥔 POTATO - Máxima Performance'
+                    }};
+                    
+                    console.log('✅ Qualidade alterada para: ' + qualityNames[newQuality]);
+                }});
+            }}
+        }})();
+        
         // 🤖 Mensagens do Robito Helper por página (DETALHADAS)
         const robitoMessages = {{
             'dashboard': {{
