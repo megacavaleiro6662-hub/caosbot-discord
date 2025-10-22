@@ -868,26 +868,26 @@ def dashboard():
             right: 20px;
             z-index: 999;
             transition: transform 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55), opacity 0.8s ease-in-out;
+            transform: translateY(0);
         }}
         
         .robito-helper.initial-entry {{
             animation: robitoEntryFromCenter 1s cubic-bezier(0.34, 1.56, 0.64, 1) 2s forwards;
         }}
         
-        .robito-helper.entry-complete {{
+        /* MOVIMENTO DE DESCIDA/SUBIDA - SÓ O CONTAINER */
+        .robito-helper.hidden {{
+            transform: translateY(500px) !important;
+            opacity: 0;
+        }}
+        
+        /* WRAPPER INTERNO PARA FLUTUAÇÃO */
+        .robito-float-wrapper {{
+            animation: none;
+        }}
+        
+        .robito-helper.entry-complete .robito-float-wrapper {{
             animation: robitoFloat 3s ease-in-out infinite;
-        }}
-        
-        /* Quando escondido: usa animação que INCLUI o offset de 500px */
-        .robito-helper.hidden.entry-complete {{
-            animation: robitoFloatHidden 3s ease-in-out infinite;
-            opacity: 0;
-        }}
-        
-        /* Quando escondido SEM animação ainda */
-        .robito-helper.hidden:not(.entry-complete) {{
-            transform: translateY(500px);
-            opacity: 0;
         }}
         
         .robito-helper img {{
@@ -1001,12 +1001,6 @@ def dashboard():
         @keyframes robitoFloat {{
             0%, 100% {{ transform: translateY(0px); }}
             50% {{ transform: translateY(-20px); }}
-        }}
-        
-        /* Animação de flutuação ENQUANTO DESCE (mantém o offset de 500px) */
-        @keyframes robitoFloatHidden {{
-            0%, 100% {{ transform: translateY(500px); }}
-            50% {{ transform: translateY(480px); }}
         }}
         
         @keyframes robitoSwing {{
@@ -1620,12 +1614,14 @@ Você ganhou **{{{{prize}}}}**!
     
     <!-- 🤖 ROBITO HELPER - ASSISTENTE FLUTUANTE -->
     <div class="robito-helper" id="robito-helper">
+        <div class="robito-float-wrapper">
         <div class="robito-speech-bubble" id="robito-bubble">
             <p id="robito-message">
                 👋 <strong>Olá!</strong> Sou o Robito, seu assistente pessoal! Estou aqui para te guiar e ajudar a configurar tudo no dashboard do jeito certo. Qualquer dúvida, só me chamar! 😊
             </p>
         </div>
         <img src="{ROBITO_IMAGES['acenando']}" alt="Robito Helper" id="robito-img">
+        </div>
     </div>
     
     <!-- 🔽 BOTÃO TOGGLE ROBITO -->
