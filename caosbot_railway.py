@@ -11115,14 +11115,29 @@ if __name__ == '__main__':
         print('ERRO: DISCORD_TOKEN nao encontrado!')
         exit(1)
     
+    # CARREGAR CONFIGURAÇÕES DO JSONBIN (PERSISTÊNCIA)
+    print('\n🔄 Carregando configurações do JSONBin...')
+    try:
+        if JSONBIN_BIN_ID:
+            config_from_bin = load_config_from_jsonbin()
+            if config_from_bin:
+                dashboard_config_global.update(config_from_bin)
+                print(f'✅ Configurações carregadas do JSONBin: {dashboard_config_global}')
+            else:
+                print('⚠️ Nenhuma configuração encontrada no bin, usando padrões')
+        else:
+            print('⚠️ JSONBIN_BIN_ID não configurado, usando configs padrão')
+    except Exception as e:
+        print(f'❌ Erro ao carregar do JSONBin: {e}')
+    
     import os
     port = int(os.getenv("PORT", 10000))
     
-    print(f'Porta: {port}')
+    print(f'\nPorta: {port}')
     print(f'REDIRECT_URI: {DISCORD_REDIRECT_URI}')
     
     # Iniciar bot Discord em thread separada DEPOIS do Flask
-    print('Iniciando bot Discord em background...')
+    print('\nIniciando bot Discord em background...')
     bot_thread = threading.Thread(target=run_discord_bot, daemon=True)
     bot_thread.start()
     
