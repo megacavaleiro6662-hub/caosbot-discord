@@ -871,9 +871,7 @@ def dashboard():
             transform: translateY(0);
         }}
         
-        .robito-helper.initial-entry {{
-            animation: robitoEntryFromCenter 1s cubic-bezier(0.34, 1.56, 0.64, 1) 2s forwards;
-        }}
+        /* Animação de entrada removida - Robito já começa no canto */
         
         /* MOVIMENTO DE DESCIDA/SUBIDA - SÓ O CONTAINER */
         .robito-helper.hidden {{
@@ -993,10 +991,6 @@ def dashboard():
             transform: rotate(180deg);
         }}
         
-        @keyframes robitoEntryFromCenter {{
-            0% {{ transform: translate(-50vw, -50vh) scale(1.5); }}
-            100% {{ transform: translate(0, 0) scale(1); }}
-        }}
         
         @keyframes robitoFloat {{
             0%, 100% {{ transform: translateY(0px); }}
@@ -1012,9 +1006,222 @@ def dashboard():
             0%, 100% {{ transform: scale(1); box-shadow: 0 12px 50px rgba(0, 150, 255, 0.7), 0 0 50px rgba(100, 200, 255, 0.5); }}
             50% {{ transform: scale(1.03); box-shadow: 0 16px 60px rgba(0, 150, 255, 0.9), 0 0 60px rgba(100, 200, 255, 0.7); }}
         }}
+        
+        /* 🎬 SPLASH SCREEN ÉPICO - ULTRA PROFISSIONAL */
+        #splash-screen {{
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            background: radial-gradient(ellipse at center, #0d1b3a 0%, #020510 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 99999;
+            overflow: hidden;
+        }}
+        
+        #splash-screen.fade-out {{
+            animation: splashFadeOut 1s ease-out forwards;
+        }}
+        
+        @keyframes splashFadeOut {{
+            0% {{ opacity: 1; transform: scale(1); }}
+            100% {{ opacity: 0; transform: scale(1.05); pointer-events: none; }}
+        }}
+        
+        .splash-particles {{
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }}
+        
+        .splash-particle {{
+            position: absolute;
+            background: radial-gradient(circle, rgba(0, 150, 255, 0.8) 0%, transparent 70%);
+            border-radius: 50%;
+            animation: particleFloat 8s ease-in-out infinite;
+            opacity: 0;
+        }}
+        
+        @keyframes particleFloat {{
+            0% {{ transform: translate(0, 100vh) scale(0); opacity: 0; }}
+            10% {{ opacity: 1; }}
+            90% {{ opacity: 1; }}
+            100% {{ transform: translate(var(--tx), -100vh) scale(1); opacity: 0; }}
+        }}
+        
+        .splash-waves {{
+            position: absolute;
+            width: 600px;
+            height: 600px;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }}
+        
+        .splash-wave {{
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border: 3px solid rgba(0, 150, 255, 0.3);
+            border-radius: 50%;
+            animation: waveExpand 3s ease-out infinite;
+        }}
+        
+        .splash-wave:nth-child(2) {{ animation-delay: 1s; }}
+        .splash-wave:nth-child(3) {{ animation-delay: 2s; }}
+        
+        @keyframes waveExpand {{
+            0% {{ transform: scale(0.1); opacity: 1; border-width: 6px; }}
+            100% {{ transform: scale(2); opacity: 0; border-width: 1px; }}
+        }}
+        
+        .splash-logo-container {{
+            position: relative;
+            z-index: 10;
+            margin-bottom: 40px;
+        }}
+        
+        .splash-glow {{
+            position: absolute;
+            width: 300px;
+            height: 300px;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: radial-gradient(circle, rgba(0, 150, 255, 0.4) 0%, transparent 70%);
+            border-radius: 50%;
+            animation: glowPulse 2s ease-in-out infinite;
+        }}
+        
+        @keyframes glowPulse {{
+            0%, 100% {{ transform: translate(-50%, -50%) scale(1); opacity: 0.6; }}
+            50% {{ transform: translate(-50%, -50%) scale(1.2); opacity: 1; }}
+        }}
+        
+        #splash-screen .splash-logo {{
+            position: relative;
+            width: 200px;
+            height: 200px;
+            animation: logoEntrance 1s ease-out forwards, logoFloat 3s ease-in-out 1s infinite;
+            filter: drop-shadow(0 0 40px rgba(0, 150, 255, 0.9));
+            z-index: 2;
+        }}
+        
+        @keyframes logoEntrance {{
+            0% {{ transform: scale(0) rotate(-180deg); opacity: 0; }}
+            60% {{ transform: scale(1.2) rotate(20deg); }}
+            100% {{ transform: scale(1) rotate(0deg); opacity: 1; }}
+        }}
+        
+        @keyframes logoFloat {{
+            0%, 100% {{ transform: translateY(0px); }}
+            50% {{ transform: translateY(-20px); }}
+        }}
+        
+        .splash-text {{
+            color: #ffffff;
+            font-size: 32px;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 30px;
+            animation: textGlow 2s ease-in-out infinite;
+            text-shadow: 0 0 20px rgba(0, 150, 255, 0.8), 0 0 40px rgba(0, 150, 255, 0.6), 0 0 60px rgba(0, 150, 255, 0.4);
+        }}
+        
+        @keyframes textGlow {{
+            0%, 100% {{ text-shadow: 0 0 20px rgba(0, 150, 255, 0.8), 0 0 40px rgba(0, 150, 255, 0.6), 0 0 60px rgba(0, 150, 255, 0.4); }}
+            50% {{ text-shadow: 0 0 30px rgba(0, 200, 255, 1), 0 0 60px rgba(0, 200, 255, 0.8), 0 0 90px rgba(0, 200, 255, 0.6); }}
+        }}
+        
+        .splash-progress {{
+            width: 400px;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+            box-shadow: 0 0 20px rgba(0, 150, 255, 0.3);
+        }}
+        
+        .splash-progress-bar {{
+            height: 100%;
+            background: linear-gradient(90deg, #0066ff 0%, #00ccff 50%, #0066ff 100%);
+            background-size: 200% 100%;
+            border-radius: 10px;
+            animation: progressFill 2.5s ease-out forwards, progressShine 1.5s linear infinite;
+            box-shadow: 0 0 20px rgba(0, 150, 255, 0.8), inset 0 0 10px rgba(255, 255, 255, 0.3);
+        }}
+        
+        @keyframes progressFill {{
+            0% {{ width: 0%; }}
+            100% {{ width: 100%; }}
+        }}
+        
+        @keyframes progressShine {{
+            0% {{ background-position: 200% 0; }}
+            100% {{ background-position: -200% 0; }}
+        }}
+        
+        .splash-crystal {{
+            position: absolute;
+            width: 100px;
+            height: 100px;
+            background: linear-gradient(45deg, rgba(0, 150, 255, 0.3), rgba(0, 200, 255, 0.1));
+            clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+            animation: crystalRotate 8s linear infinite;
+        }}
+        
+        .splash-crystal:nth-child(1) {{ top: 10%; left: 10%; animation-duration: 6s; }}
+        .splash-crystal:nth-child(2) {{ top: 10%; right: 10%; animation-duration: 8s; animation-direction: reverse; }}
+        .splash-crystal:nth-child(3) {{ bottom: 10%; left: 10%; animation-duration: 7s; }}
+        .splash-crystal:nth-child(4) {{ bottom: 10%; right: 10%; animation-duration: 9s; animation-direction: reverse; }}
+        
+        @keyframes crystalRotate {{
+            0% {{ transform: rotate(0deg) scale(1); opacity: 0.3; }}
+            50% {{ transform: rotate(180deg) scale(1.2); opacity: 0.6; }}
+            100% {{ transform: rotate(360deg) scale(1); opacity: 0.3; }}
+        }}
     </style>
 </head>
 <body>
+    <!-- 🎬 SPLASH SCREEN ÉPICO -->
+    <div id="splash-screen">
+        <!-- Partículas de fundo -->
+        <div class="splash-particles" id="splash-particles"></div>
+        
+        <!-- Cristais nos cantos -->
+        <div class="splash-crystal"></div>
+        <div class="splash-crystal"></div>
+        <div class="splash-crystal"></div>
+        <div class="splash-crystal"></div>
+        
+        <!-- Ondas de energia -->
+        <div class="splash-waves">
+            <div class="splash-wave"></div>
+            <div class="splash-wave"></div>
+            <div class="splash-wave"></div>
+        </div>
+        
+        <!-- Logo com brilho -->
+        <div class="splash-logo-container">
+            <div class="splash-glow"></div>
+            <img src="{ROBITO_IMAGES['acenando']}" alt="CaosBot Dashboard" class="splash-logo">
+        </div>
+        
+        <!-- Texto -->
+        <div class="splash-text">Carregando Dashboard...</div>
+        
+        <!-- Barra de progresso -->
+        <div class="splash-progress">
+            <div class="splash-progress-bar"></div>
+        </div>
+    </div>
+    
     <!-- Partículas de fogo animadas (50 partículas variadas) -->
     <div class="fire-particles">
         <div class="particle"></div>
@@ -3006,36 +3213,69 @@ Você ganhou **{{{{prize}}}}**!
             }}
         }};
         
-        // 🎉 INICIALIZAÇÃO DO DASHBOARD COM SPLASH SCREEN (SÓ RODA 1x)
+        // 🎬 INICIALIZAÇÃO ÉPICA DO DASHBOARD
         window.addEventListener('DOMContentLoaded', function() {{
             const helper = document.getElementById('robito-helper');
+            const splash = document.getElementById('splash-screen');
             
-            // Adicionar classe de entrada inicial (SÓ NA PRIMEIRA VEZ)
-            if (helper && !helper.classList.contains('initial-entry')) {{
-                helper.classList.add('initial-entry');
-                console.log('🎬 Animação inicial do Robito começando...');
-            }}
+            // 🌌 Criar partículas animadas no splash
+            createSplashParticles();
             
-            // Remover splash screen após 2 segundos
+            console.log('🚀 Iniciando carregamento épico...');
+            
+            // Remover splash com transição suave após 3 segundos
             setTimeout(function() {{
-                const splash = document.getElementById('splash-screen');
                 if (splash) {{
-                    splash.style.display = 'none';
-                }}
-            }}, 2000);
-            
-            // Marcar animação de entrada como completa após 3 segundos (2s delay + 1s animação)
-            setTimeout(function() {{
-                if (helper) {{
-                    helper.classList.remove('initial-entry');
-                    helper.classList.add('entry-complete');
-                    console.log('✅ Robito entrada completa! Animação de flutuação iniciada.');
+                    splash.classList.add('fade-out');
+                    
+                    // Remover do DOM após animação
+                    setTimeout(function() {{
+                        splash.style.display = 'none';
+                        console.log('✅ Dashboard carregado!');
+                    }}, 1000);
                 }}
             }}, 3000);
+            
+            // Iniciar animação de flutuação do Robito
+            setTimeout(function() {{
+                if (helper) {{
+                    helper.classList.add('entry-complete');
+                    console.log('🤖 Robito ativo!');
+                }}
+            }}, 3500);
             
             // Carregar dados do usuário
             loadUserData();
         }});
+        
+        // 🌌 Função para criar partículas do splash
+        function createSplashParticles() {{
+            const container = document.getElementById('splash-particles');
+            if (!container) return;
+            
+            for (let i = 0; i < 30; i++) {{
+                const particle = document.createElement('div');
+                particle.className = 'splash-particle';
+                
+                // Posição aleatória
+                const left = Math.random() * 100;
+                const size = Math.random() * 6 + 2;
+                const delay = Math.random() * 4;
+                const duration = Math.random() * 4 + 4;
+                const tx = (Math.random() - 0.5) * 200;
+                
+                particle.style.left = left + '%';
+                particle.style.width = size + 'px';
+                particle.style.height = size + 'px';
+                particle.style.animationDelay = delay + 's';
+                particle.style.animationDuration = duration + 's';
+                particle.style.setProperty('--tx', tx + 'px');
+                
+                container.appendChild(particle);
+            }}
+            
+            console.log('✨ 30 partículas criadas!');
+        }}
     </script>
 </body>
 </html>
