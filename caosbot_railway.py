@@ -696,7 +696,8 @@ def callback():
             'avatar': f"https://cdn.discordapp.com/avatars/{user_data['id']}/{user_data['avatar']}.png" if user_data.get('avatar') else None
         }
         
-        return redirect(url_for('dashboard'))
+        # Redirecionar para dashboard com parâmetro firstLogin
+        return redirect(url_for('dashboard', firstLogin='true'))
     
     except Exception as e:
         print(f"❌ [LOGIN] Erro: {e}")
@@ -704,9 +705,49 @@ def callback():
 
 @app.route('/logout')
 def logout():
-    """Fazer logout"""
+    """Fazer logout com limpeza do sessionStorage"""
     session.clear()
-    return redirect(url_for('login_page'))
+    # Página intermediária que limpa sessionStorage e redireciona
+    return '''
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>Saindo...</title>
+        <style>
+            body {{
+                background: #000;
+                color: #0066ff;
+                font-family: 'Orbitron', sans-serif;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                height: 100vh;
+                margin: 0;
+            }}
+            .message {{
+                text-align: center;
+                font-size: 24px;
+            }}
+        </style>
+    </head>
+    <body>
+        <div class="message">
+            <h1>🚪 Saindo...</h1>
+            <p>Redirecionando para o login...</p>
+        </div>
+        <script>
+            // 🗑️ LIMPAR sessionStorage
+            sessionStorage.clear();
+            console.log('🗑️ SessionStorage limpo no logout');
+            
+            // Redirecionar para login
+            setTimeout(() => {{
+                window.location.href = '/login';
+            }}, 500);
+        </script>
+    </body>
+    </html>
+    '''
 
 # CARREGAMENTO DE CONFIGURAÇÕES
 @app.route('/health')
@@ -4176,6 +4217,17 @@ Você ganhou **{{{{prize}}}}**!
         window.addEventListener('DOMContentLoaded', function() {{
             const helper = document.getElementById('robito-helper');
             const splash = document.getElementById('splash-screen');
+            
+            // 🔍 VERIFICAR SE É PRIMEIRO LOGIN (vindo do OAuth callback)
+            const urlParams = new URLSearchParams(window.location.search);
+            const isFirstLogin = urlParams.get('firstLogin') === 'true';
+            
+            if (isFirstLogin) {{
+                console.log('🎉 Primeiro login detectado! Limpando sessionStorage...');
+                sessionStorage.clear();
+                // Limpar URL para não ficar com ?firstLogin=true
+                window.history.replaceState({{}}, document.title, window.location.pathname);
+            }}
             
             // ✅ VERIFICAR SE JÁ MOSTROU O SPLASH NESTA SESSÃO
             const splashShown = sessionStorage.getItem('splashShown');
