@@ -155,12 +155,34 @@ def ping():
 @app.route('/test')
 def test():
     """Rota de teste para debug"""
+    # Tentar criar/obter JSONBin ID
+    global JSONBIN_BIN_ID
+    jsonbin_status = ""
+    
+    if JSONBIN_BIN_ID:
+        jsonbin_status = f'<h2 style="color: #0f0;">✅ JSONBIN_BIN_ID JÁ EXISTE!</h2><h3 style="background: #333; padding: 20px; color: #fff;">JSONBIN_BIN_ID={JSONBIN_BIN_ID}</h3><p style="color: #ff0;">Copie o ID acima e adicione nas variáveis de ambiente do Render!</p>'
+    else:
+        try:
+            config_data = load_config_dashboard()
+            headers = {'Content-Type': 'application/json', 'X-Master-Key': JSONBIN_API_KEY}
+            response = requests.post(JSONBIN_API_URL, json=config_data, headers=headers)
+            
+            if response.status_code in [200, 201]:
+                JSONBIN_BIN_ID = response.json()['metadata']['id']
+                jsonbin_status = f'<h2 style="color: #0f0;">✅ BIN CRIADO AGORA!</h2><h3 style="background: #333; padding: 20px; color: #fff;">JSONBIN_BIN_ID={JSONBIN_BIN_ID}</h3><p style="color: #ff0;">Copie o ID acima e adicione nas variáveis de ambiente do Render!</p>'
+            else:
+                jsonbin_status = f'<h2 style="color: #f00;">❌ ERRO AO CRIAR BIN</h2><p>Status: {response.status_code}</p><p>{response.text}</p>'
+        except Exception as e:
+            jsonbin_status = f'<h2 style="color: #f00;">❌ EXCEPTION</h2><p>{str(e)}</p>'
+    
     return """
     <html>
         <head><title>TESTE - CAOS Bot</title></head>
         <body style="background: #000; color: #fff; font-family: Arial; padding: 50px; text-align: center;">
             <h1>✅ FLASK ESTÁ FUNCIONANDO!</h1>
             <p>Se você está vendo isso, o servidor Flask está online.</p>
+            <hr>
+            """ + jsonbin_status + """
             <hr>
             <h2>Diagnóstico:</h2>
             <p><b>Status:</b> Online</p>
