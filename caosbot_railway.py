@@ -816,6 +816,7 @@ def dashboard():
             background-size: 400% 400%;
             animation: oceanGlow 20s ease infinite;
             min-height: 100vh; 
+            max-height: 100vh;
             color: #fff; 
             overflow-y: auto;
             position: relative;
@@ -1115,7 +1116,7 @@ def dashboard():
         .btn-logout {{ padding: 8px 16px; background: linear-gradient(135deg, #0000cc, #000099); color: white; border: 2px solid #0000cc; border-radius: 0; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.3s; box-shadow: 0 4px 12px rgba(0, 100, 200, 0.4); }}
         .btn-logout:hover {{ background: linear-gradient(135deg, #000099, #000066); box-shadow: 0 6px 16px rgba(0, 100, 200, 0.6); transform: translateY(-2px); }}
         .grid {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(min(320px, 100%), 1fr)); gap: 24px; will-change: auto; transform: translateZ(0); width: 100%; box-sizing: border-box; }}
-        .card {{ background: linear-gradient(135deg, rgba(0, 0, 0, 0.6) 0%, rgba(0, 20, 50, 0.4) 100%); backdrop-filter: blur(10px); border: 2px solid #0066ff; border-radius: 0; padding: 24px; transition: all 0.3s; box-shadow: 0 4px 16px rgba(0, 100, 255, 0.3); will-change: transform; transform: translateZ(0); contain: layout style paint; width: 100%; max-width: 100%; box-sizing: border-box; word-wrap: break-word; overflow-wrap: break-word; }}
+        .card {{ background: linear-gradient(135deg, rgba(0, 0, 0, 0.6) 0%, rgba(0, 20, 50, 0.4) 100%); backdrop-filter: blur(10px); border: 2px solid #0066ff; border-radius: 0; padding: 24px; transition: all 0.3s; box-shadow: 0 4px 16px rgba(0, 100, 255, 0.3); will-change: transform; transform: translateZ(0); contain: layout style paint; width: 100%; max-width: 100%; box-sizing: border-box; word-wrap: break-word; overflow-wrap: break-word; overflow-y: auto; max-height: 600px; }}
         .card:hover {{ border-color: #0033ff; transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0, 150, 255, 0.5), 0 0 30px rgba(0, 100, 255, 0.3); }}
         .card-header {{ display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 12px; }}
         .card-header h2 {{ font-size: 18px; font-weight: 700; color: #00ccff; text-shadow: 0 0 5px rgba(100, 200, 255, 0.4); word-wrap: break-word; overflow-wrap: break-word; max-width: 100%; }}
@@ -1133,7 +1134,7 @@ def dashboard():
         .btn-primary:hover {{ background: linear-gradient(135deg, #0033ff, #0000cc); box-shadow: 0 6px 20px rgba(0, 100, 255, 0.6), 0 0 20px rgba(0, 150, 255, 0.4); transform: translateY(-2px); }}
         .btn-danger {{ background: linear-gradient(135deg, #0000cc, #000099); color: white; border-color: #0000cc; box-shadow: 0 4px 15px rgba(0, 100, 200, 0.4); }}
         .btn-danger:hover {{ background: linear-gradient(135deg, #000099, #000066); box-shadow: 0 6px 20px rgba(0, 100, 200, 0.6); transform: translateY(-2px); }}
-        .section {{ margin-bottom: 32px; width: 100%; box-sizing: border-box; max-width: 100%; }}
+        .section {{ margin-bottom: 32px; width: 100%; box-sizing: border-box; max-width: 100%; overflow-y: auto; max-height: calc(100vh - 200px); }}
         .section-title {{ font-size: 20px; font-weight: 700; margin-bottom: 16px; color: #00ccff; text-shadow: 0 0 8px rgba(100, 200, 255, 0.4); word-wrap: break-word; overflow-wrap: break-word; max-width: 100%; }}
         .page {{ display: none; width: 100%; box-sizing: border-box; max-width: 100%; }}
         .page.active {{ display: block; }}
@@ -2102,7 +2103,7 @@ def dashboard():
                     <div class="user-role" id="user-display-role">•••</div>
                 </div>
                 <img src="" alt="Avatar" class="user-avatar" id="user-avatar">
-                <button class="btn-logout" onclick="window.location.href='/logout'">🚪 Sair</button>
+                <button class="btn-logout" onclick="sessionStorage.removeItem('splashShown'); window.location.href='/logout'">🚪 Sair</button>
             </div>
         </div>
         
@@ -4124,6 +4125,21 @@ Você ganhou **{{{{prize}}}}**!
             const helper = document.getElementById('robito-helper');
             const splash = document.getElementById('splash-screen');
             
+            // ✅ VERIFICAR SE JÁ MOSTROU O SPLASH NESTA SESSÃO
+            const splashShown = sessionStorage.getItem('splashShown');
+            
+            if (splashShown === 'true') {{
+                // JÁ MOSTROU = PULAR SPLASH
+                console.log('⏭️ Splash já foi exibido, pulando...');
+                if (splash) splash.style.display = 'none';
+                if (helper) {{
+                    helper.classList.add('entry-complete');
+                    console.log('🤖 Robito ativo!');
+                }}
+                loadUserData();
+                return;
+            }}
+            
             // 🌌 Criar partículas animadas no splash
             createSplashParticles();
             
@@ -4153,6 +4169,8 @@ Você ganhou **{{{{prize}}}}**!
                             
                             setTimeout(function() {{
                                 splash.style.display = 'none';
+                                // ✅ MARCAR QUE O SPLASH JÁ FOI MOSTRADO
+                                sessionStorage.setItem('splashShown', 'true');
                                 console.log('✅ Dashboard carregado!');
                             }}, 1500);
                         }}
