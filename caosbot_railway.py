@@ -2,17 +2,12 @@
 # Arquivo principal do bot
 
 import discord
-from discord.ext import commands, tasks
-import asyncio
+from discord.ext import commands
+from discord import app_commands
 import random
 import time
 import json
 import os
-from collections import defaultdict, deque
-from threading import Thread
-from http.server import HTTPServer, BaseHTTPRequestHandler
-import re
-import aiohttp
 import requests
 from datetime import datetime
 from discord.ui import Button, View
@@ -6341,6 +6336,13 @@ welcome_config = {
     'tickets_enabled': False,  # ❌ Aguardando dashboard
     'status_message_id': None
 }
+# Tentar carregar configurações do JSONBin ao iniciar
+print("🔄 Tentando carregar do JSONBin...")
+loaded_config = load_config_from_jsonbin()
+if loaded_config:
+    welcome_config.update(loaded_config)
+    print(f"✅ Config carregada: welcome={welcome_config.get('welcome_enabled')}, goodbye={welcome_config.get('goodbye_enabled')}")
+
 
 # ===============================
 # Helpers de normalização de toggles
@@ -6375,13 +6377,17 @@ def is_on(key: str) -> bool:
     return to_bool(welcome_config.get(key))
 
 def save_welcome_config():
-    """Salva configurações do sistema de boas-vindas"""
+    """Salva configurações (JSONBin + backup local)"""
     try:
+        # Salvar no JSONBin (persistente)
+        save_config_to_jsonbin(welcome_config)
+        
+        # Backup local
         with open(WELCOME_CONFIG_FILE, 'w', encoding='utf-8') as f:
             json.dump(welcome_config, f, indent=2, ensure_ascii=False)
-        print(f"✅ Configurações de boas-vindas salvas")
+        print(f"✅ Configurações salvas (JSONBin + local)")
     except Exception as e:
-        print(f"❌ Erro ao salvar configurações de boas-vindas: {e}")
+        print(f"❌ Erro ao salvar: {e}")
 
 def load_welcome_config():
     """Carrega configurações do sistema de boas-vindas DO ARQUIVO LOCAL"""
@@ -10996,3 +11002,4 @@ if __name__ == '__main__':
 
 # Sistema anti-hibernação já definido no início do arquivo
 
+from jsonbin_config import save_config_to_jsonbin, load_config_from_jsonbin
