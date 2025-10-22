@@ -733,6 +733,10 @@ def dashboard():
             color: #fff; 
             overflow-y: auto;
             position: relative;
+            transform: translateZ(0);
+            perspective: 1000px;
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
         }}
         
         /* Partículas de oceano animadas */
@@ -751,6 +755,9 @@ def dashboard():
             animation: oceanFlicker 3s ease-in-out infinite;
             pointer-events: none;
             z-index: 0;
+            will-change: opacity;
+            transform: translateZ(0);
+            isolation: isolate;
         }}
         
         body::after {{
@@ -767,6 +774,9 @@ def dashboard():
             animation: fireFloat 25s linear infinite;
             pointer-events: none;
             z-index: 0;
+            will-change: transform;
+            transform: translateZ(0);
+            isolation: isolate;
         }}
         
         /* Camada extra de partículas */
@@ -779,6 +789,10 @@ def dashboard():
             overflow-y: auto;
             pointer-events: none;
             z-index: 0;
+            will-change: contents;
+            transform: translateZ(0);
+            isolation: isolate;
+            contain: strict;
         }}
         
         .particle {{
@@ -952,8 +966,8 @@ def dashboard():
         .sidebar-nav a {{ display: flex; align-items: center; padding: 14px 18px; color: #66aaff; text-decoration: none; border-radius: 0; border-left: 4px solid transparent; transition: all 0.3s; font-weight: 600; letter-spacing: 0.5px; }}
         .sidebar-nav a:hover {{ background: rgba(0, 150, 255, 0.15); color: #00ccff; border-left-color: #0066ff; box-shadow: inset 0 0 10px rgba(0, 150, 255, 0.2); }}
         .sidebar-nav a.active {{ background: rgba(0, 100, 255, 0.25); color: #ffffff; border-left-color: #0033ff; box-shadow: inset 0 0 15px rgba(0, 100, 255, 0.3); }}
-        .main {{ margin-left: 280px; padding: 32px; position: relative; z-index: 1; }}
-        .header {{ background: linear-gradient(135deg, rgba(0, 100, 255, 0.15) 0%, rgba(0, 150, 255, 0.1) 100%); backdrop-filter: blur(10px); border: 2px solid #0066ff; border-radius: 0; padding: 32px; margin-bottom: 32px; box-shadow: 0 8px 32px rgba(0, 100, 255, 0.4); display: flex; justify-content: space-between; align-items: center; }}
+        .main {{ margin-left: 280px; padding: 32px; position: relative; z-index: 1; will-change: auto; transform: translateZ(0); isolation: isolate; }}
+        .header {{ background: linear-gradient(135deg, rgba(0, 100, 255, 0.15) 0%, rgba(0, 150, 255, 0.1) 100%); backdrop-filter: blur(10px); border: 2px solid #0066ff; border-radius: 0; padding: 32px; margin-bottom: 32px; box-shadow: 0 8px 32px rgba(0, 100, 255, 0.4); display: flex; justify-content: space-between; align-items: center; will-change: auto; transform: translateZ(0); isolation: isolate; }}
         .header-left h1 {{ font-size: 32px; font-weight: 800; margin-bottom: 8px; text-shadow: 0 0 10px rgba(0, 150, 255, 0.5), 0 0 20px rgba(0, 100, 255, 0.3); color: #00ccff; }}
         .header-left p {{ color: #66aaff; font-size: 16px; }}
         .user-profile {{ display: flex; align-items: center; gap: 16px; }}
@@ -963,7 +977,7 @@ def dashboard():
         .user-role {{ font-size: 13px; color: #66aaff; margin-top: 4px; }}
         .btn-logout {{ padding: 8px 16px; background: linear-gradient(135deg, #0000cc, #000099); color: white; border: 2px solid #0000cc; border-radius: 0; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.3s; box-shadow: 0 4px 12px rgba(0, 100, 200, 0.4); }}
         .btn-logout:hover {{ background: linear-gradient(135deg, #000099, #000066); box-shadow: 0 6px 16px rgba(0, 100, 200, 0.6); transform: translateY(-2px); }}
-        .grid {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 24px; }}
+        .grid {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 24px; will-change: auto; transform: translateZ(0); }}
         .card {{ background: linear-gradient(135deg, rgba(0, 0, 0, 0.6) 0%, rgba(0, 20, 50, 0.4) 100%); backdrop-filter: blur(10px); border: 2px solid #0066ff; border-radius: 0; padding: 24px; transition: all 0.3s; box-shadow: 0 4px 16px rgba(0, 100, 255, 0.3); will-change: transform; transform: translateZ(0); contain: layout style paint; }}
         .card:hover {{ border-color: #0033ff; transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0, 150, 255, 0.5), 0 0 30px rgba(0, 100, 255, 0.3); }}
         .card-header {{ display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }}
@@ -1054,6 +1068,8 @@ def dashboard():
             z-index: 999;
             transition: transform 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55), opacity 0.8s ease-in-out;
             transform: translateY(0);
+            will-change: transform, opacity;
+            isolation: isolate;
         }}
         
         /* Animação de entrada removida - Robito já começa no canto */
