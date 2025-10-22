@@ -1359,6 +1359,15 @@ def dashboard():
             justify-content: center;
             z-index: 99999;
             overflow: hidden;
+            opacity: 1;
+            visibility: visible;
+        }}
+        
+        /* 🚫 Splash escondido quando já foi exibido */
+        #splash-screen.hidden {{
+            display: none !important;
+            opacity: 0 !important;
+            visibility: hidden !important;
         }}
         
         /* 🔒 BLOQUEAR SCROLL DO BODY ENQUANTO SPLASH ESTÁ ATIVO */
@@ -4171,10 +4180,15 @@ Você ganhou **{{{{prize}}}}**!
             // ✅ VERIFICAR SE JÁ MOSTROU O SPLASH NESTA SESSÃO
             const splashShown = sessionStorage.getItem('splashShown');
             
+            console.log('🔍 Verificando splash... splashShown =', splashShown);
+            
             if (splashShown === 'true') {{
                 // JÁ MOSTROU = PULAR SPLASH
-                console.log('⏭️ Splash já foi exibido, pulando...');
-                if (splash) splash.style.display = 'none';
+                console.log('⏭️ Splash já foi exibido nesta sessão, pulando...');
+                if (splash) {{
+                    splash.classList.add('hidden');
+                    splash.style.display = 'none';
+                }}
                 // 🔓 LIBERAR SCROLL DO BODY
                 document.body.classList.remove('splash-active');
                 if (helper) {{
@@ -4183,6 +4197,17 @@ Você ganhou **{{{{prize}}}}**!
                 }}
                 loadUserData();
                 return;
+            }}
+            
+            // 🎉 PRIMEIRA VEZ = MOSTRAR SPLASH!
+            console.log('🎉 Primeira vez nesta sessão! Exibindo splash screen...');
+            
+            // 🔒 GARANTIR QUE SPLASH ESTÁ VISÍVEL
+            if (splash) {{
+                splash.classList.remove('hidden');
+                splash.style.display = 'flex';
+                splash.style.opacity = '1';
+                splash.style.visibility = 'visible';
             }}
             
             // 🔒 BLOQUEAR SCROLL DO BODY DURANTE O SPLASH
@@ -4216,9 +4241,11 @@ Você ganhou **{{{{prize}}}}**!
                             console.log('🎆 Transição para dashboard...');
                             
                             setTimeout(function() {{
+                                splash.classList.add('hidden');
                                 splash.style.display = 'none';
                                 // ✅ MARCAR QUE O SPLASH JÁ FOI MOSTRADO
                                 sessionStorage.setItem('splashShown', 'true');
+                                console.log('💾 Splash marcado como exibido no sessionStorage');
                                 // 🔓 LIBERAR SCROLL DO BODY
                                 document.body.classList.remove('splash-active');
                                 console.log('✅ Dashboard carregado!');
