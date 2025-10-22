@@ -1361,6 +1361,14 @@ def dashboard():
             overflow: hidden;
         }}
         
+        /* 🔒 BLOQUEAR SCROLL DO BODY ENQUANTO SPLASH ESTÁ ATIVO */
+        body.splash-active {{
+            overflow: hidden !important;
+            height: 100vh;
+            position: fixed;
+            width: 100%;
+        }}
+        
         #splash-screen.fade-out {{
             animation: splashFadeOut 1.5s ease-out forwards;
         }}
@@ -1962,7 +1970,7 @@ def dashboard():
         }}
     </style>
 </head>
-<body>
+<body class="splash-active">
     <!-- 🎬 SPLASH SCREEN ÉPICO -->
     <div id="splash-screen">
         <!-- Partículas de fundo -->
@@ -4132,6 +4140,8 @@ Você ganhou **{{{{prize}}}}**!
                 // JÁ MOSTROU = PULAR SPLASH
                 console.log('⏭️ Splash já foi exibido, pulando...');
                 if (splash) splash.style.display = 'none';
+                // 🔓 LIBERAR SCROLL DO BODY
+                document.body.classList.remove('splash-active');
                 if (helper) {{
                     helper.classList.add('entry-complete');
                     console.log('🤖 Robito ativo!');
@@ -4139,6 +4149,9 @@ Você ganhou **{{{{prize}}}}**!
                 loadUserData();
                 return;
             }}
+            
+            // 🔒 BLOQUEAR SCROLL DO BODY DURANTE O SPLASH
+            document.body.classList.add('splash-active');
             
             // 🌌 Criar partículas animadas no splash
             createSplashParticles();
@@ -4171,6 +4184,8 @@ Você ganhou **{{{{prize}}}}**!
                                 splash.style.display = 'none';
                                 // ✅ MARCAR QUE O SPLASH JÁ FOI MOSTRADO
                                 sessionStorage.setItem('splashShown', 'true');
+                                // 🔓 LIBERAR SCROLL DO BODY
+                                document.body.classList.remove('splash-active');
                                 console.log('✅ Dashboard carregado!');
                             }}, 1500);
                         }}
