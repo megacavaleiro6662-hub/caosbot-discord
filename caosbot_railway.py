@@ -1310,6 +1310,293 @@ def dashboard():
             50% {{ transform: rotate(180deg) scale(1.2); opacity: 0.6; }}
             100% {{ transform: rotate(360deg) scale(1); opacity: 0.3; }}
         }}
+        
+        /* ========================================
+           📱 RESPONSIVO - MOBILE & TABLET
+           ======================================== */
+        
+        /* 📲 TABLET (768px - 1024px) */
+        @media (max-width: 1024px) {{
+            .sidebar {{
+                width: 220px;
+            }}
+            .main {{
+                margin-left: 220px;
+                padding: 20px;
+            }}
+            .grid {{
+                grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            }}
+        }}
+        
+        /* 📱 MOBILE (até 768px) */
+        @media (max-width: 768px) {{
+            /* Sidebar vira menu hamburger */
+            .sidebar {{
+                position: fixed;
+                top: 0;
+                left: -100%;
+                width: 280px;
+                height: 100vh;
+                z-index: 9999;
+                transition: left 0.3s ease;
+                box-shadow: none;
+            }}
+            
+            .sidebar.mobile-open {{
+                left: 0;
+                box-shadow: 10px 0 50px rgba(0, 100, 255, 0.5);
+            }}
+            
+            /* Overlay escuro quando menu aberto */
+            .mobile-overlay {{
+                display: none;
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100vh;
+                background: rgba(0, 0, 0, 0.7);
+                backdrop-filter: blur(5px);
+                z-index: 9998;
+            }}
+            
+            .mobile-overlay.show {{
+                display: block;
+            }}
+            
+            /* Conteúdo principal */
+            .main {{
+                margin-left: 0;
+                padding: 80px 16px 16px 16px;
+            }}
+            
+            /* Header com botão hamburger */
+            .header {{
+                flex-direction: column;
+                gap: 16px;
+                padding: 20px 16px;
+                position: relative;
+            }}
+            
+            .header-left {{
+                width: 100%;
+                text-align: center;
+            }}
+            
+            .header-left h1 {{
+                font-size: 24px;
+            }}
+            
+            .header-left p {{
+                font-size: 14px;
+            }}
+            
+            /* Botão hamburger */
+            .mobile-menu-btn {{
+                display: flex !important;
+                position: fixed;
+                top: 16px;
+                left: 16px;
+                z-index: 10000;
+                width: 50px;
+                height: 50px;
+                background: linear-gradient(135deg, #0066ff, #0099ff);
+                border: 2px solid #00ccff;
+                border-radius: 8px;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                gap: 6px;
+                cursor: pointer;
+                box-shadow: 0 4px 20px rgba(0, 100, 255, 0.6);
+                transition: all 0.3s;
+            }}
+            
+            .mobile-menu-btn:hover {{
+                box-shadow: 0 6px 30px rgba(0, 150, 255, 0.8);
+                transform: scale(1.05);
+            }}
+            
+            .mobile-menu-btn span {{
+                width: 28px;
+                height: 3px;
+                background: #ffffff;
+                border-radius: 2px;
+                transition: all 0.3s;
+            }}
+            
+            .mobile-menu-btn.open span:nth-child(1) {{
+                transform: rotate(45deg) translateY(9px);
+            }}
+            
+            .mobile-menu-btn.open span:nth-child(2) {{
+                opacity: 0;
+            }}
+            
+            .mobile-menu-btn.open span:nth-child(3) {{
+                transform: rotate(-45deg) translateY(-9px);
+            }}
+            
+            /* User profile */
+            .user-profile {{
+                flex-direction: column;
+                gap: 12px;
+            }}
+            
+            .user-info {{
+                text-align: center;
+            }}
+            
+            /* Grid de cards - 1 coluna */
+            .grid {{
+                grid-template-columns: 1fr;
+                gap: 16px;
+            }}
+            
+            /* Cards */
+            .card {{
+                padding: 20px;
+            }}
+            
+            .card-header h2 {{
+                font-size: 16px;
+            }}
+            
+            /* Toggles maiores para touch */
+            .toggle {{
+                width: 60px;
+                height: 32px;
+            }}
+            
+            .toggle label:before {{
+                height: 26px;
+                width: 26px;
+            }}
+            
+            .toggle input:checked + label:before {{
+                transform: translateX(28px);
+            }}
+            
+            /* Botões maiores */
+            .btn {{
+                padding: 14px 24px;
+                font-size: 15px;
+                width: 100%;
+                margin-bottom: 8px;
+            }}
+            
+            /* Forms */
+            .form-input, .form-select, .form-textarea {{
+                font-size: 16px;
+                padding: 12px;
+            }}
+            
+            /* Robito Helper menor no mobile */
+            .robito-helper {{
+                bottom: 10px;
+                right: 10px;
+            }}
+            
+            .robito-helper img {{
+                width: 120px;
+                height: 120px;
+            }}
+            
+            .robito-speech-bubble {{
+                min-width: 280px;
+                max-width: 320px;
+                font-size: 14px;
+                padding: 16px 20px;
+                bottom: 140px;
+            }}
+            
+            .robito-toggle {{
+                right: 130px;
+                width: 55px;
+                height: 32px;
+            }}
+            
+            .robito-toggle::before {{
+                font-size: 18px;
+            }}
+            
+            /* Toast notifications */
+            .toast {{
+                top: 80px;
+                right: 16px;
+                left: 16px;
+                min-width: auto;
+            }}
+            
+            /* Section titles */
+            .section-title {{
+                font-size: 18px;
+            }}
+            
+            /* Sidebar logo menor */
+            .sidebar-logo img {{
+                width: 180px;
+            }}
+            
+            /* Partículas menos densas no mobile (performance) */
+            .particle:nth-child(n+26) {{
+                display: none;
+            }}
+            
+            /* Splash screen ajustado */
+            #splash-screen .splash-logo {{
+                width: 150px;
+                height: 150px;
+            }}
+            
+            .splash-text {{
+                font-size: 20px;
+            }}
+            
+            .splash-progress {{
+                width: 280px;
+            }}
+        }}
+        
+        /* 📱 MOBILE PEQUENO (até 480px) */
+        @media (max-width: 480px) {{
+            .header-left h1 {{
+                font-size: 20px;
+            }}
+            
+            .card-header h2 {{
+                font-size: 14px;
+            }}
+            
+            .robito-helper img {{
+                width: 100px;
+                height: 100px;
+            }}
+            
+            .robito-speech-bubble {{
+                min-width: 240px;
+                max-width: 280px;
+                font-size: 13px;
+                padding: 14px 18px;
+                bottom: 120px;
+            }}
+            
+            .robito-toggle {{
+                right: 110px;
+                width: 50px;
+                height: 28px;
+            }}
+            
+            .sidebar-logo img {{
+                width: 150px;
+            }}
+        }}
+        
+        /* Botão hamburger (escondido no desktop) */
+        .mobile-menu-btn {{
+            display: none;
+        }}
     </style>
 </head>
 <body>
@@ -1400,8 +1687,18 @@ def dashboard():
         <div class="particle"></div>
     </div>
     
+    <!-- Botão Hamburger (Mobile) -->
+    <div class="mobile-menu-btn" id="mobile-menu-btn">
+        <span></span>
+        <span></span>
+        <span></span>
+    </div>
+    
+    <!-- Overlay Mobile (fechar menu ao clicar fora) -->
+    <div class="mobile-overlay" id="mobile-overlay"></div>
+    
     <!-- Sidebar -->
-    <div class="sidebar">
+    <div class="sidebar" id="sidebar">
         <div class="sidebar-logo">
             <img src="https://i.ibb.co/C3gw3z4L/Gemini-Generated-Image-vjef5gvjef5gvjef-1.png" alt="Robito Dashboard">
         </div>
@@ -2163,6 +2460,32 @@ Você ganhou **{{{{prize}}}}**!
         
         // Sincronizar imediatamente ao carregar
         syncDashboardConfigs();
+        
+        // 📱 MENU MOBILE - Controle do hamburger
+        const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+        const sidebar = document.getElementById('sidebar');
+        const mobileOverlay = document.getElementById('mobile-overlay');
+        
+        function toggleMobileMenu() {{
+            sidebar.classList.toggle('mobile-open');
+            mobileMenuBtn.classList.toggle('open');
+            mobileOverlay.classList.toggle('show');
+        }}
+        
+        // Abrir/fechar menu ao clicar no hamburger
+        mobileMenuBtn.addEventListener('click', toggleMobileMenu);
+        
+        // Fechar menu ao clicar no overlay
+        mobileOverlay.addEventListener('click', toggleMobileMenu);
+        
+        // Fechar menu ao clicar em qualquer link da sidebar (mobile)
+        document.querySelectorAll('.sidebar-nav a').forEach(link => {{
+            link.addEventListener('click', () => {{
+                if (window.innerWidth <= 768 && sidebar.classList.contains('mobile-open')) {{
+                    toggleMobileMenu();
+                }}
+            }});
+        }});
         
         // Carregar categorias do Discord
         async function loadCategories() {{
