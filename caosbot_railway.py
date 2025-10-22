@@ -3383,6 +3383,9 @@ def toggle_config_api():
         config[key] = not config[key]
         save_config_dashboard(config)
         
+        # SALVAR NO JSONBIN (PERSISTENTE)
+        save_config_to_jsonbin(config)
+        
         # ATUALIZAR MEMÓRIA DO BOT (CRÍTICO!)
         global welcome_config
         welcome_config[key] = config[key]
@@ -3414,6 +3417,9 @@ def update_config_api():
                 updated.append(key)
         
         save_config_dashboard(config)
+        
+        # SALVAR NO JSONBIN (PERSISTENTE)
+        save_config_to_jsonbin(config)
         
         # ATUALIZAR MEMÓRIA DO BOT (CRÍTICO!)
         global welcome_config
