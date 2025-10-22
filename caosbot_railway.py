@@ -9,6 +9,7 @@ import time
 import json
 import os
 import requests
+from jsonbin_config import save_config_to_jsonbin, load_config_from_jsonbin
 from datetime import datetime
 from discord.ui import Button, View
 import math
@@ -11002,4 +11003,3 @@ if __name__ == '__main__':
 
 # Sistema anti-hibernação já definido no início do arquivo
 
-from jsonbin_config import save_config_to_jsonbin, load_config_from_jsonbin
