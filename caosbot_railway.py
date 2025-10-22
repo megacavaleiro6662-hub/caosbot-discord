@@ -878,10 +878,16 @@ def dashboard():
             animation: robitoFloat 3s ease-in-out infinite;
         }}
         
-        .robito-helper.hidden {{
+        /* Quando escondido: usa animação que INCLUI o offset de 500px */
+        .robito-helper.hidden.entry-complete {{
+            animation: robitoFloatHidden 3s ease-in-out infinite;
+            opacity: 0;
+        }}
+        
+        /* Quando escondido SEM animação ainda */
+        .robito-helper.hidden:not(.entry-complete) {{
             transform: translateY(500px);
             opacity: 0;
-            /* Mantém a animação durante a saída! */
         }}
         
         .robito-helper img {{
@@ -995,6 +1001,12 @@ def dashboard():
         @keyframes robitoFloat {{
             0%, 100% {{ transform: translateY(0px); }}
             50% {{ transform: translateY(-20px); }}
+        }}
+        
+        /* Animação de flutuação ENQUANTO DESCE (mantém o offset de 500px) */
+        @keyframes robitoFloatHidden {{
+            0%, 100% {{ transform: translateY(500px); }}
+            50% {{ transform: translateY(480px); }}
         }}
         
         @keyframes robitoSwing {{
