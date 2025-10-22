@@ -2119,6 +2119,51 @@ Você ganhou **{{{{prize}}}}**!
             }});
         }});
         
+        // 🔄 SINCRONIZAÇÃO EM TEMPO REAL - Atualiza toggles a cada 2 segundos
+        let isUserInteracting = false;
+        
+        // Marcar quando usuário está interagindo
+        document.querySelectorAll('.toggle input').forEach(toggle => {{
+            toggle.addEventListener('mousedown', () => {{ isUserInteracting = true; }});
+            toggle.addEventListener('mouseup', () => {{ setTimeout(() => {{ isUserInteracting = false; }}, 500); }});
+        }});
+        
+        async function syncDashboardConfigs() {{
+            // Não atualiza se usuário está clicando em algo
+            if (isUserInteracting) return;
+            
+            try {{
+                const response = await fetch('/api/config/status');
+                const config = await response.json();
+                
+                // Atualizar cada toggle se mudou
+                Object.keys(config).forEach(key => {{
+                    const toggle = document.getElementById(key);
+                    const statusSpan = document.getElementById(key.replace('_enabled', '-status'));
+                    
+                    if (toggle && toggle.checked !== config[key]) {{
+                        // Atualizar toggle SEM disparar evento
+                        toggle.checked = config[key];
+                        
+                        // Atualizar texto de status
+                        if (statusSpan) {{
+                            statusSpan.textContent = config[key] ? 'Ativado' : 'Desativado';
+                            statusSpan.className = `status ${{config[key] ? 'status-on' : 'status-off'}}`;
+                        }}
+                    }}
+                }});
+            }} catch (error) {{
+                // Silencioso - não mostra erro de polling
+                console.error('Erro ao sincronizar:', error);
+            }}
+        }}
+        
+        // Iniciar polling a cada 2 segundos
+        setInterval(syncDashboardConfigs, 2000);
+        
+        // Sincronizar imediatamente ao carregar
+        syncDashboardConfigs();
+        
         // Carregar categorias do Discord
         async function loadCategories() {{
             try {{
