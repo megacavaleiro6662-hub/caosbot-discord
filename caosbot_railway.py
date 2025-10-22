@@ -173,6 +173,81 @@ def test():
         </body>
     </html>
     """, 200
+
+@app.route('/get-bin-id')
+def get_bin_id():
+    """CRIA O BIN E MOSTRA O ID NA TELA"""
+    try:
+        global JSONBIN_BIN_ID
+        
+        # Se já existe, mostra
+        if JSONBIN_BIN_ID:
+            return f"""
+            <html>
+                <head><title>JSONBin ID</title></head>
+                <body style="background: #000; color: #0f0; font-family: monospace; padding: 50px; text-align: center;">
+                    <h1>✅ BIN JÁ EXISTE!</h1>
+                    <h2 style="color: #fff; background: #333; padding: 20px; border: 3px solid #0f0;">
+                        JSONBIN_BIN_ID={JSONBIN_BIN_ID}
+                    </h2>
+                    <p style="color: #fff;">Copie o ID acima e adicione nas variáveis de ambiente do Render!</p>
+                </body>
+            </html>
+            """
+        
+        # Se não existe, CRIA AGORA!
+        config_data = load_config_dashboard()
+        headers = {{'Content-Type': 'application/json', 'X-Master-Key': JSONBIN_API_KEY}}
+        response = requests.post(JSONBIN_API_URL, json=config_data, headers=headers)
+        
+        if response.status_code in [200, 201]:
+            JSONBIN_BIN_ID = response.json()['metadata']['id']
+            return f"""
+            <html>
+                <head><title>JSONBin ID CRIADO!</title></head>
+                <body style="background: #000; color: #0f0; font-family: monospace; padding: 50px; text-align: center;">
+                    <h1>✅ BIN CRIADO COM SUCESSO!</h1>
+                    <h2 style="color: #fff; background: #333; padding: 20px; border: 3px solid #0f0;">
+                        JSONBIN_BIN_ID={JSONBIN_BIN_ID}
+                    </h2>
+                    <p style="color: #fff;">Copie o ID acima e adicione nas variáveis de ambiente do Render!</p>
+                    <hr style="border-color: #333;">
+                    <h3 style="color: #ff0;">INSTRUÇÕES:</h3>
+                    <ol style="color: #fff; text-align: left; max-width: 600px; margin: 0 auto;">
+                        <li>Copie o ID acima (JSONBIN_BIN_ID=...)</li>
+                        <li>Vá no Render Dashboard → Environment</li>
+                        <li>Add Environment Variable</li>
+                        <li>Key: <b>JSONBIN_BIN_ID</b></li>
+                        <li>Value: <b>{JSONBIN_BIN_ID}</b></li>
+                        <li>Save Changes</li>
+                        <li>Aguarde redeploy (~3 min)</li>
+                        <li>PRONTO! Configs vão persistir! ✅</li>
+                    </ol>
+                </body>
+            </html>
+            """
+        else:
+            return f"""
+            <html>
+                <head><title>ERRO</title></head>
+                <body style="background: #000; color: #f00; font-family: monospace; padding: 50px; text-align: center;">
+                    <h1>❌ ERRO AO CRIAR BIN</h1>
+                    <p style="color: #fff;">Status: {{response.status_code}}</p>
+                    <p style="color: #fff;">Resposta: {{response.text}}</p>
+                </body>
+            </html>
+            """
+    except Exception as e:
+        return f"""
+        <html>
+            <head><title>ERRO</title></head>
+            <body style="background: #000; color: #f00; font-family: monospace; padding: 50px; text-align: center;">
+                <h1>❌ EXCEPTION</h1>
+                <p style="color: #fff;">{{str(e)}}</p>
+            </body>
+        </html>
+        """
+
 # SISTEMA DE LOGIN COM DISCORD OAUTH2
 # ========================================
 @app.route('/login')
