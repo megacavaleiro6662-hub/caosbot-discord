@@ -197,7 +197,7 @@ def get_bin_id():
         
         # Se não existe, CRIA AGORA!
         config_data = load_config_dashboard()
-        headers = {{'Content-Type': 'application/json', 'X-Master-Key': JSONBIN_API_KEY}}
+        headers = {'Content-Type': 'application/json', 'X-Master-Key': JSONBIN_API_KEY}
         response = requests.post(JSONBIN_API_URL, json=config_data, headers=headers)
         
         if response.status_code in [200, 201]:
@@ -232,8 +232,8 @@ def get_bin_id():
                 <head><title>ERRO</title></head>
                 <body style="background: #000; color: #f00; font-family: monospace; padding: 50px; text-align: center;">
                     <h1>❌ ERRO AO CRIAR BIN</h1>
-                    <p style="color: #fff;">Status: {{response.status_code}}</p>
-                    <p style="color: #fff;">Resposta: {{response.text}}</p>
+                    <p style="color: #fff;">Status: {response.status_code}</p>
+                    <p style="color: #fff;">Resposta: {response.text}</p>
                 </body>
             </html>
             """
@@ -243,7 +243,7 @@ def get_bin_id():
             <head><title>ERRO</title></head>
             <body style="background: #000; color: #f00; font-family: monospace; padding: 50px; text-align: center;">
                 <h1>❌ EXCEPTION</h1>
-                <p style="color: #fff;">{{str(e)}}</p>
+                <p style="color: #fff;">{str(e)}</p>
             </body>
         </html>
         """
