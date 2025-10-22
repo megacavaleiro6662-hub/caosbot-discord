@@ -99,16 +99,16 @@ def check_user_permissions(user_id):
             headers=headers
         ).json()
         
-        print(f"🔐 [CHECK] Usuário {user_id} - Cargos: {member_data.get('roles', [])}")
+        # print(f"🔐 [CHECK] Usuário {user_id} - Cargos: {member_data.get('roles', [])}")
         
         # Verifica se tem algum dos cargos permitidos
         user_roles = member_data.get('roles', [])
         for role_id in user_roles:
             if role_id in ALLOWED_ROLE_IDS:
-                print(f"✅ [CHECK] Usuário {user_id} tem cargo permitido: {role_id}")
+                # print(f"✅ [CHECK] Usuário {user_id} tem cargo permitido: {role_id}")
                 return True
         
-        print(f"❌ [CHECK] Usuário {user_id} NÃO tem cargo permitido")
+        # print(f"❌ [CHECK] Usuário {user_id} NÃO tem cargo permitido")
         return False
     except Exception as e:
         print(f"❌ Erro ao verificar permissões: {e}")
