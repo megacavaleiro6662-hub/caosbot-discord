@@ -9,7 +9,6 @@ import time
 import json
 import os
 import requests
-from jsonbin_config import save_config_to_jsonbin, load_config_from_jsonbin
 from collections import defaultdict, deque
 from threading import Thread
 from http.server import HTTPServer, BaseHTTPRequestHandler
@@ -6328,6 +6327,47 @@ dashboard_config_global = {
     'tickets_enabled': False,
     'stats_message_id': None
 }
+
+
+# ========================================
+# JSONBIN.IO - PERSISTENCIA DE CONFIGURACOES
+# ========================================
+JSONBIN_API_KEY = "$2a$10$OLp47wzSpJZqq7gAVgUgkO4qJQa6pAk6oL0pZ0OrV/Z.7HwQ/TRrq"
+JSONBIN_BIN_ID = os.getenv('JSONBIN_BIN_ID', None)
+JSONBIN_API_URL = "https://api.jsonbin.io/v3/b"
+
+def save_config_to_jsonbin(config_data):
+    """Salva configuracoes no JSONBin"""
+    global JSONBIN_BIN_ID
+    try:
+        headers = {'Content-Type': 'application/json', 'X-Master-Key': JSONBIN_API_KEY}
+        if JSONBIN_BIN_ID:
+            response = requests.put(f"{JSONBIN_API_URL}/{JSONBIN_BIN_ID}", json=config_data, headers=headers)
+        else:
+            response = requests.post(JSONBIN_API_URL, json=config_data, headers=headers)
+            if response.status_code == 200:
+                JSONBIN_BIN_ID = response.json()['metadata']['id']
+                print(f"[JSONBIN] Bin criado! ADICIONE NO RENDER: JSONBIN_BIN_ID={JSONBIN_BIN_ID}")
+        if response.status_code in [200, 201]:
+            print(f"[JSONBIN] Config salva!")
+            return True
+        return False
+    except Exception as e:
+        print(f"[JSONBIN] Erro ao salvar: {e}")
+        return False
+
+def load_config_from_jsonbin():
+    """Carrega configuracoes do JSONBin"""
+    if not JSONBIN_BIN_ID:
+        return None
+    try:
+        headers = {'X-Master-Key': JSONBIN_API_KEY}
+        response = requests.get(f"{JSONBIN_API_URL}/{JSONBIN_BIN_ID}/latest", headers=headers)
+        if response.status_code == 200:
+            return response.json()['record']
+        return None
+    except:
+        return None
 
 # Arquivo de configuração (NÃO USADO NO RENDER - apenas backup local)
 WELCOME_CONFIG_FILE = "welcome_config.json"
