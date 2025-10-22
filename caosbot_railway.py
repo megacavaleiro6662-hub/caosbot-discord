@@ -3254,10 +3254,10 @@ Você ganhou **{{{{prize}}}}**!
             // 🎬 SISTEMA DE MENSAGENS E IMAGENS ROTATIVAS
             const loadingMessages = [
                 {{ text: '⚡ Inicializando sistemas...', img: '{ROBITO_IMAGES["acenando"]}', progress: 20 }},
-                {{ text: '🔧 Configurando módulos...', img: '{ROBITO_IMAGES["explicando"]}', progress: 40 }},
-                {{ text: '📊 Coletando informações...', img: '{ROBITO_IMAGES["pensando"]}', progress: 60 }},
+                {{ text: '🔧 Configurando módulos...', img: '{ROBITO_IMAGES["feliz"]}', progress: 40 }},
+                {{ text: '📊 Coletando informações...', img: '{ROBITO_IMAGES["nervoso"]}', progress: 60 }},
                 {{ text: '🎨 Preparando interface...', img: '{ROBITO_IMAGES["feliz"]}', progress: 80 }},
-                {{ text: '✅ Finalizando carregamento...', img: '{ROBITO_IMAGES["comemorando"]}', progress: 100 }}
+                {{ text: '✅ Finalizando carregamento...', img: '{ROBITO_IMAGES["dab"]}', progress: 100 }}
             ];
             
             let currentMessageIndex = 0;
