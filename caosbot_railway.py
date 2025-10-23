@@ -7610,32 +7610,75 @@ async def ship_command(ctx, user1: discord.Member = None, user2: discord.Member 
                 robito_data = await resp.read()
                 robito = Image.open(io.BytesIO(robito_data)).convert('RGBA').resize((180, 180))
         
-        # Canvas 800x400
-        img = Image.new('RGBA', (800, 400), (0, 0, 0, 0))
+        # CANVAS ULTRA GRANDE - 1000x600
+        width, height = 1000, 600
+        img = Image.new('RGBA', (width, height), (0, 0, 0, 0))
         
-        # GRADIENTE DE FUNDO BASEADO NA %
-        bg = Image.new('RGB', (800, 400), (20, 20, 40))
+        # GRADIENTE 2D ULTRA DETALHADO
+        bg = Image.new('RGB', (width, height), (20, 20, 40))
         draw_bg = ImageDraw.Draw(bg)
         
-        # Gradiente vertical
-        for y in range(400):
-            # Cor baseada na porcentagem
-            if ship_value >= 70:
-                r = int(255 * (1 - y/400) + 180 * (y/400))
-                g = int(20 * (1 - y/400) + 100 * (y/400))
-                b = int(147 * (1 - y/400) + 180 * (y/400))
-            elif ship_value >= 40:
-                r = int(255 * (1 - y/400) + 100 * (y/400))
-                g = int(140 * (1 - y/400) + 80 * (y/400))
-                b = int(0 * (1 - y/400) + 150 * (y/400))
-            else:
-                r = int(80 * (1 - y/400) + 50 * (y/400))
-                g = int(80 * (1 - y/400) + 50 * (y/400))
-                b = int(100 * (1 - y/400) + 80 * (y/400))
-            
-            draw_bg.line([(0, y), (800, y)], fill=(r, g, b))
+        import math
+        
+        # Gradiente radial + vertical + horizontal COMBINADOS
+        center_x, center_y = width // 2, height // 2
+        max_dist = math.sqrt(center_x**2 + center_y**2)
+        
+        for y in range(height):
+            for x in range(width):
+                # Múltiplos gradientes
+                vert_prog = y / height
+                horiz_prog = x / width
+                
+                # Distância do centro (efeito radial)
+                dist = math.sqrt((x - center_x)**2 + (y - center_y)**2)
+                radial_prog = dist / max_dist
+                
+                # Combinar progressos
+                combined = (vert_prog * 0.4 + horiz_prog * 0.3 + radial_prog * 0.3)
+                
+                if ship_value >= 70:
+                    # Rosa vibrante
+                    r = int(255 * (1 - combined) + 200 * combined - 20 * math.sin(horiz_prog * 3.14))
+                    g = int(30 * (1 - combined) + 140 * combined + 30 * math.cos(vert_prog * 3.14))
+                    b = int(147 * (1 - combined) + 220 * combined)
+                elif ship_value >= 40:
+                    # Dourado/Roxo
+                    r = int(255 * (1 - combined) + 150 * combined)
+                    g = int(200 * (1 - combined) + 120 * combined)
+                    b = int(60 * (1 - combined) + 200 * combined)
+                else:
+                    # Cinza azulado
+                    r = int(100 * (1 - combined) + 70 * combined)
+                    g = int(100 * (1 - combined) + 70 * combined)
+                    b = int(140 * (1 - combined) + 110 * combined)
+                
+                # Limitar valores
+                r = max(0, min(255, r))
+                g = max(0, min(255, g))
+                b = max(0, min(255, b))
+                
+                draw_bg.point((x, y), fill=(r, g, b))
         
         img.paste(bg, (0, 0))
+        
+        # PADRÃO DE ESTRELAS/PONTOS DECORATIVOS
+        import random
+        random.seed(user1.id + user2.id)  # Consistente
+        for _ in range(150):
+            px = random.randint(0, width)
+            py = random.randint(0, height)
+            size = random.randint(1, 3)
+            brightness = random.randint(150, 255)
+            draw_bg.ellipse([px - size, py - size, px + size, py + size], 
+                           fill=(brightness, brightness, brightness, 200))
+        
+        # LINHAS DECORATIVAS DE FUNDO
+        for i in range(8):
+            y_pos = int((i / 8) * height)
+            alpha = 30 + i * 5
+            draw_bg.line([(0, y_pos), (width, y_pos)], fill=(255, 255, 255), width=1)
+        
         draw = ImageDraw.Draw(img)
         
         # Carregar fontes
@@ -7650,106 +7693,331 @@ async def ship_command(ctx, user1: discord.Member = None, user2: discord.Member 
             font_text = ImageFont.load_default()
             font_small = ImageFont.load_default()
         
-        # AVATARES CIRCULARES COM BORDA
-        # Avatar 1 (esquerda)
-        mask1 = Image.new('L', (200, 200), 0)
-        draw_mask1 = ImageDraw.Draw(mask1)
-        draw_mask1.ellipse([0, 0, 200, 200], fill=255)
+        # AVATARES CIRCULARES ULTRA DETALHADOS
+        avatar_size = 220
+        avatar1 = avatar1.resize((avatar_size, avatar_size))
+        avatar2 = avatar2.resize((avatar_size, avatar_size))
         
-        avatar1_circle = Image.new('RGBA', (220, 220), (0, 0, 0, 0))
-        # Sombra
-        draw.ellipse([40, 130, 260, 350], fill=(0, 0, 0, 100))
-        # Borda
-        draw.ellipse([45, 135, 255, 345], fill=(255, 255, 255), outline=(255, 255, 255), width=8)
+        # Avatar 1 (esquerda)
+        av1_x, av1_y = 80, 250
+        
+        # Múltiplas sombras (profundidade)
+        for offset in range(5, 0, -1):
+            alpha = int(40 - offset * 5)
+            draw.ellipse([av1_x - offset*3, av1_y - offset*3, 
+                         av1_x + avatar_size + offset*3, av1_y + avatar_size + offset*3],
+                        fill=(0, 0, 0, alpha))
+        
+        # Glow externo (baseado na %)
+        if ship_value >= 70:
+            glow_color = (255, 50, 150, 100)
+        elif ship_value >= 40:
+            glow_color = (255, 200, 50, 100)
+        else:
+            glow_color = (100, 100, 150, 80)
+        
+        for i in range(15, 0, -1):
+            alpha = int(i * 4)
+            draw.ellipse([av1_x - i, av1_y - i, 
+                         av1_x + avatar_size + i, av1_y + avatar_size + i],
+                        outline=glow_color, width=2)
+        
+        # Borda tripla
+        draw.ellipse([av1_x - 8, av1_y - 8, av1_x + avatar_size + 8, av1_y + avatar_size + 8],
+                    outline=(255, 255, 255), width=10)
+        draw.ellipse([av1_x - 4, av1_y - 4, av1_x + avatar_size + 4, av1_y + avatar_size + 4],
+                    outline=(200, 200, 255), width=6)
+        draw.ellipse([av1_x - 2, av1_y - 2, av1_x + avatar_size + 2, av1_y + avatar_size + 2],
+                    outline=(255, 255, 255), width=3)
+        
+        # Máscara circular
+        mask1 = Image.new('L', (avatar_size, avatar_size), 0)
+        draw_mask1 = ImageDraw.Draw(mask1)
+        draw_mask1.ellipse([0, 0, avatar_size, avatar_size], fill=255)
+        
         # Avatar
-        img.paste(avatar1, (55, 145), mask1)
+        img.paste(avatar1, (av1_x, av1_y), mask1)
         
         # Avatar 2 (direita)
-        mask2 = Image.new('L', (200, 200), 0)
+        av2_x, av2_y = 700, 250
+        
+        # Múltiplas sombras
+        for offset in range(5, 0, -1):
+            alpha = int(40 - offset * 5)
+            draw.ellipse([av2_x - offset*3, av2_y - offset*3,
+                         av2_x + avatar_size + offset*3, av2_y + avatar_size + offset*3],
+                        fill=(0, 0, 0, alpha))
+        
+        # Glow externo
+        for i in range(15, 0, -1):
+            alpha = int(i * 4)
+            draw.ellipse([av2_x - i, av2_y - i,
+                         av2_x + avatar_size + i, av2_y + avatar_size + i],
+                        outline=glow_color, width=2)
+        
+        # Borda tripla
+        draw.ellipse([av2_x - 8, av2_y - 8, av2_x + avatar_size + 8, av2_y + avatar_size + 8],
+                    outline=(255, 255, 255), width=10)
+        draw.ellipse([av2_x - 4, av2_y - 4, av2_x + avatar_size + 4, av2_y + avatar_size + 4],
+                    outline=(200, 200, 255), width=6)
+        draw.ellipse([av2_x - 2, av2_y - 2, av2_x + avatar_size + 2, av2_y + avatar_size + 2],
+                    outline=(255, 255, 255), width=3)
+        
+        # Máscara circular
+        mask2 = Image.new('L', (avatar_size, avatar_size), 0)
         draw_mask2 = ImageDraw.Draw(mask2)
-        draw_mask2.ellipse([0, 0, 200, 200], fill=255)
+        draw_mask2.ellipse([0, 0, avatar_size, avatar_size], fill=255)
         
-        # Sombra
-        draw.ellipse([540, 130, 760, 350], fill=(0, 0, 0, 100))
-        # Borda
-        draw.ellipse([545, 135, 755, 345], fill=(255, 255, 255), outline=(255, 255, 255), width=8)
         # Avatar
-        img.paste(avatar2, (555, 145), mask2)
+        img.paste(avatar2, (av2_x, av2_y), mask2)
         
-        # ROBITO NO CENTRO
-        robito_x, robito_y = 310, 180
-        # Sombra robito
-        shadow = Image.new('RGBA', (180, 180), (0, 0, 0, 0))
-        draw_shadow = ImageDraw.Draw(shadow)
-        draw_shadow.ellipse([0, 0, 180, 180], fill=(0, 0, 0, 120))
-        shadow = shadow.filter(ImageFilter.GaussianBlur(15))
-        img.paste(shadow, (robito_x, robito_y + 10), shadow)
+        # ROBITO NO CENTRO COM EFEITOS
+        robito_size = 250
+        robito = robito.resize((robito_size, robito_size))
+        robito_x, robito_y = (width - robito_size) // 2, 240
+        
+        # Múltiplas sombras no robito
+        for offset in range(8, 0, -1):
+            alpha = int(30 - offset * 2)
+            shadow = Image.new('RGBA', (robito_size + offset*4, robito_size + offset*4), (0, 0, 0, 0))
+            draw_shadow = ImageDraw.Draw(shadow)
+            draw_shadow.ellipse([0, 0, robito_size + offset*4, robito_size + offset*4], fill=(0, 0, 0, alpha))
+            shadow = shadow.filter(ImageFilter.GaussianBlur(offset*2))
+            img.paste(shadow, (robito_x - offset*2, robito_y + offset), shadow)
+        
+        # Glow colorido no robito
+        for i in range(20, 0, -1):
+            alpha = int(i * 3)
+            draw.ellipse([robito_x - i, robito_y - i,
+                         robito_x + robito_size + i, robito_y + robito_size + i],
+                        outline=glow_color, width=1)
+        
         # Robito
         img.paste(robito, (robito_x, robito_y), robito)
         
-        # TÍTULO NO TOPO (SEM EMOJI - DEJAVU NÃO SUPORTA)
+        # PAINEL DECORATIVO NO TOPO
+        panel_y = 20
+        panel_h = 140
+        
+        # Painel com gradiente
+        for y in range(panel_h):
+            alpha = int(180 - (y / panel_h) * 100)
+            draw.line([(50, panel_y + y), (width - 50, panel_y + y)], 
+                     fill=(20, 20, 50, alpha), width=1)
+        
+        # Bordas decorativas do painel
+        draw.rectangle([50, panel_y, width - 50, panel_y + panel_h], 
+                      outline=(255, 255, 255), width=5)
+        draw.rectangle([55, panel_y + 5, width - 55, panel_y + panel_h - 5],
+                      outline=(200, 200, 255), width=3)
+        
+        # TÍTULO NO TOPO COM MÚLTIPLAS SOMBRAS
         title_text = f"SHIPAGEM: {ship_name.upper()}"
         bbox = draw.textbbox((0, 0), title_text, font=font_title)
         title_w = bbox[2] - bbox[0]
-        title_x = (800 - title_w) // 2
-        # Sombra
-        draw.text((title_x + 3, 33), title_text, font=font_title, fill=(0, 0, 0))
-        # Texto
-        draw.text((title_x, 30), title_text, font=font_title, fill=(255, 255, 255))
+        title_x = (width - title_w) // 2
         
-        # PORCENTAGEM GRANDE NO CENTRO
+        # Múltiplas sombras no título
+        for offset in range(5, 0, -1):
+            draw.text((title_x + offset, panel_y + 25 + offset), title_text, 
+                     font=font_title, fill=(0, 0, 0, 180 - offset*30))
+        # Texto principal
+        draw.text((title_x, panel_y + 25), title_text, font=font_title, fill=(255, 255, 255))
+        
+        # PORCENTAGEM ULTRA GRANDE COM EFEITOS
+        font_percent_mega = ImageFont.truetype('/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf', 90)
         percent_text = f"{ship_value}%"
-        bbox = draw.textbbox((0, 0), percent_text, font=font_percent)
+        bbox = draw.textbbox((0, 0), percent_text, font=font_percent_mega)
         percent_w = bbox[2] - bbox[0]
-        percent_x = (800 - percent_w) // 2
-        # Sombra
-        draw.text((percent_x + 4, 84), percent_text, font=font_percent, fill=(0, 0, 0))
-        # Texto
+        percent_x = (width - percent_w) // 2
+        
+        # Cor baseada na %
         if ship_value >= 70:
             color = (255, 100, 150)
+            outline_color = (255, 200, 220)
         elif ship_value >= 40:
             color = (255, 200, 0)
+            outline_color = (255, 240, 150)
         else:
-            color = (150, 150, 150)
-        draw.text((percent_x, 80), percent_text, font=font_percent, fill=color)
+            color = (150, 150, 200)
+            outline_color = (200, 200, 230)
         
-        # BARRA DE COMPATIBILIDADE
-        bar_x, bar_y = 100, 160
-        bar_w, bar_h = 600, 40
+        # Múltiplas sombras na porcentagem
+        for offset in range(8, 0, -1):
+            draw.text((percent_x + offset, panel_y + 70 + offset), percent_text,
+                     font=font_percent_mega, fill=(0, 0, 0, 160 - offset*15))
         
-        # Borda da barra
-        draw.rectangle([bar_x - 3, bar_y - 3, bar_x + bar_w + 3, bar_y + bar_h + 3], 
-                      outline=(255, 255, 255), width=3)
-        # Fundo da barra
-        draw.rectangle([bar_x, bar_y, bar_x + bar_w, bar_y + bar_h], fill=(40, 40, 60))
+        # Outline (borda no texto)
+        for dx, dy in [(-2, -2), (-2, 2), (2, -2), (2, 2), (-3, 0), (3, 0), (0, -3), (0, 3)]:
+            draw.text((percent_x + dx, panel_y + 70 + dy), percent_text,
+                     font=font_percent_mega, fill=outline_color)
         
-        # Preenchimento gradiente
+        # Texto principal
+        draw.text((percent_x, panel_y + 70), percent_text, font=font_percent_mega, fill=color)
+        
+        # BARRA DE COMPATIBILIDADE ULTRA DETALHADA
+        bar_x, bar_y = 100, 520
+        bar_w, bar_h = 800, 50
+        
+        # Múltiplas bordas
+        for i in range(3, 0, -1):
+            thickness = i * 2
+            offset = (3 - i) * 2
+            draw.rectangle([bar_x - offset, bar_y - offset, 
+                           bar_x + bar_w + offset, bar_y + bar_h + offset],
+                          outline=(255, 255, 255, 200 - i*40), width=thickness)
+        
+        # Sombra interna
+        shadow_layer = Image.new('RGBA', (bar_w, bar_h), (0, 0, 0, 0))
+        shadow_draw = ImageDraw.Draw(shadow_layer)
+        shadow_draw.rectangle([0, 0, bar_w, 10], fill=(0, 0, 0, 100))
+        img.paste(shadow_layer, (bar_x, bar_y), shadow_layer)
+        
+        # Fundo da barra com gradiente
+        for y in range(bar_h):
+            shade = int(40 + (y / bar_h) * 30)
+            draw.line([(bar_x, bar_y + y), (bar_x + bar_w, bar_y + y)],
+                     fill=(shade, shade, shade + 20))
+        
+        # Preenchimento com gradiente complexo
         filled_w = int(bar_w * (ship_value / 100))
-        for x in range(filled_w):
-            progress = x / bar_w
-            if ship_value >= 70:
-                r = int(255 - (80 * progress))
-                g = int(50 + (100 * progress))
-                b = int(150 + (50 * progress))
-            elif ship_value >= 40:
-                r = int(255 - (50 * progress))
-                g = int(200 - (50 * progress))
-                b = int(100 * progress)
-            else:
-                r = int(100 + (50 * progress))
-                g = int(100 + (50 * progress))
-                b = int(120 + (50 * progress))
-            
-            draw.line([(bar_x + x, bar_y), (bar_x + x, bar_y + bar_h)], fill=(r, g, b))
         
-        # MENSAGEM EMBAIXO
+        for x in range(filled_w):
+            for y in range(bar_h):
+                x_progress = x / bar_w
+                y_progress = y / bar_h
+                
+                # Gradiente horizontal + vertical
+                if ship_value >= 70:
+                    r = int(255 - (60 * x_progress) + (30 * y_progress))
+                    g = int(50 + (120 * x_progress) - (20 * y_progress))
+                    b = int(150 + (70 * x_progress) + (20 * y_progress))
+                elif ship_value >= 40:
+                    r = int(255 - (40 * x_progress) + (20 * y_progress))
+                    g = int(200 - (80 * x_progress) - (30 * y_progress))
+                    b = int(50 + (150 * x_progress) + (10 * y_progress))
+                else:
+                    r = int(120 + (30 * x_progress) - (10 * y_progress))
+                    g = int(120 + (30 * x_progress) - (10 * y_progress))
+                    b = int(150 + (50 * x_progress) + (20 * y_progress))
+                
+                r = max(0, min(255, r))
+                g = max(0, min(255, g))
+                b = max(0, min(255, b))
+                
+                draw.point((bar_x + x, bar_y + y), fill=(r, g, b))
+        
+        # Brilho no topo da barra preenchida
+        if filled_w > 0:
+            for x in range(filled_w):
+                alpha = int(150 - (x / filled_w) * 100)
+                draw.line([(bar_x + x, bar_y + 2), (bar_x + x, bar_y + 8)],
+                         fill=(255, 255, 255, alpha))
+        
+        # NOMES DOS USUÁRIOS NAS PONTAS
+        # User 1 (esquerda)
+        user1_name = user1.display_name if len(user1.display_name) <= 15 else user1.display_name[:12] + '...'
+        bbox = draw.textbbox((0, 0), user1_name, font=font_text)
+        name1_w = bbox[2] - bbox[0]
+        name1_x = av1_x + (avatar_size - name1_w) // 2
+        name1_y = av1_y + avatar_size + 15
+        
+        # Sombras múltiplas
+        for offset in range(4, 0, -1):
+            draw.text((name1_x + offset, name1_y + offset), user1_name,
+                     font=font_text, fill=(0, 0, 0, 200 - offset*40))
+        # Outline
+        for dx, dy in [(-1, -1), (-1, 1), (1, -1), (1, 1)]:
+            draw.text((name1_x + dx, name1_y + dy), user1_name,
+                     font=font_text, fill=(0, 0, 0))
+        # Texto
+        draw.text((name1_x, name1_y), user1_name, font=font_text, fill=(255, 255, 255))
+        
+        # User 2 (direita)
+        user2_name = user2.display_name if len(user2.display_name) <= 15 else user2.display_name[:12] + '...'
+        bbox = draw.textbbox((0, 0), user2_name, font=font_text)
+        name2_w = bbox[2] - bbox[0]
+        name2_x = av2_x + (avatar_size - name2_w) // 2
+        name2_y = av2_y + avatar_size + 15
+        
+        # Sombras múltiplas
+        for offset in range(4, 0, -1):
+            draw.text((name2_x + offset, name2_y + offset), user2_name,
+                     font=font_text, fill=(0, 0, 0, 200 - offset*40))
+        # Outline
+        for dx, dy in [(-1, -1), (-1, 1), (1, -1), (1, 1)]:
+            draw.text((name2_x + dx, name2_y + dy), user2_name,
+                     font=font_text, fill=(0, 0, 0))
+        # Texto
+        draw.text((name2_x, name2_y), user2_name, font=font_text, fill=(255, 255, 255))
+        
+        # MENSAGEM NO RODAPÉ
         bbox = draw.textbbox((0, 0), message, font=font_text)
         msg_w = bbox[2] - bbox[0]
-        msg_x = (800 - msg_w) // 2
-        # Sombra
-        draw.text((msg_x + 2, 372), message, font=font_text, fill=(0, 0, 0))
-        # Texto
-        draw.text((msg_x, 370), message, font=font_text, fill=(255, 255, 255))
+        msg_x = (width - msg_w) // 2
+        msg_y = height - 20
+        
+        # Múltiplas sombras
+        for offset in range(5, 0, -1):
+            draw.text((msg_x + offset, msg_y + offset), message,
+                     font=font_text, fill=(0, 0, 0, 220 - offset*35))
+        # Outline colorido
+        for dx, dy in [(-2, -2), (-2, 2), (2, -2), (2, 2)]:
+            draw.text((msg_x + dx, msg_y + dy), message,
+                     font=font_text, fill=color)
+        # Texto principal
+        draw.text((msg_x, msg_y), message, font=font_text, fill=(255, 255, 255))
+        
+        # PARTÍCULAS DECORATIVAS FINAIS (corações/estrelas)
+        random.seed(user1.id * user2.id)
+        for _ in range(50):
+            px = random.randint(50, width - 50)
+            py = random.randint(180, 220)
+            size = random.randint(3, 8)
+            alpha = random.randint(100, 200)
+            
+            # Corações pequenos (simbolizado por círculos coloridos)
+            if ship_value >= 50:
+                draw.ellipse([px - size, py - size, px + size, py + size],
+                            fill=(255, random.randint(100, 200), random.randint(150, 200), alpha))
+            else:
+                draw.ellipse([px - size, py - size, px + size, py + size],
+                            fill=(random.randint(150, 200), random.randint(150, 200), 200, alpha))
+        
+        # MOLDURA EXTERNA DECORATIVA
+        frame_thickness = 15
+        # Cantos decorativos
+        corner_size = 80
+        
+        # Canto superior esquerdo
+        for i in range(corner_size):
+            alpha = int(255 - (i / corner_size) * 180)
+            draw.line([(i, 0), (i, corner_size - i)], fill=(255, 255, 255, alpha), width=3)
+            draw.line([(0, i), (corner_size - i, i)], fill=(255, 255, 255, alpha), width=3)
+        
+        # Canto superior direito
+        for i in range(corner_size):
+            alpha = int(255 - (i / corner_size) * 180)
+            draw.line([(width - i - 1, 0), (width - i - 1, corner_size - i)], 
+                     fill=(255, 255, 255, alpha), width=3)
+            draw.line([(width - corner_size + i, i), (width - 1, i)], 
+                     fill=(255, 255, 255, alpha), width=3)
+        
+        # Canto inferior esquerdo
+        for i in range(corner_size):
+            alpha = int(255 - (i / corner_size) * 180)
+            draw.line([(i, height - 1), (i, height - corner_size + i)], 
+                     fill=(255, 255, 255, alpha), width=3)
+            draw.line([(0, height - i - 1), (corner_size - i, height - i - 1)], 
+                     fill=(255, 255, 255, alpha), width=3)
+        
+        # Canto inferior direito
+        for i in range(corner_size):
+            alpha = int(255 - (i / corner_size) * 180)
+            draw.line([(width - i - 1, height - 1), (width - i - 1, height - corner_size + i)], 
+                     fill=(255, 255, 255, alpha), width=3)
+            draw.line([(width - corner_size + i, height - i - 1), (width - 1, height - i - 1)], 
+                     fill=(255, 255, 255, alpha), width=3)
         
         # Salvar PNG
         buffer = io.BytesIO()
