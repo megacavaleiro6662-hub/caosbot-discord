@@ -24,6 +24,18 @@ from io import BytesIO
 import sqlite3
 from urllib.parse import urlencode
 
+# ==================== SISTEMA DE XP ====================
+try:
+    from xp_database import xp_db
+    from xp_system import setup_xp_system, XPSystem
+    from xp_commands import XPCommands
+    import xp_dashboard
+    XP_SYSTEM_ENABLED = True
+    print('✅ Sistema de XP importado com sucesso!')
+except Exception as e:
+    XP_SYSTEM_ENABLED = False
+    print(f'⚠️ Sistema de XP não disponível: {e}')
+
 # ========================================
 # FIGURINHAS DO ROBITO (MASCOTE DO BOT)
 # ========================================
@@ -5121,7 +5133,24 @@ intents.presences = True  # NECESSÁRIO para ver status online/offline dos membr
 # Bot configurado com PREFIXO (.)
 bot = commands.Bot(command_prefix='.', intents=intents)
 
-# Sistema de XP - Cooldown para ganhar XP
+# ==================== INICIALIZAR SISTEMA DE XP ====================
+if XP_SYSTEM_ENABLED:
+    try:
+        # Inicializar sistema de XP
+        xp_system_instance = setup_xp_system(bot)
+        print('✅ Sistema de XP inicializado no bot!')
+        
+        # Carregar comandos de XP
+        async def load_xp_commands():
+            await bot.add_cog(XPCommands(bot))
+            print('✅ Comandos de XP carregados!')
+        
+        # Agendar carregamento dos comandos
+        bot.loop.create_task(load_xp_commands())
+    except Exception as e:
+        print(f'❌ Erro ao inicializar sistema de XP: {e}')
+
+# Sistema de XP - Cooldown para ganhar XP (antigo, será substituído pelo novo)
 xp_cooldowns = {}
 
 # Nova função COMPLETA com todos os campos
@@ -5272,6 +5301,17 @@ async def on_ready():
         print('🎉 TODOS os comandos slash foram removidos! Use apenas comandos com PONTO (.)')
     except Exception as e:
         print(f'⚠️ Aviso ao limpar comandos slash: {e}')
+    
+    # ==================== INICIALIZAR BANCO DE XP ====================
+    if XP_SYSTEM_ENABLED:
+        try:
+            print('🗃️ Inicializando banco de dados de XP...')
+            # Criar níveis padrão para cada servidor
+            for guild in bot.guilds:
+                xp_db.create_default_levels(guild.id)
+                print(f'✅ Níveis padrão criados para: {guild.name}')
+        except Exception as e:
+            print(f'⚠️ Erro ao inicializar XP: {e}')
     
     # Status rotativo
     statuses = [
@@ -12088,6 +12128,25 @@ if __name__ == '__main__':
     print('\nIniciando bot Discord em background...')
     bot_thread = threading.Thread(target=run_discord_bot, daemon=True)
     bot_thread.start()
+    
+    # ==================== DASHBOARD XP (FastAPI) ====================
+    if XP_SYSTEM_ENABLED:
+        try:
+            print('\n🌐 Iniciando Dashboard XP (FastAPI) na porta 8000...')
+            def run_xp_dashboard():
+                import uvicorn
+                uvicorn.run(
+                    xp_dashboard.app,
+                    host="0.0.0.0",
+                    port=8000,
+                    log_level="warning"
+                )
+            
+            dashboard_thread = threading.Thread(target=run_xp_dashboard, daemon=True)
+            dashboard_thread.start()
+            print('✅ Dashboard XP rodando em http://localhost:8000')
+        except Exception as e:
+            print(f'❌ Erro ao iniciar dashboard XP: {e}')
     
     # Flask como PROCESSO PRINCIPAL (BLOCKING - CRITICO!)
     print('Iniciando Flask como processo principal...')

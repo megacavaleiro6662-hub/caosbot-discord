@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🏆 Leaderboard - {{ guild_id }}</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #000000 0%, #001a33 50%, #000000 100%);
+            color: #ffffff;
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 48px;
+            text-align: center;
+            color: #00ccff;
+            text-shadow: 0 0 20px rgba(0, 200, 255, 0.6);
+            margin-bottom: 40px;
+        }
+        
+        .leaderboard {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .lb-item {
+            background: linear-gradient(135deg, rgba(0, 0, 0, 0.8), rgba(0, 30, 60, 0.6));
+            border: 2px solid #0066ff;
+            padding: 20px;
+            display: grid;
+            grid-template-columns: 80px 1fr 150px 150px;
+            gap: 20px;
+            align-items: center;
+            transition: all 0.3s;
+        }
+        
+        .lb-item:hover {
+            border-color: #00ccff;
+            transform: translateX(5px);
+        }
+        
+        .lb-rank {
+            font-size: 36px;
+            font-weight: 900;
+            text-align: center;
+            color: #00ccff;
+            font-family: 'Orbitron', sans-serif;
+        }
+        
+        .lb-rank.gold { color: #FFD700; }
+        .lb-rank.silver { color: #C0C0C0; }
+        .lb-rank.bronze { color: #CD7F32; }
+        
+        .lb-user {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .lb-username {
+            font-size: 20px;
+            font-weight: 700;
+            color: #00ccff;
+        }
+        
+        .lb-level-info {
+            font-size: 14px;
+            color: #6688aa;
+            margin-top: 5px;
+        }
+        
+        .lb-xp, .lb-level {
+            text-align: center;
+        }
+        
+        .lb-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: #00ccff;
+        }
+        
+        .lb-label {
+            font-size: 12px;
+            color: #6688aa;
+            text-transform: uppercase;
+        }
+        
+        @media (max-width: 768px) {
+            .lb-item {
+                grid-template-columns: 60px 1fr;
+                grid-template-rows: auto auto;
+            }
+            
+            .lb-xp, .lb-level {
+                grid-column: 2;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="title">🏆 Top 100 - Ranking de XP</h1>
+        
+        <div class="leaderboard">
+            {% for user in leaderboard %}
+            <div class="lb-item">
+                <div class="lb-rank {% if loop.index == 1 %}gold{% elif loop.index == 2 %}silver{% elif loop.index == 3 %}bronze{% endif %}">
+                    #{{ loop.index }}
+                </div>
+                
+                <div class="lb-user">
+                    <div class="lb-username">User {{ user.user_id }}</div>
+                    <div class="lb-level-info">
+                        Level {{ user.level }}
+                        {% for level in levels %}
+                            {% if level.level == user.level %}
+                                • {{ level.role_name }}
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+                
+                <div class="lb-xp">
+                    <div class="lb-value">{{ "{:,}".format(user.xp).replace(',', '.') }}</div>
+                    <div class="lb-label">XP Total</div>
+                </div>
+                
+                <div class="lb-level">
+                    <div class="lb-value">{{ user.total_messages }}</div>
+                    <div class="lb-label">Mensagens</div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</body>
+</html>

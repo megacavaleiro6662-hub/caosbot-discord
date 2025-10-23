@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+
+{% block title %}Meus Servidores{% endblock %}
+
+{% block extra_css %}
+<style>
+    .page-title {
+        font-family: 'Orbitron', sans-serif;
+        font-size: 36px;
+        color: #00ccff;
+        text-shadow: 0 0 15px rgba(0, 200, 255, 0.5);
+        margin: 40px 0 30px 0;
+    }
+    
+    .servers-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 25px;
+        margin-top: 30px;
+    }
+    
+    .server-card {
+        background: linear-gradient(135deg, rgba(0, 0, 0, 0.8), rgba(0, 30, 60, 0.6));
+        border: 2px solid #0066ff;
+        padding: 25px;
+        text-align: center;
+        transition: all 0.3s;
+        cursor: pointer;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .server-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(0, 200, 255, 0.1), transparent);
+        transition: 0.5s;
+    }
+    
+    .server-card:hover::before {
+        left: 100%;
+    }
+    
+    .server-card:hover {
+        border-color: #00ccff;
+        box-shadow: 0 10px 30px rgba(0, 150, 255, 0.6);
+        transform: translateY(-8px);
+    }
+    
+    .server-icon {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        border: 3px solid #0066ff;
+        margin-bottom: 15px;
+    }
+    
+    .server-name {
+        font-family: 'Orbitron', sans-serif;
+        font-size: 20px;
+        color: #00ccff;
+        margin-bottom: 10px;
+    }
+    
+    .server-id {
+        font-size: 12px;
+        color: #6688aa;
+        margin-bottom: 15px;
+    }
+    
+    .manage-btn {
+        padding: 10px 25px;
+        background: linear-gradient(135deg, #0066ff, #0033ff);
+        border: 2px solid #0066ff;
+        color: white;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s;
+        text-decoration: none;
+        display: inline-block;
+        font-family: 'Orbitron', sans-serif;
+    }
+    
+    .manage-btn:hover {
+        background: linear-gradient(135deg, #00ccff, #0066ff);
+        box-shadow: 0 0 15px rgba(0, 200, 255, 0.6);
+    }
+    
+    .no-servers {
+        text-align: center;
+        padding: 60px 20px;
+        color: #6688aa;
+        font-size: 18px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<h1 class="page-title">⚙️ Meus Servidores</h1>
+<p style="color: #6688aa; margin-bottom: 30px;">Selecione um servidor para gerenciar o sistema de XP</p>
+
+{% if guilds %}
+<div class="servers-grid">
+    {% for guild in guilds %}
+    <div class="server-card">
+        {% if guild.icon %}
+        <img src="https://cdn.discordapp.com/icons/{{ guild.id }}/{{ guild.icon }}.png" class="server-icon" alt="{{ guild.name }}">
+        {% else %}
+        <div class="server-icon" style="background: linear-gradient(135deg, #0066ff, #00ccff); display: flex; align-items: center; justify-content: center; font-size: 40px; color: white;">
+            {{ guild.name[0] }}
+        </div>
+        {% endif %}
+        
+        <div class="server-name">{{ guild.name }}</div>
+        <div class="server-id">ID: {{ guild.id }}</div>
+        
+        <a href="/dashboard/{{ guild.id }}" class="manage-btn">
+            🎮 Gerenciar
+        </a>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="no-servers">
+    <h2>😢 Nenhum servidor encontrado</h2>
+    <p>Você precisa ser administrador de um servidor para usar este painel.</p>
+</div>
+{% endif %}
+{% endblock %}

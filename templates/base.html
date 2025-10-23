@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Sistema de XP{% endblock %}</title>
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    
+    <!-- CSS -->
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #000000 0%, #001a33 50%, #000000 100%);
+            background-size: 400% 400%;
+            animation: gradientFlow 15s ease infinite;
+            color: #ffffff;
+            min-height: 100vh;
+        }
+        
+        @keyframes gradientFlow {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        /* Navbar */
+        .navbar {
+            background: linear-gradient(135deg, rgba(0, 50, 100, 0.8), rgba(0, 20, 50, 0.8));
+            backdrop-filter: blur(10px);
+            border-bottom: 2px solid #0066ff;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 20px rgba(0, 100, 255, 0.3);
+        }
+        
+        .navbar-brand {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 24px;
+            font-weight: 900;
+            color: #00ccff;
+            text-shadow: 0 0 10px rgba(0, 200, 255, 0.5);
+            text-decoration: none;
+        }
+        
+        .navbar-user {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 2px solid #0066ff;
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            border: 2px solid #0066ff;
+            background: linear-gradient(135deg, #0066ff, #0033ff);
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-block;
+            font-family: 'Orbitron', sans-serif;
+        }
+        
+        .btn:hover {
+            background: linear-gradient(135deg, #0033ff, #0000cc);
+            box-shadow: 0 0 20px rgba(0, 100, 255, 0.6);
+            transform: translateY(-2px);
+        }
+        
+        .btn-danger {
+            background: linear-gradient(135deg, #cc0000, #990000);
+            border-color: #cc0000;
+        }
+        
+        .btn-danger:hover {
+            background: linear-gradient(135deg, #990000, #660000);
+        }
+        
+        /* Cards */
+        .card {
+            background: linear-gradient(135deg, rgba(0, 0, 0, 0.7), rgba(0, 20, 50, 0.5));
+            backdrop-filter: blur(10px);
+            border: 2px solid #0066ff;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 16px rgba(0, 100, 255, 0.3);
+            transition: all 0.3s;
+        }
+        
+        .card:hover {
+            border-color: #00ccff;
+            box-shadow: 0 8px 24px rgba(0, 150, 255, 0.5);
+            transform: translateY(-4px);
+        }
+        
+        .card-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 20px;
+            color: #00ccff;
+            margin-bottom: 15px;
+            text-shadow: 0 0 8px rgba(0, 200, 255, 0.4);
+        }
+        
+        /* Forms */
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #66aaff;
+        }
+        
+        .form-input, .form-select, .form-textarea {
+            width: 100%;
+            padding: 12px;
+            background: rgba(0, 0, 0, 0.5);
+            border: 2px solid #0066ff;
+            color: #00ccff;
+            font-family: 'Inter', sans-serif;
+            transition: all 0.3s;
+        }
+        
+        .form-input:focus, .form-select:focus, .form-textarea:focus {
+            outline: none;
+            border-color: #00ccff;
+            box-shadow: 0 0 10px rgba(0, 200, 255, 0.4);
+        }
+        
+        .toggle {
+            position: relative;
+            width: 60px;
+            height: 30px;
+        }
+        
+        .toggle input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: #333;
+            transition: 0.4s;
+            border-radius: 30px;
+            border: 2px solid #0066ff;
+        }
+        
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 22px;
+            width: 22px;
+            left: 2px;
+            bottom: 2px;
+            background: #0066ff;
+            transition: 0.4s;
+            border-radius: 50%;
+        }
+        
+        .toggle input:checked + .toggle-slider {
+            background: #0066ff;
+        }
+        
+        .toggle input:checked + .toggle-slider:before {
+            transform: translateX(30px);
+            background: #00ccff;
+        }
+        
+        /* Responsivo */
+        @media (max-width: 768px) {
+            .navbar {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .container {
+                padding: 10px;
+            }
+        }
+        
+        {% block extra_css %}{% endblock %}
+    </style>
+</head>
+<body>
+    {% if user %}
+    <nav class="navbar">
+        <a href="/" class="navbar-brand">⭐ XP System</a>
+        <div class="navbar-user">
+            <img src="https://cdn.discordapp.com/avatars/{{ user.id }}/{{ user.avatar }}.png" class="user-avatar" alt="Avatar">
+            <span>{{ user.username }}</span>
+            <a href="/logout" class="btn btn-danger">Sair</a>
+        </div>
+    </nav>
+    {% endif %}
+    
+    <div class="container">
+        {% block content %}{% endblock %}
+    </div>
+    
+    <script>
+        {% block extra_js %}{% endblock %}
+    </script>
+</body>
+</html>

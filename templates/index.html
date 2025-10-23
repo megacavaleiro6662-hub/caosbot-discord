@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+
+{% block title %}Sistema de XP - Login{% endblock %}
+
+{% block extra_css %}
+<style>
+    .login-container {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+    }
+    
+    .login-card {
+        max-width: 500px;
+        text-align: center;
+        background: linear-gradient(135deg, rgba(0, 0, 0, 0.9), rgba(0, 20, 50, 0.9));
+        border: 3px solid #0066ff;
+        padding: 50px;
+        box-shadow: 0 10px 40px rgba(0, 100, 255, 0.5);
+    }
+    
+    .login-title {
+        font-family: 'Orbitron', sans-serif;
+        font-size: 48px;
+        color: #00ccff;
+        text-shadow: 0 0 20px rgba(0, 200, 255, 0.6);
+        margin-bottom: 20px;
+    }
+    
+    .login-subtitle {
+        font-size: 18px;
+        color: #66aaff;
+        margin-bottom: 40px;
+    }
+    
+    .login-btn {
+        padding: 15px 40px;
+        font-size: 18px;
+        background: linear-gradient(135deg, #5865F2, #4752C4);
+        border: none;
+        color: white;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.3s;
+        text-decoration: none;
+        display: inline-block;
+        font-family: 'Orbitron', sans-serif;
+    }
+    
+    .login-btn:hover {
+        background: linear-gradient(135deg, #4752C4, #3C45A5);
+        box-shadow: 0 0 30px rgba(88, 101, 242, 0.8);
+        transform: scale(1.05);
+    }
+    
+    .features {
+        margin-top: 50px;
+        text-align: left;
+    }
+    
+    .feature-item {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        margin-bottom: 15px;
+        color: #66aaff;
+    }
+    
+    .feature-icon {
+        font-size: 24px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="login-container">
+    <div class="login-card">
+        <h1 class="login-title">⭐ XP System</h1>
+        <p class="login-subtitle">Sistema completo de níveis e recompensas para seu servidor Discord</p>
+        
+        <a href="{{ oauth_url }}" class="login-btn">
+            🔐 Login com Discord
+        </a>
+        
+        <div class="features">
+            <div class="feature-item">
+                <span class="feature-icon">✨</span>
+                <span>Sistema de XP automático por mensagens</span>
+            </div>
+            <div class="feature-item">
+                <span class="feature-icon">🎨</span>
+                <span>Rank cards personalizáveis</span>
+            </div>
+            <div class="feature-item">
+                <span class="feature-icon">🏆</span>
+                <span>8 níveis com cargos e recompensas</span>
+            </div>
+            <div class="feature-item">
+                <span class="feature-icon">⚙️</span>
+                <span>Dashboard completo de configuração</span>
+            </div>
+            <div class="feature-item">
+                <span class="feature-icon">📊</span>
+                <span>Estatísticas e leaderboards</span>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
