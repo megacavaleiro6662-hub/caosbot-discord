@@ -6663,41 +6663,182 @@ async def on_member_ban(guild, user):
 
 @bot.command(name='oi')
 async def oi_command(ctx):
-    """Teste do Pillow - Gera imagem"""
+    """Teste do Pillow - Imagem LINDA com gradientes e detalhes"""
     try:
         from PIL import Image, ImageDraw, ImageFont
         import io
+        import aiohttp
         
-        # Criar imagem 400x200
-        img = Image.new('RGB', (400, 200), color=(26, 26, 46))
+        # Canvas 800x400
+        width, height = 800, 400
+        img = Image.new('RGB', (width, height), color=(10, 10, 25))
         draw = ImageDraw.Draw(img)
         
-        # Tentar carregar fonte
+        # FUNDO: Gradiente azul diagonal
+        for y in range(height):
+            for x in range(width):
+                # Gradiente diagonal escuro -> azul
+                r = int(10 + (x / width) * 20)
+                g = int(10 + (y / height) * 40 + (x / width) * 30)
+                b = int(25 + (x / width) * 70 + (y / height) * 60)
+                img.putpixel((x, y), (r, g, b))
+        
+        # Efeito de círculos azuis (decoração)
+        for i in range(8):
+            x = (i * 120) % width
+            y = (i * 70) % height
+            radius = 80 - (i * 5)
+            draw.ellipse([x - radius, y - radius, x + radius, y + radius], 
+                        outline=(0, 100 + i*10, 255 - i*20), width=2)
+        
+        # Retângulo principal com sombra
+        box_x, box_y = 50, 100
+        box_w, box_h = 700, 250
+        
+        # Sombra (offset)
+        draw.rectangle([box_x + 8, box_y + 8, box_x + box_w + 8, box_y + box_h + 8], 
+                      fill=(0, 0, 0, 100))
+        
+        # Fundo do box com gradiente
+        for i in range(box_h):
+            color_r = 15 + int(i / box_h * 20)
+            color_g = 20 + int(i / box_h * 40)
+            color_b = 50 + int(i / box_h * 30)
+            draw.rectangle([box_x, box_y + i, box_x + box_w, box_y + i + 1], 
+                          fill=(color_r, color_g, color_b))
+        
+        # Borda dupla azul brilhante
+        draw.rectangle([box_x, box_y, box_x + box_w, box_y + box_h], 
+                      outline=(0, 150, 255), width=4)
+        draw.rectangle([box_x + 6, box_y + 6, box_x + box_w - 6, box_y + box_h - 6], 
+                      outline=(100, 200, 255), width=2)
+        
+        # Linhas decorativas horizontais
+        for i in range(3):
+            y_line = box_y + 30 + (i * 70)
+            draw.line([box_x + 20, y_line, box_x + 200, y_line], 
+                     fill=(0, 180, 255), width=2)
+        
+        # Baixar avatar do usuário
         try:
-            font_big = ImageFont.truetype('arial.ttf', 40)
-            font_small = ImageFont.truetype('arial.ttf', 20)
+            async with aiohttp.ClientSession() as session:
+                async with session.get(str(ctx.author.display_avatar.url)) as resp:
+                    if resp.status == 200:
+                        avatar_data = await resp.read()
+                        avatar = Image.open(io.BytesIO(avatar_data))
+                        avatar = avatar.resize((120, 120))
+                        
+                        # Fazer avatar circular
+                        mask = Image.new('L', (120, 120), 0)
+                        mask_draw = ImageDraw.Draw(mask)
+                        mask_draw.ellipse([0, 0, 120, 120], fill=255)
+                        
+                        # Colar avatar
+                        img.paste(avatar, (box_x + 30, box_y + 65), mask)
+                        
+                        # Borda azul no avatar
+                        draw.ellipse([box_x + 27, box_y + 62, box_x + 153, box_y + 188], 
+                                    outline=(0, 200, 255), width=4)
         except:
-            font_big = ImageFont.load_default()
+            # Círculo azul se não conseguir avatar
+            draw.ellipse([box_x + 30, box_y + 65, box_x + 150, box_y + 185], 
+                        fill=(0, 100, 200), outline=(0, 200, 255), width=4)
+        
+        # Fontes
+        try:
+            font_title = ImageFont.truetype('/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf', 48)
+            font_user = ImageFont.truetype('/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf', 32)
+            font_small = ImageFont.truetype('/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf', 20)
+        except:
+            font_title = ImageFont.load_default()
+            font_user = ImageFont.load_default()
             font_small = ImageFont.load_default()
         
-        # Desenhar retângulo azul
-        draw.rectangle([20, 20, 380, 180], outline=(0, 102, 255), width=3)
+        # Textos com sombra
+        text_x = box_x + 200
         
-        # Texto
-        draw.text((200, 60), '👋 Olá!', font=font_big, fill=(255, 255, 255), anchor='mm')
-        draw.text((200, 120), f'Teste Pillow - {ctx.author.name}', font=font_small, fill=(150, 150, 150), anchor='mm')
+        # Título com sombra
+        draw.text((text_x + 2, box_y + 62), '👋 Olá!', font=font_title, fill=(0, 0, 0))
+        draw.text((text_x, box_y + 60), '👋 Olá!', font=font_title, fill=(100, 200, 255))
         
-        # Salvar em buffer
+        # Nome do usuário
+        username = ctx.author.name if len(ctx.author.name) <= 20 else ctx.author.name[:17] + '...'
+        draw.text((text_x + 2, box_y + 122), username, font=font_user, fill=(0, 0, 0))
+        draw.text((text_x, box_y + 120), username, font=font_user, fill=(255, 255, 255))
+        
+        # Subtítulo
+        draw.text((text_x + 2, box_y + 162), '✨ Pillow funcionando perfeitamente!', font=font_small, fill=(0, 0, 0))
+        draw.text((text_x, box_y + 160), '✨ Pillow funcionando perfeitamente!', font=font_small, fill=(150, 220, 255))
+        
+        # Barra de progresso decorativa
+        bar_x = box_x + 200
+        bar_y = box_y + 200
+        bar_w = 480
+        bar_h = 30
+        
+        # Fundo da barra
+        draw.rectangle([bar_x, bar_y, bar_x + bar_w, bar_y + bar_h], 
+                      fill=(20, 20, 40), outline=(0, 100, 200), width=2)
+        
+        # Gradiente na barra
+        progress = int(bar_w * 0.75)
+        for i in range(progress):
+            color_val = int(100 + (i / progress) * 155)
+            draw.rectangle([bar_x + i, bar_y + 2, bar_x + i + 1, bar_y + bar_h - 2], 
+                          fill=(0, color_val, 255))
+        
+        # Texto na barra
+        draw.text((bar_x + bar_w // 2, bar_y + bar_h // 2), '🎨 Sistema de XP ativo!', 
+                 font=font_small, fill=(255, 255, 255), anchor='mm')
+        
+        # Estrelas decorativas
+        stars = [(100, 50), (700, 70), (650, 350), (120, 370), (400, 30)]
+        for star_x, star_y in stars:
+            draw.text((star_x, star_y), '✨', font=font_title, fill=(255, 255, 100))
+        
+        # Baixar figurinha do Robito (feliz)
+        try:
+            robito_url = 'https://i.imgur.com/9iZq7RH.png'  # Robito feliz
+            async with aiohttp.ClientSession() as session:
+                async with session.get(robito_url) as resp:
+                    if resp.status == 200:
+                        robito_data = await resp.read()
+                        robito = Image.open(io.BytesIO(robito_data))
+                        robito = robito.resize((100, 100))
+                        
+                        # Colar Robito no canto
+                        img.paste(robito, (width - 130, height - 130), robito if robito.mode == 'RGBA' else None)
+        except:
+            # Emoji alternativo
+            draw.text((width - 100, height - 100), '🤖', font=font_title, fill=(0, 200, 255))
+        
+        # Salvar
         buffer = io.BytesIO()
         img.save(buffer, format='PNG')
         buffer.seek(0)
         
-        # Enviar
-        file = discord.File(buffer, filename='teste_pillow.png')
-        await ctx.reply('✅ **Pillow funcionando!** Imagem gerada:', file=file)
+        file = discord.File(buffer, filename='pillow_perfeito.png')
+        
+        embed = discord.Embed(
+            title='🎨 Pillow Funcionando Perfeitamente!',
+            description='✅ Imagem gerada com gradientes, sombras, avatar circular e detalhes azuis!\n\n'
+                       '**Recursos usados:**\n'
+                       '• Gradiente de fundo diagonal\n'
+                       '• Círculos decorativos\n'
+                       '• Sombras e bordas duplas\n'
+                       '• Avatar circular do usuário\n'
+                       '• Barra de progresso com gradiente\n'
+                       '• Textos com sombra\n'
+                       '• Estrelas e detalhes azuis\n\n'
+                       '🚀 **Sistema de XP com rank cards vai funcionar perfeitamente!**',
+            color=0x00ccff
+        )
+        embed.set_footer(text='Pillow • PIL • Render.com')
+        
+        await ctx.reply(embed=embed, file=file)
         
     except Exception as e:
-        await ctx.reply(f'❌ Erro ao gerar imagem com Pillow: {e}')
+        await ctx.reply(f'❌ Erro ao gerar imagem: {e}\n```{type(e).__name__}```')
 
 @bot.command(name='comoesta')
 async def comoesta_command(ctx, usuario: discord.Member = None):
