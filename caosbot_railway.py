@@ -5112,7 +5112,7 @@ def send_ticket_panel():
                     description=description,
                     color=int(color, 16) if isinstance(color, str) else color
                 )
-                embed.set_footer(text='Sistema de Tickets • Caos Hub')
+                embed.set_footer(text='Sistema de Tickets • Gilipe Server')
                 
                 # Usar o sistema de BOTÃO com TicketView
                 view = TicketView()
@@ -5742,7 +5742,7 @@ async def create_ticket_channel_complete(interaction, category_name, category_em
         embed.add_field(name="📄 Assunto", value=f"```\n{assunto}\n```", inline=False)
         embed.add_field(name="📝 Descrição Detalhada", value=f"```\n{descricao}\n```", inline=False)
         embed.add_field(name="ℹ️ Informações Adicionais", value=f"```\n{info_adicional}\n```", inline=False)
-        embed.set_footer(text=f"Sistema de Tickets • Caos Hub • Hoje às {discord.utils.utcnow().strftime('%I:%M %p')}")
+        embed.set_footer(text=f"Sistema de Tickets • Gilipe Server • Hoje às {discord.utils.utcnow().strftime('%I:%M %p')}")
         
         # Enviar mensagem no canal do ticket
         await ticket_channel.send(f"{member.mention}", embed=embed, view=TicketManageView(ticket_channel))
@@ -5876,7 +5876,7 @@ async def on_member_join(member):
                     )
                     embed.add_field(name="👤 Usuário", value=f"{member.mention}\nID: `{member.id}`", inline=True)
                     embed.add_field(name="🔍 Motivo", value=suspicion_reason, inline=True)
-                    embed.set_footer(text="Sistema Anti-Raid • Caos Hub")
+                    embed.set_footer(text="Sistema Anti-Raid • Gilipe Server")
                     await log_channel.send(embed=embed)
                 
                 return  # Para o processamento
@@ -6145,7 +6145,7 @@ async def on_message(message):
                         value="Entre em um canal de música para usar o bot!",
                         inline=True
                     )
-                    embed.set_footer(text="Sistema de Bloqueio • Caos Hub")
+                    embed.set_footer(text="Sistema de Bloqueio • Gilipe Server")
                     warning = await message.channel.send(embed=embed)
                     await asyncio.sleep(10)
                     await warning.delete()
@@ -6219,7 +6219,7 @@ async def on_message(message):
             value=f"**Máximo permitido:** 1 menção por mensagem\n**Você mencionou:** {', '.join(mencoes)}",
             inline=False
         )
-        embed.set_footer(text="Sistema de Moderação • Caos Hub")
+        embed.set_footer(text="Sistema de Moderação • Gilipe Server")
         await message.channel.send(embed=embed, delete_after=10)
         return
     
@@ -6391,7 +6391,7 @@ async def oi_command(ctx):
         description=resposta,
         color=0x00ff88
     )
-    embed.set_footer(text="Comandos de Conversa • Caos Hub")
+    embed.set_footer(text="Comandos de Conversa • Gilipe Server")
     await ctx.reply(embed=embed)
 
 @bot.command(name='comoesta')
@@ -6408,7 +6408,7 @@ async def comoesta_command(ctx, usuario: discord.Member = None):
             description='Como você está hoje?',
             color=0x87ceeb
         )
-    embed.set_footer(text="Comandos de Conversa • Caos Hub")
+    embed.set_footer(text="Comandos de Conversa • Gilipe Server")
     await ctx.reply(embed=embed)
 
 @bot.command(name='conversa')
@@ -6432,7 +6432,7 @@ async def conversa_command(ctx):
         description=topico,
         color=0xff69b4
     )
-    embed.set_footer(text="Comandos de Conversa • Caos Hub")
+    embed.set_footer(text="Comandos de Conversa • Gilipe Server")
     await ctx.reply(embed=embed)
 
 @bot.command(name='clima')
@@ -6451,7 +6451,7 @@ async def clima_command(ctx):
         description=pergunta,
         color=0xffd700
     )
-    embed.set_footer(text="Comandos de Conversa • Caos Hub")
+    embed.set_footer(text="Comandos de Conversa • Gilipe Server")
     await ctx.reply(embed=embed)
 
 @bot.command(name='tchau')
@@ -6470,7 +6470,7 @@ async def tchau_command(ctx):
         description=despedida,
         color=0xff6b6b
     )
-    embed.set_footer(text="Comandos de Conversa • Caos Hub")
+    embed.set_footer(text="Comandos de Conversa • Gilipe Server")
     await ctx.reply(embed=embed)
 
 # ========================================
@@ -7603,7 +7603,7 @@ async def setup_welcome_command(ctx):
         value="Para ativar tickets, use `.ticket config` primeiro, depois `.toggletickets`",
         inline=False
     )
-    embed.set_footer(text="Sistema de Eventos • Caos Hub")
+    embed.set_footer(text="Sistema de Eventos • Gilipe Server")
     
     await ctx.reply(embed=embed)
 
@@ -7630,7 +7630,7 @@ async def toggle_welcome_command(ctx):
         description=f"Sistema de boas-vindas: {status}",
         color=0x00ff88 if welcome_config['welcome_enabled'] else 0xff6b6b
     )
-    embed.set_footer(text="Sistema de Eventos • Caos Hub")
+    embed.set_footer(text="Sistema de Eventos • Gilipe Server")
     
     await ctx.reply(embed=embed)
 
@@ -7657,7 +7657,7 @@ async def toggle_goodbye_command(ctx):
         description=f"Sistema de saída/ban: {status}",
         color=0x00ff88 if welcome_config['goodbye_enabled'] else 0xff6b6b
     )
-    embed.set_footer(text="Sistema de Eventos • Caos Hub")
+    embed.set_footer(text="Sistema de Eventos • Gilipe Server")
     
     await ctx.reply(embed=embed)
 
@@ -7684,7 +7684,7 @@ async def toggle_autorole_command(ctx):
         description=f"Sistema de autorole: {status}",
         color=0x00ff88 if welcome_config['autorole_enabled'] else 0xff6b6b
     )
-    embed.set_footer(text="Sistema de Eventos • Caos Hub")
+    embed.set_footer(text="Sistema de Eventos • Gilipe Server")
     
     await ctx.reply(embed=embed)
 
@@ -7748,7 +7748,7 @@ async def blocked_calls_command(ctx):
         inline=False
     )
     
-    embed.set_footer(text="Sistema de Bloqueio • Caos Hub")
+    embed.set_footer(text="Sistema de Bloqueio • Gilipe Server")
     
     await ctx.reply(embed=embed)
 
@@ -7776,7 +7776,7 @@ async def config_bloqueio(ctx):
         value="\n".join(f"`{c}`" for c in PROTECTED_VOICE_CHANNELS),
         inline=False
     )
-    embed.set_footer(text="Sistema de Bloqueio • Caos Hub")
+    embed.set_footer(text="Sistema de Bloqueio • Gilipe Server")
     await ctx.send(embed=embed)
 
 @config_bloqueio.error
@@ -8146,7 +8146,7 @@ async def update_status_panel(guild):
             inline=False
         )
         
-        embed.set_footer(text="Sistema de Eventos • Caos Hub")
+        embed.set_footer(text="Sistema de Eventos • Gilipe Server")
         
         # Atualizar ou criar mensagem
         if welcome_config['status_message_id']:
@@ -8391,7 +8391,7 @@ async def activate_raid_mode(guild):
             value=f"{RAID_CONFIG['lockdown_duration'] // 60} minutos (automático)",
             inline=False
         )
-        embed.set_footer(text="Sistema Anti-Raid • Caos Hub")
+        embed.set_footer(text="Sistema Anti-Raid • Gilipe Server")
         await log_channel.send("@everyone", embed=embed)
     
     # Aplicar slowmode em canais de texto
@@ -8427,7 +8427,7 @@ async def deactivate_raid_mode(guild):
             color=0x00FF00,
             timestamp=discord.utils.utcnow()
         )
-        embed.set_footer(text="Sistema Anti-Raid • Caos Hub")
+        embed.set_footer(text="Sistema Anti-Raid • Gilipe Server")
         await log_channel.send(embed=embed)
     
     # Remover slowmode
@@ -8632,7 +8632,7 @@ async def send_adv_log(ctx, usuario, motivo, warning_count, action_type="adverte
         
         # Footer personalizado
         embed.set_footer(
-            text=f"Sistema de Moderação • Caos Hub | Log ID: {ctx.message.id}",
+            text=f"Sistema de Moderação • Gilipe Server | Log ID: {ctx.message.id}",
             icon_url=ctx.guild.icon.url if ctx.guild.icon else None
         )
         
@@ -8751,7 +8751,7 @@ async def adv_command(ctx, usuario: discord.Member = None, *, motivo=None):
                     value=ctx.author.mention,
                     inline=True
                 )
-                embed.set_footer(text="Sistema de Advertências • Caos Hub")
+                embed.set_footer(text="Sistema de Advertências • Gilipe Server")
                 await ctx.reply(embed=embed)
                 
                 # Enviar log detalhado
@@ -8800,7 +8800,7 @@ async def adv_command(ctx, usuario: discord.Member = None, *, motivo=None):
                     value=ctx.author.mention,
                     inline=True
                 )
-                embed.set_footer(text="Sistema de Advertências • Caos Hub")
+                embed.set_footer(text="Sistema de Advertências • Gilipe Server")
                 await ctx.reply(embed=embed)
                 
                 # Enviar log detalhado
@@ -8853,7 +8853,7 @@ async def adv_command(ctx, usuario: discord.Member = None, *, motivo=None):
                 value=ctx.author.mention,
                 inline=True
             )
-            embed.set_footer(text="Sistema de Advertências • Caos Hub")
+            embed.set_footer(text="Sistema de Advertências • Gilipe Server")
             await ctx.reply(embed=embed)
             
             # Enviar log detalhado
@@ -8901,7 +8901,7 @@ async def radv_command(ctx, usuario: discord.Member = None):
             value=usuario.mention,
             inline=True
         )
-        embed.set_footer(text="Sistema de Advertências • Caos Hub")
+        embed.set_footer(text="Sistema de Advertências • Gilipe Server")
         await ctx.reply(embed=embed)
         return
     
@@ -8963,7 +8963,7 @@ async def radv_command(ctx, usuario: discord.Member = None):
             value=ctx.author.mention,
             inline=True
         )
-        embed.set_footer(text="Sistema de Advertências • Caos Hub")
+        embed.set_footer(text="Sistema de Advertências • Gilipe Server")
         await ctx.reply(embed=embed)
         
         # Enviar log de remoção
@@ -9019,7 +9019,7 @@ async def radvall_command(ctx, usuario: discord.Member = None):
             value=usuario.mention,
             inline=True
         )
-        embed.set_footer(text="Sistema de Advertências • Caos Hub")
+        embed.set_footer(text="Sistema de Advertências • Gilipe Server")
         await ctx.reply(embed=embed)
         return
     
@@ -9066,7 +9066,7 @@ async def radvall_command(ctx, usuario: discord.Member = None):
             value=ctx.author.mention,
             inline=True
         )
-        embed.set_footer(text="Sistema de Advertências • Caos Hub")
+        embed.set_footer(text="Sistema de Advertências • Gilipe Server")
         await ctx.reply(embed=embed)
         
         # Enviar log de remoção total
@@ -9162,7 +9162,7 @@ async def mute_command(ctx, usuario: discord.Member = None, *, args=None):
             value="`.mute @João spam` (indefinido)\n`.mute @João flood 1h` (1 hora)\n`.mute @João toxic 30m` (30 minutos)\n`.mute @João raid 2d` (2 dias)",
             inline=False
         )
-        embed.set_footer(text="Sistema de Moderação • Caos Hub")
+        embed.set_footer(text="Sistema de Moderação • Gilipe Server")
         await ctx.reply(embed=embed)
         return
     
@@ -9259,7 +9259,7 @@ async def mute_command(ctx, usuario: discord.Member = None, *, args=None):
             value=duracao_texto,
             inline=True
         )
-        embed.set_footer(text="Sistema de Moderação • Caos Hub")
+        embed.set_footer(text="Sistema de Moderação • Gilipe Server")
         await ctx.reply(embed=embed)
         
     except discord.Forbidden:
@@ -9336,7 +9336,7 @@ async def unmute_command(ctx, usuario: discord.Member = None):
             value=ctx.author.mention,
             inline=True
         )
-        embed.set_footer(text="Sistema de Moderação • Caos Hub")
+        embed.set_footer(text="Sistema de Moderação • Gilipe Server")
         await ctx.reply(embed=embed)
         
     except discord.Forbidden:
@@ -9404,7 +9404,7 @@ async def kick_command(ctx, usuario: discord.Member = None, *, motivo="Sem motiv
             value=ctx.author.mention,
             inline=True
         )
-        embed.set_footer(text="Sistema de Moderação • Caos Hub")
+        embed.set_footer(text="Sistema de Moderação • Gilipe Server")
         embed.set_thumbnail(url=ROBITO_IMAGES['nervoso'])
         await ctx.reply(embed=embed)
         
@@ -9510,7 +9510,7 @@ async def ban_command(ctx, usuario: discord.Member = None, *, motivo="Sem motivo
             value=ctx.author.mention,
             inline=True
         )
-        embed.set_footer(text="Sistema de Moderação • Caos Hub")
+        embed.set_footer(text="Sistema de Moderação • Gilipe Server")
         embed.set_thumbnail(url=ROBITO_IMAGES['bravo'])
         await ctx.reply(embed=embed)
         
@@ -9547,7 +9547,7 @@ async def timeout_command(ctx, usuario: discord.Member = None, *, args=None):
             value="`.timeout @João spam 10m` (10 minutos)\n`.timeout @João flood 1h` (1 hora)\n`.timeout @João toxic 30m` (30 minutos)\n`.timeout @João raid 2d` (2 dias)",
             inline=False
         )
-        embed.set_footer(text="Sistema de Moderação • Caos Hub")
+        embed.set_footer(text="Sistema de Moderação • Gilipe Server")
         await ctx.reply(embed=embed)
         return
     
@@ -9643,7 +9643,7 @@ async def timeout_command(ctx, usuario: discord.Member = None, *, args=None):
             value=f"<t:{int(timeout_duration.timestamp())}:F>",
             inline=False
         )
-        embed.set_footer(text="Sistema de Moderação • Caos Hub")
+        embed.set_footer(text="Sistema de Moderação • Gilipe Server")
         await ctx.reply(embed=embed)
         
     except discord.Forbidden:
@@ -9690,7 +9690,7 @@ async def untimeout_command(ctx, usuario: discord.Member = None):
             value=ctx.author.mention,
             inline=True
         )
-        embed.set_footer(text="Sistema de Moderação • Caos Hub")
+        embed.set_footer(text="Sistema de Moderação • Gilipe Server")
         await ctx.reply(embed=embed)
         
         await usuario.timeout(None, reason=f"Timeout removido por {ctx.author}")
@@ -9726,7 +9726,7 @@ async def clear_command(ctx, quantidade: int = 10):
             value=f"**Canal:** {ctx.channel.mention}\n**Moderador:** {ctx.author.mention}",
             inline=False
         )
-        embed.set_footer(text="Sistema de Moderação • Caos Hub")
+        embed.set_footer(text="Sistema de Moderação • Gilipe Server")
         
         msg = await ctx.send(embed=embed)
         await asyncio.sleep(3)
@@ -9756,7 +9756,7 @@ async def restart_command(ctx):
         value="Isso vai resolver problemas de:\n• Mensagens duplicadas\n• Comandos travados\n• Cache corrompido",
         inline=False
     )
-    embed.set_footer(text="Sistema de Manutenção • Caos Hub")
+    embed.set_footer(text="Sistema de Manutenção • Gilipe Server")
     await ctx.reply(embed=embed)
     
     await asyncio.sleep(3)
@@ -9874,7 +9874,7 @@ async def scan_server(ctx):
               f"**Membros:** {guild.member_count}",
         inline=False
     )
-    embed.set_footer(text="Sistema de Scan • Caos Hub")
+    embed.set_footer(text="Sistema de Scan • Gilipe Server")
     
     await ctx.reply(embed=embed, file=discord.File(filename))
     
@@ -9924,7 +9924,7 @@ async def auto_moderate_spam(message, violation_type, details=""):
             value=f"**Violação:** {violation_type}\n**Detalhes:** {details}\n**Próximo:** Segundo aviso (4 mensagens)",
             inline=False
         )
-        embed.set_footer(text="Sistema Anti-Spam • Caos Hub")
+        embed.set_footer(text="Sistema Anti-Spam • Gilipe Server")
         await message.channel.send(embed=embed)
         # NÃO RESETAR - continua contando
         
@@ -9940,7 +9940,7 @@ async def auto_moderate_spam(message, violation_type, details=""):
             value=f"**Violação:** {violation_type}\n**Detalhes:** {details}\n**Próximo:** ADV 1 + Timeout (3 mensagens)",
             inline=False
         )
-        embed.set_footer(text="Sistema Anti-Spam • Caos Hub")
+        embed.set_footer(text="Sistema Anti-Spam • Gilipe Server")
         await message.channel.send(embed=embed)
         # NÃO RESETAR - continua contando
         
@@ -10001,7 +10001,7 @@ async def auto_moderate_spam(message, violation_type, details=""):
                 value=f"**Violação:** {violation_type}\n**Detalhes:** {details}",
                 inline=False
             )
-            embed.set_footer(text="Sistema Anti-Spam • Caos Hub")
+            embed.set_footer(text="Sistema Anti-Spam • Gilipe Server")
             await message.channel.send(embed=embed)
             
             await message.author.ban(reason="ADV 3 - Spam repetido")
@@ -10060,7 +10060,7 @@ async def auto_moderate_spam(message, violation_type, details=""):
                 value=f"<t:{int((discord.utils.utcnow() + timedelta(minutes=1)).timestamp())}:F>",
                 inline=False
             )
-        embed.set_footer(text="Sistema Anti-Spam • Caos Hub")
+        embed.set_footer(text="Sistema Anti-Spam • Gilipe Server")
         await message.channel.send(embed=embed)
         
         # RESETAR contador de spam (volta pro zero - precisa fazer 5→9→12 de novo)
@@ -10134,7 +10134,7 @@ async def help_command(ctx, categoria=None):
             inline=False
         )
         
-        embed.set_footer(text="💡 Dica: Use .help [categoria] para ver comandos específicos • Caos Hub")
+        embed.set_footer(text="💡 Dica: Use .help [categoria] para ver comandos específicos • Gilipe Server")
         embed.set_thumbnail(url=ROBITO_IMAGES['acenando'])
         
         await ctx.reply(embed=embed)
@@ -10527,7 +10527,7 @@ async def piada_command(ctx):
         description=piada,
         color=0xffff00
     )
-    embed.set_footer(text="Comandos de Diversão • Caos Hub")
+    embed.set_footer(text="Comandos de Diversão • Gilipe Server")
     await ctx.reply(embed=embed)
 
 @bot.command(name='escolher')
@@ -10544,7 +10544,7 @@ async def escolher_command(ctx, *, opcoes):
             value="`.escolher pizza, hambúrguer, sushi`",
             inline=False
         )
-        embed.set_footer(text="Comandos de Diversão • Caos Hub")
+        embed.set_footer(text="Comandos de Diversão • Gilipe Server")
         await ctx.reply(embed=embed)
         return
     
@@ -10560,13 +10560,13 @@ async def escolher_command(ctx, *, opcoes):
         value=", ".join(lista_opcoes),
         inline=False
     )
-    embed.set_footer(text="Comandos de Diversão • Caos Hub")
+    embed.set_footer(text="Comandos de Diversão • Gilipe Server")
     await ctx.reply(embed=embed)
 
 @bot.command(name='embedhub')
 @commands.has_permissions(administrator=True)
 async def embedhub_command(ctx):
-    """Envia o embed FODA do Caos Hub com TODOS os GIFs"""
+    """Envia o embed FODA do Gilipe Server com TODOS os GIFs"""
     
     # EMBED ÚNICO COM TUDO
     embed = discord.Embed(
@@ -10707,7 +10707,7 @@ async def on_message_old(message):
             value=f"**Máximo permitido:** 1 menção por mensagem\n**Você mencionou:** {', '.join(mencoes)}",
             inline=False
         )
-        embed.set_footer(text="Sistema de Moderação • Caos Hub")
+        embed.set_footer(text="Sistema de Moderação • Gilipe Server")
         await message.channel.send(embed=embed, delete_after=10)
         return  # Para o processamento
     
@@ -11128,7 +11128,7 @@ class PlaceholderOldTicketConfigView_REMOVED(discord.ui.View):
             value="Use `.ticket setup` para criar a mensagem de abertura!",
             inline=False
         )
-        embed.set_footer(text="Sistema de Tickets • Caos Hub")
+        embed.set_footer(text="Sistema de Tickets • Gilipe Server")
         
         await interaction.response.send_message(embed=embed)
         self.stop()
@@ -11270,7 +11270,7 @@ class TicketCategoryView(discord.ui.View):
                 color=0xFFA500,  # LARANJA
                 timestamp=discord.utils.utcnow()
             )
-            expired_embed.set_footer(text="Sistema de Tickets • Caos Hub • Tempo esgotado")
+            expired_embed.set_footer(text="Sistema de Tickets • Gilipe Server • Tempo esgotado")
             
             # Editar mensagem original com embed laranja
             if self.message:
@@ -11458,7 +11458,7 @@ class TicketModal(discord.ui.Modal, title="🎫 Informações do Ticket"):
             )
             
             embed.set_footer(
-                text="Sistema de Tickets • Caos Hub",
+                text="Sistema de Tickets • Gilipe Server",
                 icon_url=interaction.guild.icon.url if interaction.guild.icon else None
             )
             
@@ -11508,7 +11508,7 @@ class TicketModal(discord.ui.Modal, title="🎫 Informações do Ticket"):
             )
             
             success_embed.set_footer(
-                text="Sistema de Tickets • Caos Hub",
+                text="Sistema de Tickets • Gilipe Server",
                 icon_url=interaction.guild.icon.url if interaction.guild.icon else None
             )
             
@@ -11612,7 +11612,7 @@ class TicketView(discord.ui.View):
             )
             
             ticket_embed.set_footer(
-                text="Sistema de Tickets • Caos Hub",
+                text="Sistema de Tickets • Gilipe Server",
                 icon_url=interaction.guild.icon.url if interaction.guild.icon else None
             )
             ticket_embed.set_thumbnail(url=ROBITO_IMAGES['facepalm'])
@@ -11686,7 +11686,7 @@ class TicketView(discord.ui.View):
                             color=0xFFA500,  # LARANJA
                             timestamp=discord.utils.utcnow()
                         )
-                        expired_embed.set_footer(text="Sistema de Tickets • Caos Hub • Tempo esgotado")
+                        expired_embed.set_footer(text="Sistema de Tickets • Gilipe Server • Tempo esgotado")
                         await msg.edit(embed=expired_embed, view=None)
                         panel_view.stop()
                         break
@@ -11775,7 +11775,7 @@ class CloseTicketView(discord.ui.View):
                         inline=True
                     )
                 
-                log_embed.set_footer(text="Sistema de Tickets • Caos Hub")
+                log_embed.set_footer(text="Sistema de Tickets • Gilipe Server")
                 
                 # Enviar embed
                 await log_channel.send(embed=log_embed)
@@ -11922,7 +11922,7 @@ async def update_nicks_command_DISABLED(ctx):
         value="• `Administrador` → `[ADM]`\n• `Staff` → `[STF]`\n• `Moderador` → `[MOD]`\n• `Sub Moderador` → `[SBM]`",
         inline=False
     )
-    embed_result.set_footer(text="Sistema de Nicknames Automáticos • Caos Hub")
+    embed_result.set_footer(text="Sistema de Nicknames Automáticos • Gilipe Server")
     
     await msg.edit(embed=embed_result)
 
@@ -11959,7 +11959,7 @@ async def add_role_new(ctx, cargo: discord.Role = None, usuario: discord.Member 
             color=0xffaa00
         )
         embed.add_field(name="📋 Informação", value=f"**Usuário:** {usuario.mention}\n**Cargo:** {cargo.mention}", inline=False)
-        embed.set_footer(text="Sistema de Cargos • Caos Hub")
+        embed.set_footer(text="Sistema de Cargos • Gilipe Server")
         await ctx.reply(embed=embed)
         return
     
@@ -12011,7 +12011,7 @@ async def add_role_new(ctx, cargo: discord.Role = None, usuario: discord.Member 
         details += nickname_msg
 
         embed.add_field(name="📋 Detalhes", value=details, inline=False)
-        embed.set_footer(text="Sistema de Cargos • Caos Hub")
+        embed.set_footer(text="Sistema de Cargos • Gilipe Server")
         await ctx.reply(embed=embed)
         
     except Exception as e:
@@ -12026,7 +12026,7 @@ async def addrole_error(ctx, error):
             description="Você precisa ser **Sub Moderador** ou ter permissões de moderação para usar este comando!",
             color=0xff0000
         )
-        embed.set_footer(text="Sistema de Cargos • Caos Hub")
+        embed.set_footer(text="Sistema de Cargos • Gilipe Server")
         await ctx.reply(embed=embed)
     elif isinstance(error, commands.RoleNotFound):
         embed = discord.Embed(
@@ -12034,7 +12034,7 @@ async def addrole_error(ctx, error):
             description="Cargo não encontrado! Certifique-se de mencionar um cargo válido.",
             color=0xff0000
         )
-        embed.set_footer(text="Sistema de Cargos • Caos Hub")
+        embed.set_footer(text="Sistema de Cargos • Gilipe Server")
         await ctx.reply(embed=embed)
     elif isinstance(error, commands.MemberNotFound):
         embed = discord.Embed(
@@ -12042,7 +12042,7 @@ async def addrole_error(ctx, error):
             description="Usuário não encontrado! Certifique-se de mencionar um usuário válido.",
             color=0xff0000
         )
-        embed.set_footer(text="Sistema de Cargos • Caos Hub")
+        embed.set_footer(text="Sistema de Cargos • Gilipe Server")
         await ctx.reply(embed=embed)
     elif isinstance(error, commands.RoleNotFound):
         embed = discord.Embed(
@@ -12050,7 +12050,7 @@ async def addrole_error(ctx, error):
             description="Cargo não encontrado! Certifique-se de mencionar um cargo válido.",
             color=0xff0000
         )
-        embed.set_footer(text="Sistema de Cargos • Caos Hub")
+        embed.set_footer(text="Sistema de Cargos • Gilipe Server")
         await ctx.reply(embed=embed)
     elif isinstance(error, commands.MemberNotFound):
         embed = discord.Embed(
@@ -12058,7 +12058,7 @@ async def addrole_error(ctx, error):
             description="Usuário não encontrado! Certifique-se de mencionar um usuário válido.",
             color=0xff0000
         )
-        embed.set_footer(text="Sistema de Cargos • Caos Hub")
+        embed.set_footer(text="Sistema de Cargos • Gilipe Server")
         await ctx.reply(embed=embed)
 
 # ========================================
@@ -12134,7 +12134,7 @@ async def remove_role_new(ctx, cargo: discord.Role = None, usuario: discord.Memb
 
         details = f"**Usuário:** {usuario.mention}\n**Cargo:** {cargo.mention}\n**Moderador:** {ctx.author.mention}{nickname_msg}"
         embed.add_field(name="📋 Detalhes", value=details, inline=False)
-        embed.set_footer(text="Sistema de Cargos • Caos Hub")
+        embed.set_footer(text="Sistema de Cargos • Gilipe Server")
         await ctx.reply(embed=embed)
         
     except Exception as e:
@@ -12149,7 +12149,7 @@ async def removerole_error(ctx, error):
             description="Você precisa ser **Sub Moderador** ou ter permissões de moderação para usar este comando!",
             color=0xff0000
         )
-        embed.set_footer(text="Sistema de Cargos • Caos Hub")
+        embed.set_footer(text="Sistema de Cargos • Gilipe Server")
         await ctx.reply(embed=embed)
     elif isinstance(error, commands.RoleNotFound):
         embed = discord.Embed(
@@ -12157,7 +12157,7 @@ async def removerole_error(ctx, error):
             description="Cargo não encontrado! Certifique-se de mencionar um cargo válido.",
             color=0xff0000
         )
-        embed.set_footer(text="Sistema de Cargos • Caos Hub")
+        embed.set_footer(text="Sistema de Cargos • Gilipe Server")
         await ctx.reply(embed=embed)
     elif isinstance(error, commands.MemberNotFound):
         embed = discord.Embed(
@@ -12165,7 +12165,7 @@ async def removerole_error(ctx, error):
             description="Usuário não encontrado! Certifique-se de mencionar um usuário válido.",
             color=0xff0000
         )
-        embed.set_footer(text="Sistema de Cargos • Caos Hub")
+        embed.set_footer(text="Sistema de Cargos • Gilipe Server")
         await ctx.reply(embed=embed)
 
 # ========================================
