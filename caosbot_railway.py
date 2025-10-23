@@ -29,7 +29,6 @@ try:
     from xp_database import xp_db
     from xp_system import setup_xp_system, XPSystem
     from xp_commands import XPCommands
-    import xp_dashboard
     XP_SYSTEM_ENABLED = True
     print('✅ Sistema de XP importado com sucesso!')
 except Exception as e:
@@ -12081,6 +12080,303 @@ async def start_music_bot(name, token):
         import traceback
         traceback.print_exc()
 
+# ==================== ROTAS DO SISTEMA DE XP ====================
+
+@app.route('/dashboard/xp/<guild_id>')
+@login_required
+def xp_dashboard_page(guild_id):
+    """Dashboard de XP integrado no Flask"""
+    if not XP_SYSTEM_ENABLED:
+        return "Sistema de XP não disponível", 500
+    
+    try:
+        # Carregar configurações
+        config = xp_db.get_config(int(guild_id))
+        levels = xp_db.get_levels(int(guild_id))
+        leaderboard = xp_db.get_leaderboard(int(guild_id), limit=10)
+        total_users = len(xp_db.get_leaderboard(int(guild_id), limit=999999))
+        boost = xp_db.get_active_boost(int(guild_id))
+        
+        # Renderizar template (vou usar o que já criei)
+        return render_template('xp_dashboard_full.html',
+                             guild_id=guild_id,
+                             config=config,
+                             levels=levels,
+                             leaderboard=leaderboard,
+                             total_users=total_users,
+                             boost=boost)
+    except Exception as e:
+        return f"Erro: {e}", 500
+
+# APIs REST para XP
+@app.route('/api/xp/<guild_id>/config/general', methods=['POST'])
+@login_required
+def update_xp_general(guild_id):
+    """Atualiza configuração geral do XP"""
+    if not XP_SYSTEM_ENABLED:
+        return jsonify({"success": False, "message": "XP system disabled"}), 500
+    
+    data = request.json
+    xp_db.update_config(
+        int(guild_id),
+        is_enabled=data.get('is_enabled', True),
+        cooldown=data.get('cooldown', 30),
+        min_xp=data.get('min_xp', 5),
+        max_xp=data.get('max_xp', 15),
+        log_channel=data.get('log_channel')
+    )
+    return jsonify({"success": True, "message": "Configuração atualizada!"})
+
+@app.route('/api/xp/<guild_id>/config/rewards', methods=['POST'])
+@login_required
+def update_xp_rewards(guild_id):
+    """Atualiza configuração de recompensas"""
+    if not XP_SYSTEM_ENABLED:
+        return jsonify({"success": False}), 500
+    
+    data = request.json
+    xp_db.update_config(
+        int(guild_id),
+        reward_mode=data.get('reward_mode', 'stack'),
+        bonus_on_levelup=data.get('bonus_on_levelup', 0)
+    )
+    return jsonify({"success": True, "message": "Recompensas atualizadas!"})
+
+@app.route('/api/xp/<guild_id>/config/blocks', methods=['POST'])
+@login_required
+def update_xp_blocks(guild_id):
+    """Atualiza bloqueios"""
+    if not XP_SYSTEM_ENABLED:
+        return jsonify({"success": False}), 500
+    
+    data = request.json
+    blocked_roles = ','.join(map(str, data.get('blocked_roles', [])))
+    blocked_channels = ','.join(map(str, data.get('blocked_channels', [])))
+    
+    xp_db.update_config(
+        int(guild_id),
+        blocked_roles=blocked_roles,
+        blocked_channels=blocked_channels
+    )
+    return jsonify({"success": True, "message": "Bloqueios atualizados!"})
+
+@app.route('/api/xp/<guild_id>/config/messages', methods=['POST'])
+@login_required
+def update_xp_messages(guild_id):
+    """Atualiza mensagens"""
+    if not XP_SYSTEM_ENABLED:
+        return jsonify({"success": False}), 500
+    
+    data = request.json
+    xp_db.update_config(
+        int(guild_id),
+        announce_mode=data.get('announce_mode', 'none'),
+        announce_channel=data.get('announce_channel'),
+        announce_type=data.get('announce_type', 'text'),
+        message_template=data.get('message_template', '🎉 {user_mention} subiu para o nível **{level}**!')
+    )
+    return jsonify({"success": True, "message": "Mensagens atualizadas!"})
+
+@app.route('/api/xp/<guild_id>/config/rankcard', methods=['POST'])
+@login_required
+def update_xp_rankcard(guild_id):
+    """Atualiza rank card"""
+    if not XP_SYSTEM_ENABLED:
+        return jsonify({"success": False}), 500
+    
+    data = request.json
+    xp_db.update_config(
+        int(guild_id),
+        image_bg_color=data.get('image_bg_color', '#1a1a2e'),
+        image_bg_url=data.get('image_bg_url'),
+        image_bar_color=data.get('image_bar_color', '#0066ff'),
+        image_text_color=data.get('image_text_color', '#ffffff')
+    )
+    return jsonify({"success": True, "message": "Rank card atualizada!"})
+
+@app.route('/api/xp/<guild_id>/levels', methods=['GET', 'POST'])
+@login_required
+def manage_xp_levels(guild_id):
+    """Gerenciar níveis"""
+    if not XP_SYSTEM_ENABLED:
+        return jsonify({"success": False}), 500
+    
+    if request.method == 'GET':
+        levels = xp_db.get_levels(int(guild_id))
+        return jsonify({"levels": [
+            {
+                "id": level.id,
+                "level": level.level,
+                "role_id": level.role_id,
+                "role_name": level.role_name,
+                "required_xp": level.required_xp,
+                "multiplier": level.multiplier
+            }
+            for level in levels
+        ]})
+    
+    # POST - criar nível
+    from xp_database import XPLevel
+    data = request.json
+    session_db = xp_db.get_session()
+    try:
+        new_level = XPLevel(
+            guild_id=int(guild_id),
+            level=data['level'],
+            role_id=int(data['role_id']),
+            role_name=data['role_name'],
+            required_xp=data['required_xp'],
+            multiplier=data.get('multiplier', 1.0)
+        )
+        session_db.add(new_level)
+        session_db.commit()
+        return jsonify({"success": True, "message": "Nível criado!"})
+    finally:
+        session_db.close()
+
+@app.route('/api/xp/<guild_id>/levels/<int:level_id>', methods=['PUT', 'DELETE'])
+@login_required
+def manage_xp_level(guild_id, level_id):
+    """Editar/deletar nível"""
+    if not XP_SYSTEM_ENABLED:
+        return jsonify({"success": False}), 500
+    
+    from xp_database import XPLevel
+    session_db = xp_db.get_session()
+    try:
+        level = session_db.query(XPLevel).filter_by(id=level_id, guild_id=int(guild_id)).first()
+        
+        if request.method == 'DELETE':
+            if level:
+                session_db.delete(level)
+                session_db.commit()
+                return jsonify({"success": True, "message": "Nível deletado!"})
+        
+        if request.method == 'PUT':
+            data = request.json
+            if level:
+                level.role_name = data.get('role_name', level.role_name)
+                level.required_xp = data.get('required_xp', level.required_xp)
+                level.multiplier = data.get('multiplier', level.multiplier)
+                session_db.commit()
+                return jsonify({"success": True, "message": "Nível atualizado!"})
+        
+        return jsonify({"success": False, "message": "Nível não encontrado"})
+    finally:
+        session_db.close()
+
+@app.route('/api/xp/<guild_id>/reset', methods=['POST'])
+@login_required
+def reset_xp_all(guild_id):
+    """Reset XP de todos"""
+    if not XP_SYSTEM_ENABLED:
+        return jsonify({"success": False}), 500
+    
+    xp_db.reset_guild_xp(int(guild_id))
+    return jsonify({"success": True, "message": "XP de todos foi resetado!"})
+
+@app.route('/api/xp/<guild_id>/boost', methods=['POST'])
+@login_required
+def create_xp_boost(guild_id):
+    """Cria boost temporário"""
+    if not XP_SYSTEM_ENABLED:
+        return jsonify({"success": False}), 500
+    
+    data = request.json
+    boost = xp_db.create_boost(
+        int(guild_id),
+        data.get('multiplier', 2.0),
+        data.get('duration', 60)
+    )
+    
+    return jsonify({
+        "success": True,
+        "message": "Boost ativado!",
+        "boost": {
+            "multiplier": boost.multiplier,
+            "expires_at": boost.expires_at.isoformat()
+        }
+    })
+
+@app.route('/api/xp/<guild_id>/stats')
+@login_required
+def get_xp_stats(guild_id):
+    """Estatísticas"""
+    if not XP_SYSTEM_ENABLED:
+        return jsonify({"success": False}), 500
+    
+    from xp_database import XPUser, XPLog
+    session_db = xp_db.get_session()
+    try:
+        users = session_db.query(XPUser).filter_by(guild_id=int(guild_id)).all()
+        
+        total_xp = sum(user.xp for user in users)
+        total_messages = sum(user.total_messages for user in users)
+        avg_xp = total_xp / len(users) if users else 0
+        
+        logs = session_db.query(XPLog).filter_by(guild_id=int(guild_id)).order_by(XPLog.timestamp.desc()).limit(50).all()
+        
+        return jsonify({
+            "total_users": len(users),
+            "total_xp": total_xp,
+            "total_messages": total_messages,
+            "avg_xp": round(avg_xp, 2),
+            "recent_logs": [
+                {
+                    "user_id": log.user_id,
+                    "xp_gained": log.xp_gained,
+                    "timestamp": log.timestamp.isoformat()
+                }
+                for log in logs
+            ]
+        })
+    finally:
+        session_db.close()
+
+@app.route('/api/xp/<guild_id>/export/csv')
+@login_required
+def export_xp_csv(guild_id):
+    """Exporta CSV"""
+    if not XP_SYSTEM_ENABLED:
+        return "XP system disabled", 500
+    
+    leaderboard = xp_db.get_leaderboard(int(guild_id), limit=999999)
+    
+    import csv
+    import io
+    output = io.StringIO()
+    writer = csv.writer(output)
+    
+    writer.writerow(['Posição', 'User ID', 'XP', 'Level', 'Total de Mensagens'])
+    
+    for idx, user in enumerate(leaderboard, start=1):
+        writer.writerow([idx, user.user_id, user.xp, user.level, user.total_messages])
+    
+    output.seek(0)
+    return Response(
+        output.getvalue(),
+        mimetype='text/csv',
+        headers={'Content-Disposition': f'attachment; filename=ranking_{guild_id}.csv'}
+    )
+
+@app.route('/leaderboard/<guild_id>')
+def public_leaderboard(guild_id):
+    """Leaderboard público"""
+    if not XP_SYSTEM_ENABLED:
+        return "XP system disabled", 500
+    
+    config = xp_db.get_config(int(guild_id))
+    if not config.is_enabled:
+        return "XP system disabled for this guild", 404
+    
+    leaderboard = xp_db.get_leaderboard(int(guild_id), limit=100)
+    levels = xp_db.get_levels(int(guild_id))
+    
+    return render_template('leaderboard_public.html',
+                         guild_id=guild_id,
+                         leaderboard=leaderboard,
+                         levels=levels)
+
 def run_discord_bot():
     """Executa o bot Discord em thread separada"""
     import time
@@ -12129,26 +12425,10 @@ if __name__ == '__main__':
     bot_thread = threading.Thread(target=run_discord_bot, daemon=True)
     bot_thread.start()
     
-    # ==================== DASHBOARD XP (FastAPI) ====================
-    if XP_SYSTEM_ENABLED:
-        try:
-            print('\n🌐 Iniciando Dashboard XP (FastAPI) na porta 8000...')
-            def run_xp_dashboard():
-                import uvicorn
-                uvicorn.run(
-                    xp_dashboard.app,
-                    host="0.0.0.0",
-                    port=8000,
-                    log_level="warning"
-                )
-            
-            dashboard_thread = threading.Thread(target=run_xp_dashboard, daemon=True)
-            dashboard_thread.start()
-            print('✅ Dashboard XP rodando em http://localhost:8000')
-        except Exception as e:
-            print(f'❌ Erro ao iniciar dashboard XP: {e}')
-    
     # Flask como PROCESSO PRINCIPAL (BLOCKING - CRITICO!)
+    # Dashboard XP agora está INTEGRADO no Flask (mesma porta 10000)
+    if XP_SYSTEM_ENABLED:
+        print('✅ Dashboard XP integrado no Flask!')
     print('Iniciando Flask como processo principal...')
     print('Flask vai rodar em modo blocking (correto para Web Service)')
     
