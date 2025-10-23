@@ -2731,57 +2731,44 @@ Você ganhou **{{{{prize}}}}**!
         <div id="xp-system-page" class="page">
             <div class="section">
                 <h2 class="section-title">💎 Sistema de XP e Níveis</h2>
+                <p style="color: #9ca3af; margin-bottom: 30px;">Incentive usuários a conversarem dando experiência ao mandarem mensagens no seu servidor. Você pode recompensar usuários com prêmios e vantagens ao subirem de nível.</p>
                 
-                <!-- Sub-tabs do XP -->
-                <div style="display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap;">
-                    <button class="btn btn-primary" style="padding: 8px 16px; font-size: 13px;" onclick="showXPTab('geral')">⚙️ Geral</button>
-                    <button class="btn" style="padding: 8px 16px; font-size: 13px; background: rgba(255,255,255,0.1);" onclick="showXPTab('niveis')">🎯 Níveis</button>
-                    <button class="btn" style="padding: 8px 16px; font-size: 13px; background: rgba(255,255,255,0.1);" onclick="showXPTab('recompensas')">🎁 Recompensas</button>
-                    <button class="btn" style="padding: 8px 16px; font-size: 13px; background: rgba(255,255,255,0.1);" onclick="showXPTab('bloqueios')">🚫 Bloqueios</button>
-                    <button class="btn" style="padding: 8px 16px; font-size: 13px; background: rgba(255,255,255,0.1);" onclick="showXPTab('mensagens')">💬 Mensagens</button>
-                    <button class="btn" style="padding: 8px 16px; font-size: 13px; background: rgba(255,255,255,0.1);" onclick="showXPTab('rankcard')">🎨 Rank Card</button>
-                    <button class="btn" style="padding: 8px 16px; font-size: 13px; background: rgba(255,255,255,0.1);" onclick="showXPTab('estatisticas')">📊 Estatísticas</button>
-                    <button class="btn" style="padding: 8px 16px; font-size: 13px; background: rgba(255,255,255,0.1);" onclick="showXPTab('boosts')">🚀 Boosts</button>
+                <!-- Seção 1: Ativar Sistema -->
+                <div class="card" style="margin-bottom: 20px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <h3 style="margin: 0; margin-bottom: 5px;">⚡ Ativar Sistema de XP</h3>
+                            <p style="color: #9ca3af; margin: 0; font-size: 13px;">Quando desativado, ninguém ganhará experiência no servidor</p>
+                        </div>
+                        <div class="toggle">
+                            <input type="checkbox" id="xp-system-enabled">
+                            <label for="xp-system-enabled"></label>
+                        </div>
+                    </div>
                 </div>
                 
-                <!-- Aba Geral -->
-                <div id="xp-tab-geral" class="xp-tab" style="display: block;">
-                    <div class="card">
-                        <h3 style="margin-bottom: 20px;">⚙️ Configuração Geral</h3>
-                        
-                        <div class="form-group">
-                            <label class="form-label">⚡ Ativar Sistema de XP</label>
-                            <div class="toggle">
-                                <input type="checkbox" id="xp-system-enabled" checked>
-                                <label for="xp-system-enabled"></label>
+                <!-- Seção 2: XP Geral -->
+                <div class="card" style="margin-bottom: 20px;">
+                    <h3 style="margin-bottom: 15px;">⚙️ Configurações de XP</h3>
+                    
+                    <div class="form-group">
+                        <label class="form-label">💎 XP por Mensagem</label>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                            <div>
+                                <input type="number" id="xp-min" class="form-input" value="5" min="1" max="100" placeholder="Mínimo">
+                                <small style="color: #9ca3af; font-size: 11px;">Mínimo</small>
                             </div>
-                            <small style="color: #9ca3af;">Quando desativado, ninguém ganhará XP</small>
+                            <div>
+                                <input type="number" id="xp-max" class="form-input" value="15" min="1" max="100" placeholder="Máximo">
+                                <small style="color: #9ca3af; font-size: 11px;">Máximo</small>
+                            </div>
                         </div>
-                        
-                        <div class="form-group">
-                            <label class="form-label">💎 XP Mínimo por Mensagem</label>
-                            <input type="number" id="xp-min" class="form-input" value="5" min="1" max="100">
-                        </div>
-                        
-                        <div class="form-group">
-                            <label class="form-label">💎 XP Máximo por Mensagem</label>
-                            <input type="number" id="xp-max" class="form-input" value="15" min="1" max="100">
-                        </div>
-                        
-                        <div class="form-group">
-                            <label class="form-label">⏱️ Cooldown (segundos)</label>
-                            <input type="number" id="xp-cooldown" class="form-input" value="30" min="0" max="300">
-                            <small style="color: #9ca3af;">Tempo mínimo entre mensagens para ganhar XP</small>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label class="form-label">📋 Canal de Log (ID)</label>
-                            <input type="text" id="xp-log-channel" class="form-input" placeholder="Ex: 123456789">
-                            <small style="color: #9ca3af;">Canal para logs de eventos (opcional)</small>
-                        </div>
-                        
-                        <button class="btn btn-primary" onclick="saveXPGeneral()" style="width: 100%; padding: 12px; margin-top: 10px;">💾 Salvar Configurações</button>
-                        <button class="btn btn-danger" onclick="resetAllXP()" style="width: 100%; padding: 12px; margin-top: 10px;">🗑️ Zerar XP de Todos</button>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">⏱️ Cooldown entre mensagens (segundos)</label>
+                        <input type="number" id="xp-cooldown" class="form-input" value="30" min="0" max="300">
+                        <small style="color: #9ca3af;">Tempo mínimo entre mensagens para ganhar XP (evita spam)</small>
                     </div>
                 </div>
                 
@@ -6676,22 +6663,41 @@ async def on_member_ban(guild, user):
 
 @bot.command(name='oi')
 async def oi_command(ctx):
-    saudacoes = [
-        'Oi! Como você está? 😊',
-        'Olá! Tudo bem? 👋',
-        'E aí! Beleza? 🤗',
-        'Oi oi! Como foi seu dia? ✨',
-        'Salve! Tudo certo? 🔥'
-    ]
-    resposta = random.choice(saudacoes)
-    
-    embed = discord.Embed(
-        title="👋 Olá!",
-        description=resposta,
-        color=0x00ff88
-    )
-    embed.set_footer(text="Comandos de Conversa • Gilipe Server")
-    await ctx.reply(embed=embed)
+    """Teste do Pillow - Gera imagem"""
+    try:
+        from PIL import Image, ImageDraw, ImageFont
+        import io
+        
+        # Criar imagem 400x200
+        img = Image.new('RGB', (400, 200), color=(26, 26, 46))
+        draw = ImageDraw.Draw(img)
+        
+        # Tentar carregar fonte
+        try:
+            font_big = ImageFont.truetype('arial.ttf', 40)
+            font_small = ImageFont.truetype('arial.ttf', 20)
+        except:
+            font_big = ImageFont.load_default()
+            font_small = ImageFont.load_default()
+        
+        # Desenhar retângulo azul
+        draw.rectangle([20, 20, 380, 180], outline=(0, 102, 255), width=3)
+        
+        # Texto
+        draw.text((200, 60), '👋 Olá!', font=font_big, fill=(255, 255, 255), anchor='mm')
+        draw.text((200, 120), f'Teste Pillow - {ctx.author.name}', font=font_small, fill=(150, 150, 150), anchor='mm')
+        
+        # Salvar em buffer
+        buffer = io.BytesIO()
+        img.save(buffer, format='PNG')
+        buffer.seek(0)
+        
+        # Enviar
+        file = discord.File(buffer, filename='teste_pillow.png')
+        await ctx.reply('✅ **Pillow funcionando!** Imagem gerada:', file=file)
+        
+    except Exception as e:
+        await ctx.reply(f'❌ Erro ao gerar imagem com Pillow: {e}')
 
 @bot.command(name='comoesta')
 async def comoesta_command(ctx, usuario: discord.Member = None):
