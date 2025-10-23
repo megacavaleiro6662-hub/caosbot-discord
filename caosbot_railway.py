@@ -2832,52 +2832,65 @@ Você ganhou **{{{{prize}}}}**!
                 <div id="xp-tab-bloqueios" class="xp-tab" style="display: none;">
                     <div class="card">
                         <h3 style="margin-bottom: 20px;">🚫 Cargos e Canais Bloqueados</h3>
-                        <p style="color: #9ca3af; margin-bottom: 20px;">Usuários com estes cargos ou mensagens nestes canais NÃO ganharão XP</p>
+                        <p style="color: #9ca3af; margin-bottom: 20px;">Cargos que estão na lista não irão ganhar experiência. Perfeito para usuários que acham engraçado "spammar" e "floodar" seu servidor com mensagens aleatórias toscas só para ganhar mais experiência.</p>
                         
                         <div class="form-group">
-                            <label class="form-label">🎭 IDs dos Cargos Bloqueados (separados por vírgula)</label>
-                            <textarea id="xp-blocked-roles" class="form-textarea" placeholder="Ex: 123456789, 987654321"></textarea>
+                            <label class="form-label">🎭 Cargos Bloqueados</label>
+                            <select id="xp-role-selector" class="form-select" style="margin-bottom: 10px;">
+                                <option value="">Selecione um cargo...</option>
+                            </select>
+                            <button class="btn" onclick="addBlockedRole()" style="width: 100%; margin-bottom: 15px;">➕ Adicionar Cargo</button>
+                            <div id="xp-blocked-roles-list" style="display: flex; flex-direction: column; gap: 8px; max-height: 200px; overflow-y: auto;">
+                                <!-- Cargos bloqueados aparecerão aqui -->
+                            </div>
                         </div>
+                        
+                        <hr style="border: 1px solid rgba(255,255,255,0.1); margin: 20px 0;">
                         
                         <div class="form-group">
-                            <label class="form-label">📢 IDs dos Canais Bloqueados (separados por vírgula)</label>
-                            <textarea id="xp-blocked-channels" class="form-textarea" placeholder="Ex: 123456789, 987654321"></textarea>
+                            <label class="form-label">📢 Canais Bloqueados</label>
+                            <p style="color: #9ca3af; font-size: 13px; margin-bottom: 10px;">Canais que estão nesta lista não irão dar experiência para usuários que falarem neles. Útil para bloquear canais criados para "spam" ou "flood", assim evitando que usuários ganhem experiência no seu servidor apenas mandando mensagens aleatórias toscas só para ganhar mais experiência.</p>
+                            <select id="xp-channel-selector" class="form-select" style="margin-bottom: 10px;">
+                                <option value="">Selecione um canal...</option>
+                            </select>
+                            <button class="btn" onclick="addBlockedChannel()" style="width: 100%; margin-bottom: 15px;">➕ Adicionar Canal</button>
+                            <div id="xp-blocked-channels-list" style="display: flex; flex-direction: column; gap: 8px; max-height: 200px; overflow-y: auto;">
+                                <!-- Canais bloqueados aparecerão aqui -->
+                            </div>
                         </div>
-                        
-                        <button class="btn btn-primary" onclick="saveXPBlocks()" style="width: 100%; padding: 12px; margin-top: 10px;">💾 Salvar Bloqueios</button>
                     </div>
                 </div>
                 
                 <!-- Aba Mensagens -->
                 <div id="xp-tab-mensagens" class="xp-tab" style="display: none;">
                     <div class="card">
-                        <h3 style="margin-bottom: 20px;">💬 Mensagens de Level Up</h3>
+                        <h3 style="margin-bottom: 20px;">💬 Mensagens ao Subir de Nível</h3>
+                        <p style="color: #9ca3af; margin-bottom: 20px;">Você pode configurar para que eu notifique usuários quando eles subirem de nível.</p>
                         
                         <div class="form-group">
-                            <label class="form-label">📍 Onde Anunciar</label>
+                            <label class="form-label">📍 Anúncio ao Subir de Nível</label>
+                            <p style="color: #9ca3af; font-size: 13px; margin-bottom: 10px;">Você pode ativar várias opções ao mesmo tempo!</p>
                             <div style="display: flex; flex-direction: column; gap: 10px;">
-                                <label style="display: flex; align-items: center; gap: 8px;">
-                                    <input type="radio" name="xp-announce-mode" value="none">
-                                    🚫 Nenhum
-                                </label>
-                                <label style="display: flex; align-items: center; gap: 8px;">
-                                    <input type="radio" name="xp-announce-mode" value="current" checked>
+                                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                                    <input type="checkbox" id="xp-announce-current">
                                     💬 Canal atual
                                 </label>
-                                <label style="display: flex; align-items: center; gap: 8px;">
-                                    <input type="radio" name="xp-announce-mode" value="dm">
-                                    📧 Mensagem direta (DM)
+                                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                                    <input type="checkbox" id="xp-announce-dm">
+                                    📧 Mensagem direta
                                 </label>
-                                <label style="display: flex; align-items: center; gap: 8px;">
-                                    <input type="radio" name="xp-announce-mode" value="custom">
+                                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                                    <input type="checkbox" id="xp-announce-custom">
                                     📍 Canal personalizado
                                 </label>
                             </div>
                         </div>
                         
-                        <div class="form-group" id="xp-custom-channel-group" style="display: none;">
-                            <label class="form-label">ID do Canal Personalizado</label>
-                            <input type="text" id="xp-announce-channel" class="form-input" placeholder="Ex: 123456789">
+                        <div class="form-group" id="xp-custom-channel-group" style="display: none; margin-top: 15px;">
+                            <label class="form-label">Canal Personalizado</label>
+                            <select id="xp-announce-channel" class="form-select">
+                                <option value="">Selecione um canal...</option>
+                            </select>
                         </div>
                         
                         <div class="form-group">
