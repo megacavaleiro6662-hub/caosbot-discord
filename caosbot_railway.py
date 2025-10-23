@@ -7592,6 +7592,8 @@ async def ship_command(ctx, user1: discord.Member = None, user2: discord.Member 
         from PIL import Image, ImageDraw, ImageFont, ImageFilter
         import io
         import aiohttp
+        import math
+        import random
         
         # Baixar avatares e robito
         async with aiohttp.ClientSession() as session:
@@ -7617,8 +7619,6 @@ async def ship_command(ctx, user1: discord.Member = None, user2: discord.Member 
         # GRADIENTE 2D ULTRA DETALHADO
         bg = Image.new('RGB', (width, height), (20, 20, 40))
         draw_bg = ImageDraw.Draw(bg)
-        
-        import math
         
         # Gradiente radial + vertical + horizontal COMBINADOS
         center_x, center_y = width // 2, height // 2
@@ -7663,7 +7663,6 @@ async def ship_command(ctx, user1: discord.Member = None, user2: discord.Member 
         img.paste(bg, (0, 0))
         
         # PADRÃO DE ESTRELAS/PONTOS DECORATIVOS
-        import random
         random.seed(user1.id + user2.id)  # Consistente
         for _ in range(150):
             px = random.randint(0, width)
