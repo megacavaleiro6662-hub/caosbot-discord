@@ -179,7 +179,7 @@ async def dashboard(request: Request, guild_id: str, session: dict = Depends(req
     # Boost ativo?
     boost = xp_db.get_active_boost(int(guild_id))
     
-    return templates.TemplateResponse("dashboard.html", {
+    return templates.TemplateResponse("xp_dashboard_full.html", {
         "request": request,
         "guild_id": guild_id,
         "config": config,
