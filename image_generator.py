@@ -1,15 +1,14 @@
 """
 🎨 GERADOR DE IMAGENS COM PILLOW
-Cria rank cards e leaderboards em tempo real
+Rank cards e leaderboards em tempo real
 """
 
 import discord
-from PIL import Image, ImageDraw, ImageFont, ImageFilter
+from PIL import Image, ImageDraw, ImageFont
 import aiohttp
 import io
 from xp_database import xp_db
 
-# Config
 CARD_WIDTH = 800
 CARD_HEIGHT = 250
 AVATAR_SIZE = 150
@@ -48,26 +47,25 @@ def make_circular(img, size):
     return output
 
 
-async def generate_rank_card(member, guild_id, config):
+async def generate_rank_card(member, guild_id):
     """Gera rank card do usuário"""
     
     try:
-        # Dados do usuário
         user_data = xp_db.get_user_xp(guild_id, member.id)
         if not user_data:
             return None
         
-        # Criar canvas
-        img = Image.new('RGB', (CARD_WIDTH, CARD_HEIGHT), hex_to_rgb(config.image_bg_color))
+        # Canvas
+        img = Image.new('RGB', (CARD_WIDTH, CARD_HEIGHT), (26, 26, 46))
         draw = ImageDraw.Draw(img)
         
-        # Baixar avatar
+        # Avatar
         avatar = await download_avatar(member.display_avatar.url)
         if avatar:
             avatar = make_circular(avatar, AVATAR_SIZE)
             img.paste(avatar, (30, (CARD_HEIGHT - AVATAR_SIZE) // 2), avatar)
         
-        # Fontes (fallback para padrão se não existir)
+        # Fontes
         try:
             font_large = ImageFont.truetype('arial.ttf', 48)
             font_medium = ImageFont.truetype('arial.ttf', 32)
@@ -77,20 +75,19 @@ async def generate_rank_card(member, guild_id, config):
             font_medium = ImageFont.load_default()
             font_small = ImageFont.load_default()
         
-        # Nome do usuário
-        text_color = hex_to_rgb(config.image_text_color)
+        # Nome
         username = member.name if len(member.name) <= 20 else member.name[:17] + '...'
-        draw.text((210, 40), username, font=font_large, fill=text_color)
+        draw.text((210, 40), username, font=font_large, fill=(255, 255, 255))
         
         # Nível
         levels = xp_db.get_levels(guild_id)
-        level_name = 'noob'
+        level_name = 'Sem cargo'
         for lvl in levels:
             if lvl.level == user_data.level:
                 level_name = lvl.role_name
                 break
         
-        draw.text((210, 95), f'Nível {user_data.level} • {level_name}', font=font_small, fill=text_color)
+        draw.text((210, 95), f'Nível {user_data.level} • {level_name}', font=font_small, fill=(150, 150, 150))
         
         # Barra de progresso
         bar_x = 210
@@ -101,7 +98,7 @@ async def generate_rank_card(member, guild_id, config):
         # Fundo da barra
         draw.rectangle([bar_x, bar_y, bar_x + bar_width, bar_y + bar_height], fill=(40, 40, 40))
         
-        # Calcular progresso
+        # Progresso
         next_level_xp = 999999
         current_level_xp = 0
         for lvl in sorted(levels, key=lambda x: x.level):
@@ -117,16 +114,13 @@ async def generate_rank_card(member, guild_id, config):
         # Barra preenchida
         filled_width = int(bar_width * progress)
         if filled_width > 0:
-            draw.rectangle(
-                [bar_x, bar_y, bar_x + filled_width, bar_y + bar_height],
-                fill=hex_to_rgb(config.image_bar_color)
-            )
+            draw.rectangle([bar_x, bar_y, bar_x + filled_width, bar_y + bar_height], fill=(0, 102, 255))
         
         # Texto XP
         xp_text = f'{user_data.xp:,} / {next_level_xp:,} XP'
         bbox = draw.textbbox((0, 0), xp_text, font=font_small)
         text_width = bbox[2] - bbox[0]
-        draw.text((bar_x + (bar_width - text_width) // 2, bar_y + 5), xp_text, font=font_small, fill=text_color)
+        draw.text((bar_x + (bar_width - text_width) // 2, bar_y + 5), xp_text, font=font_small, fill=(255, 255, 255))
         
         # Posição no ranking
         leaderboard = xp_db.get_leaderboard(guild_id, limit=999999)
@@ -140,9 +134,9 @@ async def generate_rank_card(member, guild_id, config):
             rank_text = f'#{rank_position}'
             bbox = draw.textbbox((0, 0), rank_text, font=font_large)
             rank_width = bbox[2] - bbox[0]
-            draw.text((CARD_WIDTH - rank_width - 40, 30), rank_text, font=font_large, fill=hex_to_rgb(config.image_bar_color))
+            draw.text((CARD_WIDTH - rank_width - 40, 30), rank_text, font=font_large, fill=(0, 102, 255))
         
-        # Salvar em buffer
+        # Salvar
         buffer = io.BytesIO()
         img.save(buffer, format='PNG')
         buffer.seek(0)
@@ -151,18 +145,15 @@ async def generate_rank_card(member, guild_id, config):
     
     except Exception as e:
         print(f'❌ Erro ao gerar rank card: {e}')
-        import traceback
-        traceback.print_exc()
         return None
 
 
-async def generate_leaderboard_image(bot, guild, top_users, config):
+async def generate_leaderboard_image(bot, guild, top_users):
     """Gera imagem do leaderboard"""
     
     try:
-        # Canvas maior
         height = 150 + (len(top_users) * 80)
-        img = Image.new('RGB', (800, height), hex_to_rgb(config.image_bg_color))
+        img = Image.new('RGB', (800, height), (26, 26, 46))
         draw = ImageDraw.Draw(img)
         
         # Fontes
@@ -176,8 +167,7 @@ async def generate_leaderboard_image(bot, guild, top_users, config):
             font_small = ImageFont.load_default()
         
         # Título
-        text_color = hex_to_rgb(config.image_text_color)
-        draw.text((30, 30), f'🏆 Top {len(top_users)} - {guild.name}', font=font_title, fill=text_color)
+        draw.text((30, 30), f'🏆 Top {len(top_users)} - {guild.name}', font=font_title, fill=(255, 255, 255))
         
         # Usuários
         y_offset = 120
@@ -195,17 +185,17 @@ async def generate_leaderboard_image(bot, guild, top_users, config):
                 
                 # Posição
                 medal = '🥇' if idx == 1 else '🥈' if idx == 2 else '🥉' if idx == 3 else f'#{idx}'
-                draw.text((110, y_offset + 5), medal, font=font_medium, fill=text_color)
+                draw.text((110, y_offset + 5), medal, font=font_medium, fill=(255, 255, 255))
                 
                 # Nome
                 username = member.name if len(member.name) <= 15 else member.name[:12] + '...'
-                draw.text((200, y_offset + 5), username, font=font_medium, fill=text_color)
+                draw.text((200, y_offset + 5), username, font=font_medium, fill=(255, 255, 255))
                 
                 # XP
-                draw.text((500, y_offset + 5), f'{user_data.xp:,} XP', font=font_medium, fill=text_color)
+                draw.text((500, y_offset + 5), f'{user_data.xp:,} XP', font=font_medium, fill=(150, 150, 150))
                 
                 # Nível
-                draw.text((650, y_offset + 5), f'Nível {user_data.level}', font=font_small, fill=text_color)
+                draw.text((650, y_offset + 5), f'Nível {user_data.level}', font=font_small, fill=(150, 150, 150))
                 
                 y_offset += 80
             except:
