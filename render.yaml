@@ -1,0 +1,29 @@
+services:
+  - type: web
+    name: caosbot-discord
+    env: python
+    region: oregon
+    plan: free
+    buildCommand: |
+      apt-get update
+      apt-get install -y libjpeg-dev zlib1g-dev libpng-dev libpq-dev build-essential
+      pip install --upgrade pip setuptools wheel
+      pip install -r requirements.txt
+    startCommand: python caosbot_railway.py
+    envVars:
+      - key: DISCORD_TOKEN
+        sync: false
+      - key: DISCORD_CLIENT_ID
+        sync: false
+      - key: DISCORD_CLIENT_SECRET
+        sync: false
+      - key: DISCORD_REDIRECT_URI
+        sync: false
+      - key: SECRET_KEY
+        sync: false
+      - key: JSONBIN_API_KEY
+        sync: false
+      - key: JSONBIN_BIN_ID
+        sync: false
+      - key: PORT
+        value: 10000
