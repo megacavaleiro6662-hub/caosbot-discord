@@ -6663,63 +6663,23 @@ async def on_member_ban(guild, user):
 
 @bot.command(name='oi')
 async def oi_command(ctx):
-    """Teste do Pillow - Imagem LINDA com gradientes e detalhes"""
+    """Teste do Pillow - GIF ANIMADO ÉPICO com raios e efeitos"""
+    await ctx.send('⚡ **Gerando GIF animado...** Isso pode demorar uns segundos! 🔥')
+    
     try:
         from PIL import Image, ImageDraw, ImageFont
         import io
         import aiohttp
+        import math
+        import random
         
-        # Canvas 800x400
+        # Dimensões
         width, height = 800, 400
-        img = Image.new('RGB', (width, height), color=(10, 10, 25))
-        draw = ImageDraw.Draw(img)
+        frames = []
+        num_frames = 20  # 20 frames para animação suave
         
-        # FUNDO: Gradiente azul diagonal
-        for y in range(height):
-            for x in range(width):
-                # Gradiente diagonal escuro -> azul
-                r = int(10 + (x / width) * 20)
-                g = int(10 + (y / height) * 40 + (x / width) * 30)
-                b = int(25 + (x / width) * 70 + (y / height) * 60)
-                img.putpixel((x, y), (r, g, b))
-        
-        # Efeito de círculos azuis (decoração)
-        for i in range(8):
-            x = (i * 120) % width
-            y = (i * 70) % height
-            radius = 80 - (i * 5)
-            draw.ellipse([x - radius, y - radius, x + radius, y + radius], 
-                        outline=(0, 100 + i*10, 255 - i*20), width=2)
-        
-        # Retângulo principal com sombra
-        box_x, box_y = 50, 100
-        box_w, box_h = 700, 250
-        
-        # Sombra (offset)
-        draw.rectangle([box_x + 8, box_y + 8, box_x + box_w + 8, box_y + box_h + 8], 
-                      fill=(0, 0, 0, 100))
-        
-        # Fundo do box com gradiente
-        for i in range(box_h):
-            color_r = 15 + int(i / box_h * 20)
-            color_g = 20 + int(i / box_h * 40)
-            color_b = 50 + int(i / box_h * 30)
-            draw.rectangle([box_x, box_y + i, box_x + box_w, box_y + i + 1], 
-                          fill=(color_r, color_g, color_b))
-        
-        # Borda dupla azul brilhante
-        draw.rectangle([box_x, box_y, box_x + box_w, box_y + box_h], 
-                      outline=(0, 150, 255), width=4)
-        draw.rectangle([box_x + 6, box_y + 6, box_x + box_w - 6, box_y + box_h - 6], 
-                      outline=(100, 200, 255), width=2)
-        
-        # Linhas decorativas horizontais
-        for i in range(3):
-            y_line = box_y + 30 + (i * 70)
-            draw.line([box_x + 20, y_line, box_x + 200, y_line], 
-                     fill=(0, 180, 255), width=2)
-        
-        # Baixar avatar do usuário
+        # Baixar avatar do usuário ANTES do loop
+        avatar = None
         try:
             async with aiohttp.ClientSession() as session:
                 async with session.get(str(ctx.author.display_avatar.url)) as resp:
@@ -6727,24 +6687,10 @@ async def oi_command(ctx):
                         avatar_data = await resp.read()
                         avatar = Image.open(io.BytesIO(avatar_data))
                         avatar = avatar.resize((120, 120))
-                        
-                        # Fazer avatar circular
-                        mask = Image.new('L', (120, 120), 0)
-                        mask_draw = ImageDraw.Draw(mask)
-                        mask_draw.ellipse([0, 0, 120, 120], fill=255)
-                        
-                        # Colar avatar
-                        img.paste(avatar, (box_x + 30, box_y + 65), mask)
-                        
-                        # Borda azul no avatar
-                        draw.ellipse([box_x + 27, box_y + 62, box_x + 153, box_y + 188], 
-                                    outline=(0, 200, 255), width=4)
         except:
-            # Círculo azul se não conseguir avatar
-            draw.ellipse([box_x + 30, box_y + 65, box_x + 150, box_y + 185], 
-                        fill=(0, 100, 200), outline=(0, 200, 255), width=4)
+            pass
         
-        # Fontes
+        # Carregar fontes
         try:
             font_title = ImageFont.truetype('/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf', 48)
             font_user = ImageFont.truetype('/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf', 32)
@@ -6754,86 +6700,198 @@ async def oi_command(ctx):
             font_user = ImageFont.load_default()
             font_small = ImageFont.load_default()
         
-        # Textos com sombra
-        text_x = box_x + 200
+        # GERAR CADA FRAME
+        for frame_num in range(num_frames):
+            img = Image.new('RGB', (width, height), color=(10, 10, 25))
+            draw = ImageDraw.Draw(img)
+            
+            # Progresso da animação (0.0 a 1.0)
+            progress = frame_num / num_frames
+            center_x, center_y = width // 2, height // 2
+            
+            # FUNDO: Gradiente azul diagonal
+            for y in range(height):
+                for x in range(width):
+                    r = int(10 + (x / width) * 20)
+                    g = int(10 + (y / height) * 40 + (x / width) * 30)
+                    b = int(25 + (x / width) * 70 + (y / height) * 60)
+                    img.putpixel((x, y), (r, g, b))
+            
+            # GLOW PULSANTE no centro
+            glow_intensity = int(40 + 20 * math.sin(progress * 2 * math.pi))
+            for y in range(height):
+                for x in range(width):
+                    dist = ((x - center_x) ** 2 + (y - center_y) ** 2) ** 0.5
+                    max_dist = (width ** 2 + height ** 2) ** 0.5
+                    glow = int((1 - dist / max_dist) * glow_intensity)
+                    r, g, b = img.getpixel((x, y))
+                    img.putpixel((x, y), (r, g + glow // 2, b + glow))
+            
+            # RAIOS ROTATIVOS (8 raios girando)
+            rotation_offset = progress * 360
+            for i in range(8):
+                angle = (i * 45 + rotation_offset) % 360
+                rad = math.radians(angle)
+                
+                # Raio grosso com fade
+                for length in range(0, max(width, height), 3):
+                    x = int(center_x + math.cos(rad) * length)
+                    y = int(center_y + math.sin(rad) * length)
+                    if 0 <= x < width and 0 <= y < height:
+                        fade = int(100 - (length / max(width, height)) * 80)
+                        r, g, b = img.getpixel((x, y))
+                        img.putpixel((x, y), (r, g + fade, b + fade))
+            
+            # CÍRCULOS PULSANTES
+            for i in range(8):
+                x = (i * 120 + 50) % width
+                y = (i * 80 + 40) % height
+                pulse = int(10 * math.sin(progress * 2 * math.pi + i))
+                radius = 60 - (i * 5) + pulse
+                
+                for offset in range(2):
+                    draw.ellipse([x - radius - offset, y - radius - offset, 
+                                 x + radius + offset, y + radius + offset], 
+                                outline=(0, 130 + i*10, 255 - i*15), width=1)
+            
+            # PARTÍCULAS FLUTUANTES
+            random.seed(42)
+            for p in range(60):
+                px = random.randint(0, width)
+                py = random.randint(0, height)
+                # Movimento vertical
+                py_animated = (py + int(frame_num * 2.5 + p * 5)) % height
+                size = random.randint(1, 3)
+                brightness = int(200 + 55 * math.sin(progress * 2 * math.pi + p / 10))
+                draw.ellipse([px - size, py_animated - size, px + size, py_animated + size], 
+                            fill=(brightness // 3, brightness // 2, brightness))
+            
+            # BOX PRINCIPAL
+            box_x, box_y = 50, 100
+            box_w, box_h = 700, 250
+            
+            # Sombra pulsante
+            shadow_offset = int(8 + 3 * math.sin(progress * 2 * math.pi))
+            draw.rectangle([box_x + shadow_offset, box_y + shadow_offset, 
+                           box_x + box_w + shadow_offset, box_y + box_h + shadow_offset], 
+                          fill=(0, 0, 0))
+            
+            # Gradiente no box
+            for i in range(box_h):
+                color_r = int(15 + (i / box_h) * 20)
+                color_g = int(20 + (i / box_h) * 40)
+                color_b = int(50 + (i / box_h) * 30)
+                draw.rectangle([box_x, box_y + i, box_x + box_w, box_y + i + 1], 
+                              fill=(color_r, color_g, color_b))
+            
+            # Borda dupla ANIMADA
+            border_brightness = int(150 + 50 * math.sin(progress * 2 * math.pi))
+            draw.rectangle([box_x, box_y, box_x + box_w, box_y + box_h], 
+                          outline=(0, border_brightness, 255), width=4)
+            draw.rectangle([box_x + 6, box_y + 6, box_x + box_w - 6, box_y + box_h - 6], 
+                          outline=(100, 200, 255), width=2)
+            
+            # Linhas decorativas animadas
+            for i in range(3):
+                y_line = box_y + 30 + (i * 70)
+                line_length = int(180 + 20 * math.sin(progress * 2 * math.pi + i))
+                draw.line([box_x + 20, y_line, box_x + 20 + line_length, y_line], 
+                         fill=(0, 180, 255), width=2)
+            
+            # Avatar circular
+            if avatar:
+                mask = Image.new('L', (120, 120), 0)
+                mask_draw = ImageDraw.Draw(mask)
+                mask_draw.ellipse([0, 0, 120, 120], fill=255)
+                img.paste(avatar, (box_x + 30, box_y + 65), mask)
+                
+                # Borda pulsante
+                border_size = int(4 + 2 * math.sin(progress * 2 * math.pi))
+                draw.ellipse([box_x + 27, box_y + 62, box_x + 153, box_y + 188], 
+                            outline=(0, 200, 255), width=border_size)
+            else:
+                draw.ellipse([box_x + 30, box_y + 65, box_x + 150, box_y + 185], 
+                            fill=(0, 100, 200), outline=(0, 200, 255), width=4)
+            
+            # Textos
+            text_x = box_x + 200
+            draw.text((text_x + 2, box_y + 62), '👋 Olá!', font=font_title, fill=(0, 0, 0))
+            draw.text((text_x, box_y + 60), '👋 Olá!', font=font_title, fill=(100, 200, 255))
+            
+            username = ctx.author.name if len(ctx.author.name) <= 20 else ctx.author.name[:17] + '...'
+            draw.text((text_x + 2, box_y + 122), username, font=font_user, fill=(0, 0, 0))
+            draw.text((text_x, box_y + 120), username, font=font_user, fill=(255, 255, 255))
+            
+            draw.text((text_x + 2, box_y + 162), '⚡ GIF ANIMADO! Raios girando!', font=font_small, fill=(0, 0, 0))
+            draw.text((text_x, box_y + 160), '⚡ GIF ANIMADO! Raios girando!', font=font_small, fill=(150, 220, 255))
+            
+            # Barra animada
+            bar_x = box_x + 200
+            bar_y = box_y + 200
+            bar_w = 480
+            bar_h = 30
+            
+            draw.rectangle([bar_x, bar_y, bar_x + bar_w, bar_y + bar_h], 
+                          fill=(20, 20, 40), outline=(0, 100, 200), width=2)
+            
+            # Progresso animado
+            bar_progress = int(bar_w * progress)
+            for i in range(bar_progress):
+                color_val = int(100 + (i / bar_w) * 155)
+                draw.rectangle([bar_x + i, bar_y + 2, bar_x + i + 1, bar_y + bar_h - 2], 
+                              fill=(0, color_val, 255))
+            
+            draw.text((bar_x + bar_w // 2, bar_y + bar_h // 2), '🎨 Sistema XP = GIF!', 
+                     font=font_small, fill=(255, 255, 255), anchor='mm')
+            
+            # Estrelas piscando
+            stars = [(100, 50), (700, 70), (650, 350), (120, 370), (400, 30)]
+            for idx, (star_x, star_y) in enumerate(stars):
+                star_brightness = int(255 * (0.5 + 0.5 * math.sin(progress * 4 * math.pi + idx)))
+                draw.text((star_x, star_y), '✨', font=font_title, fill=(star_brightness, star_brightness, 100))
+            
+            # Emoji grande no canto (emoji funciona sem download)
+            emoji_scale = 1.0 + 0.2 * math.sin(progress * 2 * math.pi)
+            try:
+                emoji_font = ImageFont.truetype('/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf', int(60 * emoji_scale))
+            except:
+                emoji_font = font_title
+            draw.text((width - 100, height - 100), '🤖⚡', font=emoji_font, fill=(0, 200, 255))
+            
+            # Adicionar frame à lista
+            frames.append(img.copy())
         
-        # Título com sombra
-        draw.text((text_x + 2, box_y + 62), '👋 Olá!', font=font_title, fill=(0, 0, 0))
-        draw.text((text_x, box_y + 60), '👋 Olá!', font=font_title, fill=(100, 200, 255))
-        
-        # Nome do usuário
-        username = ctx.author.name if len(ctx.author.name) <= 20 else ctx.author.name[:17] + '...'
-        draw.text((text_x + 2, box_y + 122), username, font=font_user, fill=(0, 0, 0))
-        draw.text((text_x, box_y + 120), username, font=font_user, fill=(255, 255, 255))
-        
-        # Subtítulo
-        draw.text((text_x + 2, box_y + 162), '✨ Pillow funcionando perfeitamente!', font=font_small, fill=(0, 0, 0))
-        draw.text((text_x, box_y + 160), '✨ Pillow funcionando perfeitamente!', font=font_small, fill=(150, 220, 255))
-        
-        # Barra de progresso decorativa
-        bar_x = box_x + 200
-        bar_y = box_y + 200
-        bar_w = 480
-        bar_h = 30
-        
-        # Fundo da barra
-        draw.rectangle([bar_x, bar_y, bar_x + bar_w, bar_y + bar_h], 
-                      fill=(20, 20, 40), outline=(0, 100, 200), width=2)
-        
-        # Gradiente na barra
-        progress = int(bar_w * 0.75)
-        for i in range(progress):
-            color_val = int(100 + (i / progress) * 155)
-            draw.rectangle([bar_x + i, bar_y + 2, bar_x + i + 1, bar_y + bar_h - 2], 
-                          fill=(0, color_val, 255))
-        
-        # Texto na barra
-        draw.text((bar_x + bar_w // 2, bar_y + bar_h // 2), '🎨 Sistema de XP ativo!', 
-                 font=font_small, fill=(255, 255, 255), anchor='mm')
-        
-        # Estrelas decorativas
-        stars = [(100, 50), (700, 70), (650, 350), (120, 370), (400, 30)]
-        for star_x, star_y in stars:
-            draw.text((star_x, star_y), '✨', font=font_title, fill=(255, 255, 100))
-        
-        # Baixar figurinha do Robito (feliz)
-        try:
-            robito_url = 'https://i.imgur.com/9iZq7RH.png'  # Robito feliz
-            async with aiohttp.ClientSession() as session:
-                async with session.get(robito_url) as resp:
-                    if resp.status == 200:
-                        robito_data = await resp.read()
-                        robito = Image.open(io.BytesIO(robito_data))
-                        robito = robito.resize((100, 100))
-                        
-                        # Colar Robito no canto
-                        img.paste(robito, (width - 130, height - 130), robito if robito.mode == 'RGBA' else None)
-        except:
-            # Emoji alternativo
-            draw.text((width - 100, height - 100), '🤖', font=font_title, fill=(0, 200, 255))
-        
-        # Salvar
+        # SALVAR COMO GIF
         buffer = io.BytesIO()
-        img.save(buffer, format='PNG')
+        frames[0].save(
+            buffer,
+            format='GIF',
+            save_all=True,
+            append_images=frames[1:],
+            duration=100,  # 100ms por frame = 10 FPS
+            loop=0,  # Loop infinito
+            optimize=False
+        )
         buffer.seek(0)
         
-        file = discord.File(buffer, filename='pillow_perfeito.png')
+        file = discord.File(buffer, filename='pillow_animado.gif')
         
         embed = discord.Embed(
-            title='🎨 Pillow Funcionando Perfeitamente!',
-            description='✅ Imagem gerada com gradientes, sombras, avatar circular e detalhes azuis!\n\n'
-                       '**Recursos usados:**\n'
-                       '• Gradiente de fundo diagonal\n'
-                       '• Círculos decorativos\n'
-                       '• Sombras e bordas duplas\n'
-                       '• Avatar circular do usuário\n'
-                       '• Barra de progresso com gradiente\n'
-                       '• Textos com sombra\n'
-                       '• Estrelas e detalhes azuis\n\n'
-                       '🚀 **Sistema de XP com rank cards vai funcionar perfeitamente!**',
+            title='⚡ GIF ANIMADO COM PILLOW! 🔥',
+            description='✅ **20 frames de pura magia!**\n\n'
+                       '**Efeitos animados:**\n'
+                       '• 🌀 Raios rotativos de luz\n'
+                       '• 💫 Glow pulsante no centro\n'
+                       '• ⭕ Círculos pulsantes\n'
+                       '• ✨ Partículas flutuantes\n'
+                       '• 🔲 Bordas e sombras animadas\n'
+                       '• 📊 Barra de progresso animada\n'
+                       '• ⭐ Estrelas piscando\n'
+                       '• 🤖 Emoji pulsante\n\n'
+                       '🚀 **Sistema XP vai ter rank cards ANIMADAS tipo essa!**',
             color=0x00ccff
         )
-        embed.set_footer(text='Pillow • PIL • Render.com')
+        embed.set_footer(text='Pillow • GIF • 20 frames • Loop infinito')
         
         await ctx.reply(embed=embed, file=file)
         
