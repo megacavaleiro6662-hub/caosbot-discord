@@ -3422,6 +3422,263 @@ Você ganhou **{{{{prize}}}}**!
             }});
         }});
         
+        // ==================== FUNÇÕES DROPDOWNS E LISTAS ====================
+        
+        // Popular dropdowns
+        async function loadXPDropdowns() {{
+            const guildId = '{{{{GUILD_ID}}}}';
+            
+            // Carregar cargos
+            try {{
+                const rolesRes = await fetch(`/api/guild/${{guildId}}/roles`);
+                const rolesData = await rolesRes.json();
+                
+                // Popular todos os dropdowns de cargos
+                const roleSelectors = ['xp-role-selector', 'xp-mult-role-selector'];
+                roleSelectors.forEach(id => {{
+                    const select = document.getElementById(id);
+                    if (select) {{
+                        select.innerHTML = '<option value="">Selecione um cargo...</option>';
+                        rolesData.roles.forEach(role => {{
+                            const option = document.createElement('option');
+                            option.value = role.id;
+                            option.textContent = role.name;
+                            option.dataset.name = role.name;
+                            select.appendChild(option);
+                        }});
+                    }}
+                }});
+            }} catch (e) {{
+                console.error('Erro ao carregar cargos:', e);
+            }}
+            
+            // Carregar canais
+            try {{
+                const channelsRes = await fetch(`/api/guild/${{guildId}}/channels`);
+                const channelsData = await channelsRes.json();
+                
+                // Popular dropdowns de canais
+                const channelSelectors = ['xp-channel-selector', 'xp-announce-channel'];
+                channelSelectors.forEach(id => {{
+                    const select = document.getElementById(id);
+                    if (select) {{
+                        select.innerHTML = '<option value="">Selecione um canal...</option>';
+                        channelsData.channels.forEach(ch => {{
+                            const option = document.createElement('option');
+                            option.value = ch.id;
+                            option.textContent = `# ${{ch.name}}`;
+                            option.dataset.name = ch.name;
+                            select.appendChild(option);
+                        }});
+                    }}
+                }});
+            }} catch (e) {{
+                console.error('Erro ao carregar canais:', e);
+            }}
+            
+            // Carregar bloqueios atuais
+            await loadBlockedRoles();
+            await loadBlockedChannels();
+            
+            // Carregar multiplicadores
+            await loadMultipliers();
+        }}
+        
+        // Cargos bloqueados
+        async function loadBlockedRoles() {{
+            try {{
+                const res = await fetch('/api/xp/{{{{GUILD_ID}}}}/blocked-roles');
+                const data = await res.json();
+                const list = document.getElementById('xp-blocked-roles-list');
+                list.innerHTML = '';
+                
+                // Buscar nomes dos cargos
+                const rolesRes = await fetch('/api/guild/{{{{GUILD_ID}}}}/roles');
+                const rolesData = await rolesRes.json();
+                const rolesMap = {{}};
+                rolesData.roles.forEach(r => rolesMap[r.id] = r.name);
+                
+                data.blocked_roles.forEach(roleId => {{
+                    const item = document.createElement('div');
+                    item.style.cssText = 'display: flex; justify-content: space-between; align-items: center; padding: 10px; background: rgba(255,0,0,0.1); border-radius: 5px;';
+                    item.innerHTML = `
+                        <span>🎭 ${{rolesMap[roleId] || 'Cargo Desconhecido'}}</span>
+                        <button onclick="removeBlockedRole(${{roleId}})" style="background: #ff4444; border: none; color: white; padding: 5px 10px; border-radius: 5px; cursor: pointer;">❌ Remover</button>
+                    `;
+                    list.appendChild(item);
+                }});
+            }} catch (e) {{
+                console.error('Erro:', e);
+            }}
+        }}
+        
+        async function addBlockedRole() {{
+            const select = document.getElementById('xp-role-selector');
+            const roleId = select.value;
+            if (!roleId) return;
+            
+            try {{
+                await fetch('/api/xp/{{{{GUILD_ID}}}}/blocked-roles', {{
+                    method: 'POST',
+                    headers: {{ 'Content-Type': 'application/json' }},
+                    body: JSON.stringify({{ role_id: roleId }})
+                }});
+                await loadBlockedRoles();
+                select.value = '';
+                showToast('Cargo bloqueado!', 'success');
+            }} catch (e) {{
+                showToast('Erro ao bloquear cargo', 'error');
+            }}
+        }}
+        
+        async function removeBlockedRole(roleId) {{
+            try {{
+                await fetch(`/api/xp/{{{{GUILD_ID}}}}/blocked-roles/${{roleId}}`, {{ method: 'DELETE' }});
+                await loadBlockedRoles();
+                showToast('Cargo desbloqueado!', 'success');
+            }} catch (e) {{
+                showToast('Erro', 'error');
+            }}
+        }}
+        
+        // Canais bloqueados
+        async function loadBlockedChannels() {{
+            try {{
+                const res = await fetch('/api/xp/{{{{GUILD_ID}}}}/blocked-channels');
+                const data = await res.json();
+                const list = document.getElementById('xp-blocked-channels-list');
+                list.innerHTML = '';
+                
+                // Buscar nomes dos canais
+                const channelsRes = await fetch('/api/guild/{{{{GUILD_ID}}}}/channels');
+                const channelsData = await channelsRes.json();
+                const channelsMap = {{}};
+                channelsData.channels.forEach(c => channelsMap[c.id] = c.name);
+                
+                data.blocked_channels.forEach(channelId => {{
+                    const item = document.createElement('div');
+                    item.style.cssText = 'display: flex; justify-content: space-between; align-items: center; padding: 10px; background: rgba(255,0,0,0.1); border-radius: 5px;';
+                    item.innerHTML = `
+                        <span>📢 #${{channelsMap[channelId] || 'Canal Desconhecido'}}</span>
+                        <button onclick="removeBlockedChannel(${{channelId}})" style="background: #ff4444; border: none; color: white; padding: 5px 10px; border-radius: 5px; cursor: pointer;">❌ Remover</button>
+                    `;
+                    list.appendChild(item);
+                }});
+            }} catch (e) {{
+                console.error('Erro:', e);
+            }}
+        }}
+        
+        async function addBlockedChannel() {{
+            const select = document.getElementById('xp-channel-selector');
+            const channelId = select.value;
+            if (!channelId) return;
+            
+            try {{
+                await fetch('/api/xp/{{{{GUILD_ID}}}}/blocked-channels', {{
+                    method: 'POST',
+                    headers: {{ 'Content-Type': 'application/json' }},
+                    body: JSON.stringify({{ channel_id: channelId }})
+                }});
+                await loadBlockedChannels();
+                select.value = '';
+                showToast('Canal bloqueado!', 'success');
+            }} catch (e) {{
+                showToast('Erro ao bloquear canal', 'error');
+            }}
+        }}
+        
+        async function removeBlockedChannel(channelId) {{
+            try {{
+                await fetch(`/api/xp/{{{{GUILD_ID}}}}/blocked-channels/${{channelId}}`, {{ method: 'DELETE' }});
+                await loadBlockedChannels();
+                showToast('Canal desbloqueado!', 'success');
+            }} catch (e) {{
+                showToast('Erro', 'error');
+            }}
+        }}
+        
+        // Multiplicadores
+        async function loadMultipliers() {{
+            try {{
+                const res = await fetch('/api/xp/{{{{GUILD_ID}}}}/multipliers');
+                const data = await res.json();
+                const list = document.getElementById('xp-multipliers-list');
+                list.innerHTML = '';
+                
+                if (data.multipliers.length === 0) {{
+                    list.innerHTML = '<p style="color: #9ca3af; text-align: center;">Nenhum multiplicador configurado</p>';
+                    return;
+                }}
+                
+                data.multipliers.forEach(mult => {{
+                    const item = document.createElement('div');
+                    item.style.cssText = 'display: flex; justify-content: space-between; align-items: center; padding: 10px; background: rgba(0,255,0,0.1); border-radius: 5px;';
+                    item.innerHTML = `
+                        <span>🎭 ${{mult.role_name}} → <strong>${{mult.multiplier}}x XP</strong></span>
+                        <button onclick="removeMultiplier(${{mult.id}})" style="background: #ff4444; border: none; color: white; padding: 5px 10px; border-radius: 5px; cursor: pointer;">❌ Remover</button>
+                    `;
+                    list.appendChild(item);
+                }});
+            }} catch (e) {{
+                console.error('Erro:', e);
+            }}
+        }}
+        
+        async function addMultiplier() {{
+            const select = document.getElementById('xp-mult-role-selector');
+            const input = document.getElementById('xp-mult-value');
+            const roleId = select.value;
+            const multiplier = parseFloat(input.value);
+            
+            if (!roleId || !multiplier || multiplier <= 0) {{
+                showToast('Preencha todos os campos', 'warning');
+                return;
+            }}
+            
+            const roleName = select.options[select.selectedIndex].dataset.name;
+            
+            try {{
+                await fetch('/api/xp/{{{{GUILD_ID}}}}/multipliers', {{
+                    method: 'POST',
+                    headers: {{ 'Content-Type': 'application/json' }},
+                    body: JSON.stringify({{ role_id: roleId, role_name: roleName, multiplier: multiplier }})
+                }});
+                await loadMultipliers();
+                select.value = '';
+                input.value = '';
+                showToast('Multiplicador adicionado!', 'success');
+            }} catch (e) {{
+                showToast('Erro ao adicionar multiplicador', 'error');
+            }}
+        }}
+        
+        async function removeMultiplier(multId) {{
+            try {{
+                await fetch(`/api/xp/{{{{GUILD_ID}}}}/multipliers/${{multId}}`, {{ method: 'DELETE' }});
+                await loadMultipliers();
+                showToast('Multiplicador removido!', 'success');
+            }} catch (e) {{
+                showToast('Erro', 'error');
+            }}
+        }}
+        
+        // Inicializar ao carregar página
+        document.addEventListener('DOMContentLoaded', function() {{
+            // Carregar dropdowns se estiver na página XP
+            if (document.getElementById('xp-system-page')) {{
+                loadXPDropdowns();
+            }}
+            
+            // Mostrar/ocultar dropdown de canal personalizado
+            const customCheckbox = document.getElementById('xp-announce-custom');
+            if (customCheckbox) {{
+                customCheckbox.addEventListener('change', function() {{
+                    document.getElementById('xp-custom-channel-group').style.display = this.checked ? 'block' : 'none';
+                }});
+            }}
+        }});
+        
         // ==================== FIM FUNÇÕES XP ====================
         
         // Notificação com som
