@@ -2264,6 +2264,18 @@ def dashboard():
                             {'Ativado' if config.get('tickets_enabled') else 'Desativado'}
                         </span>
                     </div>
+                    <div class="card">
+                        <div class="card-header">
+                            <h2>💎 Sistema de XP</h2>
+                            <div class="toggle">
+                                <input type="checkbox" id="xp_enabled" {"checked" if config.get('xp_enabled') else ""}>
+                                <label for="xp_enabled"></label>
+                            </div>
+                        </div>
+                        <span id="xp-status" class="status {'status-on' if config.get('xp_enabled') else 'status-off'}">
+                            {'Ativado' if config.get('xp_enabled') else 'Desativado'}
+                        </span>
+                    </div>
                 </div>
             </div>
         </div>
@@ -9927,43 +9939,61 @@ async def help_command(ctx, categoria=None):
         
     elif categoria in ['rank', 'xp', 'nivel', 'nível', 'level']:
         embed = discord.Embed(
-            title="📊 SISTEMA DE RANK & XP",
-            description="**Sistema de níveis estilo Loritta!**\nGanhe XP conversando e suba de nível!\n\n**Como ganhar XP:**\n💬 Envie mensagens (+10-15 XP)\n⏱️ Cooldown: 60 segundos\n🚫 Spam não conta",
-            color=0xff6600
+            title="💎 SISTEMA DE XP E NÍVEIS",
+            description="**Sistema completo de XP estilo Loritta!**\n\n🎯 **8 Níveis:**\nnoob → bacon hair → pro → try harder → épico → místico → lendário → gilipado\n\n💬 **Ganhe XP:** Conversando no servidor\n⏱️ **Cooldown:** 30 segundos\n🎨 **Rank Card:** Com Pillow (imagem gerada em tempo real)",
+            color=0x00ccff
         )
         
         embed.add_field(
-            name="📊 `.rank [@usuário]`",
-            value="**Ver rank** com card visual tipo Loritta\n*Mostra nível, XP, posição e progresso*\n**Exemplos:**\n• `.rank` - Seu rank\n• `.rank @user` - Rank de alguém",
+            name="💎 `.xp [@usuário]`",
+            value="**Mostra rank card** com imagem personalizada\n• Avatar circular\n• Barra de progresso\n• Nível e XP atual\n• Posição no ranking\n**Exemplos:**\n• `.xp` - Seu rank\n• `.xp @user` - Rank de alguém",
             inline=False
         )
         
         embed.add_field(
-            name="🏆 `.rankxp`",
-            value="**Ver TOP 10** do servidor com imagem!\n*Ranking completo dos membros mais ativos*\n**Aliases:** `.leaderboard`, `.lb`, `.top`\n**Visual:** Card com barra de progresso",
+            name="🏆 `.xprank [quantidade]`",
+            value="**Top usuários em imagem**\n*Leaderboard visual do servidor*\n**Exemplos:**\n• `.xprank` - Top 10\n• `.xprank 20` - Top 20\n**Visual:** Imagem com avatares e barras",
             inline=False
         )
         
         embed.add_field(
-            name="⚙️ `.setxp @usuário <quantidade>`",
-            value="**Definir XP** manualmente (Admin)\n*Modificar XP de qualquer usuário*\n**Exemplo:** `.setxp @user 1000`\n**Requer:** Permissão de Administrador",
+            name="⚙️ `.xpsetup` (Admin)",
+            value="**Inicializa sistema de XP**\n*Cria os 8 níveis padrão no banco*\n**Use 1x:** Apenas ao configurar pela primeira vez\n**Requer:** Administrador",
             inline=False
         )
         
         embed.add_field(
-            name="🎨 **DESIGN DO RANK CARD**",
-            value="✅ Background laranja CAOS personalizado\n✅ Avatar circular do usuário\n✅ Barra de progresso animada\n✅ Nível e posição no ranking\n✅ Total de mensagens e XP",
+            name="🗑️ `.xpreset @usuário` (Admin)",
+            value="**Reseta XP** de um usuário específico\n**Exemplo:** `.xpreset @João`\n**Requer:** Administrador",
             inline=False
         )
         
         embed.add_field(
-            name="📈 **FÓRMULA DE XP**",
-            value="**XP por nível:** 100 × (nível^1.5)\n**Exemplo:** Nível 10 = 3.162 XP\n**Sistema:** Exponencial tipo Loritta",
+            name="💥 `.xpresetall` (Admin)",
+            value="**RESETA XP DE TODOS**\n⚠️ CUIDADO! Ação irreversível\n*Confirmação dupla necessária*\n**Requer:** Administrador",
             inline=False
         )
         
-        embed.set_thumbnail(url="https://i.ibb.co/BVX3K2Y2/1.png")
-        embed.set_footer(text="📊 Sistema de XP • Totalmente automático")
+        embed.add_field(
+            name="🚀 `.xpboost <multiplicador> <minutos>` (Admin)",
+            value="**Boost temporário de XP**\n**Exemplos:**\n• `.xpboost 2.0 60` - 2x XP por 1 hora\n• `.xpboost 3.0 30` - 3x XP por 30min\n**Requer:** Administrador",
+            inline=False
+        )
+        
+        embed.add_field(
+            name="📊 `.xpconfig` (Admin)",
+            value="**Ver configuração atual**\n*Mostra: cooldown, XP min/max, modo recompensa, bloqueios*\n**Readonly:** Para editar use o dashboard\n**Requer:** Administrador",
+            inline=False
+        )
+        
+        embed.add_field(
+            name="🌐 **DASHBOARD WEB**",
+            value="Configure TUDO pelo painel:\n• 8 seções editáveis\n• Preview de mensagens em tempo real\n• Personalizar rank cards\n• Estatísticas e logs\n• Exportar CSV\n**Acesse:** https://seu-app.onrender.com/dashboard",
+            inline=False
+        )
+        
+        embed.set_thumbnail(url=ROBITO_IMAGES['rico'])
+        embed.set_footer(text="💎 Sistema de XP Completo • Configurável pelo Dashboard")
         
     else:
         embed = discord.Embed(
