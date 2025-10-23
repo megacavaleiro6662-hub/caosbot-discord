@@ -2173,6 +2173,7 @@ def dashboard():
             <li><a href="#" class="active" onclick="showPage('dashboard')">📊 Dashboard</a></li>
             <li><a href="#" onclick="showPage('tickets')">🎫 Tickets</a></li>
             <li><a href="#" onclick="showPage('embeds')">📋 Embeds</a></li>
+            <li><a href="#" onclick="showPage('xp-system')">💎 Sistema de XP</a></li>
             <li><a href="#" onclick="showPage('stats')">📈 Estatísticas</a></li>
         </ul>
         
@@ -2724,6 +2725,287 @@ Você ganhou **{{{{prize}}}}**!
                 </div>
             </div>
         </div>
+        
+        <!-- XP System Page -->
+        <div id="xp-system-page" class="page">
+            <div class="section">
+                <h2 class="section-title">💎 Sistema de XP e Níveis</h2>
+                
+                <!-- Sub-tabs do XP -->
+                <div style="display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; overflow-x: auto;">
+                    <button class="btn btn-primary" style="padding: 8px 16px; font-size: 13px;" onclick="showXPTab('geral')">⚙️ Geral</button>
+                    <button class="btn" style="padding: 8px 16px; font-size: 13px; background: rgba(255,255,255,0.1);" onclick="showXPTab('niveis')">🎯 Níveis</button>
+                    <button class="btn" style="padding: 8px 16px; font-size: 13px; background: rgba(255,255,255,0.1);" onclick="showXPTab('recompensas')">🎁 Recompensas</button>
+                    <button class="btn" style="padding: 8px 16px; font-size: 13px; background: rgba(255,255,255,0.1);" onclick="showXPTab('bloqueios')">🚫 Bloqueios</button>
+                    <button class="btn" style="padding: 8px 16px; font-size: 13px; background: rgba(255,255,255,0.1);" onclick="showXPTab('mensagens')">💬 Mensagens</button>
+                    <button class="btn" style="padding: 8px 16px; font-size: 13px; background: rgba(255,255,255,0.1);" onclick="showXPTab('rankcard')">🎨 Rank Card</button>
+                    <button class="btn" style="padding: 8px 16px; font-size: 13px; background: rgba(255,255,255,0.1);" onclick="showXPTab('estatisticas')">📊 Estatísticas</button>
+                    <button class="btn" style="padding: 8px 16px; font-size: 13px; background: rgba(255,255,255,0.1);" onclick="showXPTab('boosts')">🚀 Boosts</button>
+                </div>
+                
+                <!-- Aba Geral -->
+                <div id="xp-tab-geral" class="xp-tab" style="display: block;">
+                    <div class="card">
+                        <h3 style="margin-bottom: 20px;">⚙️ Configuração Geral</h3>
+                        
+                        <div class="form-group">
+                            <label class="form-label">⚡ Ativar Sistema de XP</label>
+                            <div class="toggle">
+                                <input type="checkbox" id="xp-system-enabled" checked>
+                                <label for="xp-system-enabled"></label>
+                            </div>
+                            <small style="color: #9ca3af;">Quando desativado, ninguém ganhará XP</small>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">💎 XP Mínimo por Mensagem</label>
+                            <input type="number" id="xp-min" class="form-input" value="5" min="1" max="100">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">💎 XP Máximo por Mensagem</label>
+                            <input type="number" id="xp-max" class="form-input" value="15" min="1" max="100">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">⏱️ Cooldown (segundos)</label>
+                            <input type="number" id="xp-cooldown" class="form-input" value="30" min="0" max="300">
+                            <small style="color: #9ca3af;">Tempo mínimo entre mensagens para ganhar XP</small>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">📋 Canal de Log (ID)</label>
+                            <input type="text" id="xp-log-channel" class="form-input" placeholder="Ex: 123456789">
+                            <small style="color: #9ca3af;">Canal para logs de eventos (opcional)</small>
+                        </div>
+                        
+                        <button class="btn btn-primary" onclick="saveXPGeneral()" style="width: 100%; padding: 12px; margin-top: 10px;">💾 Salvar Configurações</button>
+                        <button class="btn btn-danger" onclick="resetAllXP()" style="width: 100%; padding: 12px; margin-top: 10px;">🗑️ Zerar XP de Todos</button>
+                    </div>
+                </div>
+                
+                <!-- Aba Níveis -->
+                <div id="xp-tab-niveis" class="xp-tab" style="display: none;">
+                    <div class="card">
+                        <h3 style="margin-bottom: 20px;">🎯 Configurar Níveis e Cargos</h3>
+                        <p style="color: #9ca3af; margin-bottom: 20px;">Configure os 8 níveis, XP necessário e multiplicadores</p>
+                        
+                        <div id="xp-levels-list">
+                            <p style="color: #9ca3af;">⏳ Carregando níveis...</p>
+                        </div>
+                        
+                        <button class="btn btn-primary" onclick="saveXPLevels()" style="width: 100%; padding: 12px; margin-top: 10px;">💾 Salvar Níveis</button>
+                    </div>
+                </div>
+                
+                <!-- Aba Recompensas -->
+                <div id="xp-tab-recompensas" class="xp-tab" style="display: none;">
+                    <div class="card">
+                        <h3 style="margin-bottom: 20px;">🎁 Sistema de Recompensas</h3>
+                        
+                        <div class="form-group">
+                            <label class="form-label">🎭 Modo de Recompensa</label>
+                            <div style="display: flex; flex-direction: column; gap: 10px;">
+                                <label style="display: flex; align-items: center; gap: 8px;">
+                                    <input type="radio" name="xp-reward-mode" value="stack" checked>
+                                    📚 Empilhar cargos (mantém todos os anteriores)
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 8px;">
+                                    <input type="radio" name="xp-reward-mode" value="replace">
+                                    🔄 Substituir cargo (remove o anterior)
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">💰 XP Bônus ao Subir de Nível</label>
+                            <input type="number" id="xp-bonus-levelup" class="form-input" value="0" min="0">
+                            <small style="color: #9ca3af;">XP adicional ao alcançar um novo nível</small>
+                        </div>
+                        
+                        <button class="btn btn-primary" onclick="saveXPRewards()" style="width: 100%; padding: 12px; margin-top: 10px;">💾 Salvar Recompensas</button>
+                    </div>
+                </div>
+                
+                <!-- Aba Bloqueios -->
+                <div id="xp-tab-bloqueios" class="xp-tab" style="display: none;">
+                    <div class="card">
+                        <h3 style="margin-bottom: 20px;">🚫 Cargos e Canais Bloqueados</h3>
+                        <p style="color: #9ca3af; margin-bottom: 20px;">Usuários com estes cargos ou mensagens nestes canais NÃO ganharão XP</p>
+                        
+                        <div class="form-group">
+                            <label class="form-label">🎭 IDs dos Cargos Bloqueados (separados por vírgula)</label>
+                            <textarea id="xp-blocked-roles" class="form-textarea" placeholder="Ex: 123456789, 987654321"></textarea>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">📢 IDs dos Canais Bloqueados (separados por vírgula)</label>
+                            <textarea id="xp-blocked-channels" class="form-textarea" placeholder="Ex: 123456789, 987654321"></textarea>
+                        </div>
+                        
+                        <button class="btn btn-primary" onclick="saveXPBlocks()" style="width: 100%; padding: 12px; margin-top: 10px;">💾 Salvar Bloqueios</button>
+                    </div>
+                </div>
+                
+                <!-- Aba Mensagens -->
+                <div id="xp-tab-mensagens" class="xp-tab" style="display: none;">
+                    <div class="card">
+                        <h3 style="margin-bottom: 20px;">💬 Mensagens de Level Up</h3>
+                        
+                        <div class="form-group">
+                            <label class="form-label">📍 Onde Anunciar</label>
+                            <div style="display: flex; flex-direction: column; gap: 10px;">
+                                <label style="display: flex; align-items: center; gap: 8px;">
+                                    <input type="radio" name="xp-announce-mode" value="none">
+                                    🚫 Nenhum
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 8px;">
+                                    <input type="radio" name="xp-announce-mode" value="current" checked>
+                                    💬 Canal atual
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 8px;">
+                                    <input type="radio" name="xp-announce-mode" value="dm">
+                                    📧 Mensagem direta (DM)
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 8px;">
+                                    <input type="radio" name="xp-announce-mode" value="custom">
+                                    📍 Canal personalizado
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group" id="xp-custom-channel-group" style="display: none;">
+                            <label class="form-label">ID do Canal Personalizado</label>
+                            <input type="text" id="xp-announce-channel" class="form-input" placeholder="Ex: 123456789">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">🎨 Tipo de Mensagem</label>
+                            <div style="display: flex; flex-direction: column; gap: 10px;">
+                                <label style="display: flex; align-items: center; gap: 8px;">
+                                    <input type="radio" name="xp-announce-type" value="text" checked>
+                                    📝 Texto simples
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 8px;">
+                                    <input type="radio" name="xp-announce-type" value="embed">
+                                    📋 Embed
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 8px;">
+                                    <input type="radio" name="xp-announce-type" value="image">
+                                    🖼️ Imagem (Rank Card)
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">✏️ Mensagem Personalizada</label>
+                            <textarea id="xp-message-template" class="form-textarea" rows="4">🎉 {{user_mention}} subiu para o nível **{{level}}**!</textarea>
+                            <small style="color: #9ca3af;">Placeholders: {{user}}, {{user_mention}}, {{level}}, {{level_name}}, {{xp}}, {{next_level_xp}}, {{guild_name}}</small>
+                        </div>
+                        
+                        <div style="background: #2b2d31; border: 2px solid #0066ff; padding: 15px; margin-top: 15px; border-radius: 8px;">
+                            <strong style="color: #00ccff;">👁️ Preview:</strong>
+                            <div id="xp-message-preview" style="margin-top: 10px; color: #dcddde;">
+                                <!-- Preview será renderizado aqui -->
+                            </div>
+                        </div>
+                        
+                        <button class="btn btn-primary" onclick="saveXPMessages()" style="width: 100%; padding: 12px; margin-top: 10px;">💾 Salvar Mensagens</button>
+                    </div>
+                </div>
+                
+                <!-- Aba Rank Card -->
+                <div id="xp-tab-rankcard" class="xp-tab" style="display: none;">
+                    <div class="card">
+                        <h3 style="margin-bottom: 20px;">🎨 Personalizar Rank Card</h3>
+                        
+                        <div class="form-group">
+                            <label class="form-label">🎨 Cor de Fundo</label>
+                            <input type="color" id="xp-bg-color" value="#1a1a2e" style="width: 80px; height: 40px;">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">🖼️ Imagem de Fundo (URL)</label>
+                            <input type="url" id="xp-bg-url" class="form-input" placeholder="https://...">
+                            <small style="color: #9ca3af;">Deixe vazio para usar cor sólida</small>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">📊 Cor da Barra de Progresso</label>
+                            <input type="color" id="xp-bar-color" value="#0066ff" style="width: 80px; height: 40px;">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">✏️ Cor do Texto</label>
+                            <input type="color" id="xp-text-color" value="#ffffff" style="width: 80px; height: 40px;">
+                        </div>
+                        
+                        <button class="btn btn-primary" onclick="saveXPRankCard()" style="width: 100%; padding: 12px; margin-top: 10px;">💾 Salvar Rank Card</button>
+                        <button class="btn" onclick="alert('Use o comando .xp no Discord para ver o preview!')" style="width: 100%; padding: 12px; margin-top: 10px; background: rgba(255,255,255,0.1);">👁️ Ver Preview (Discord)</button>
+                    </div>
+                </div>
+                
+                <!-- Aba Estatísticas -->
+                <div id="xp-tab-estatisticas" class="xp-tab" style="display: none;">
+                    <div class="card">
+                        <h3 style="margin-bottom: 20px;">📊 Estatísticas do Sistema XP</h3>
+                        
+                        <div id="xp-stats-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px;">
+                            <div style="background: rgba(0,100,255,0.1); border: 2px solid #0066ff; padding: 20px; text-align: center; border-radius: 8px;">
+                                <div style="font-size: 32px; font-weight: 900; color: #00ccff;">-</div>
+                                <div style="font-size: 12px; color: #66aaff; margin-top: 5px;">👥 Usuários com XP</div>
+                            </div>
+                            <div style="background: rgba(0,100,255,0.1); border: 2px solid #0066ff; padding: 20px; text-align: center; border-radius: 8px;">
+                                <div style="font-size: 32px; font-weight: 900; color: #00ccff;">-</div>
+                                <div style="font-size: 12px; color: #66aaff; margin-top: 5px;">💎 XP Total</div>
+                            </div>
+                            <div style="background: rgba(0,100,255,0.1); border: 2px solid #0066ff; padding: 20px; text-align: center; border-radius: 8px;">
+                                <div style="font-size: 32px; font-weight: 900; color: #00ccff;">-</div>
+                                <div style="font-size: 12px; color: #66aaff; margin-top: 5px;">📊 Média de XP</div>
+                            </div>
+                            <div style="background: rgba(0,100,255,0.1); border: 2px solid #0066ff; padding: 20px; text-align: center; border-radius: 8px;">
+                                <div style="font-size: 32px; font-weight: 900; color: #00ccff;">-</div>
+                                <div style="font-size: 12px; color: #66aaff; margin-top: 5px;">💬 Mensagens</div>
+                            </div>
+                        </div>
+                        
+                        <h4 style="color: #00ccff; margin: 20px 0 10px 0;">📜 Logs Recentes</h4>
+                        <div id="xp-logs-list" style="max-height: 300px; overflow-y: auto; background: rgba(0,0,0,0.3); padding: 15px; border-radius: 8px;">
+                            <p style="color: #9ca3af;">⏳ Carregando logs...</p>
+                        </div>
+                        
+                        <button class="btn" onclick="exportXPCSV()" style="width: 100%; padding: 12px; margin-top: 10px; background: rgba(255,255,255,0.1);">📥 Exportar Ranking (CSV)</button>
+                    </div>
+                </div>
+                
+                <!-- Aba Boosts -->
+                <div id="xp-tab-boosts" class="xp-tab" style="display: none;">
+                    <div class="card">
+                        <h3 style="margin-bottom: 20px;">🚀 Boosts Temporários de XP</h3>
+                        
+                        <div id="xp-boost-active" style="display: none; background: rgba(255,200,0,0.1); border: 2px solid #ffcc00; padding: 20px; text-align: center; margin-bottom: 20px; border-radius: 8px;">
+                            <div style="font-size: 40px;">🚀</div>
+                            <div style="font-size: 20px; font-weight: 700; color: #ffcc00; margin-top: 10px;">Boost Ativo!</div>
+                            <div id="xp-boost-info" style="color: #9ca3af; margin-top: 5px;">-</div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">🎯 Multiplicador de XP</label>
+                            <input type="number" id="xp-boost-mult" class="form-input" value="2.0" step="0.1" min="1" max="10">
+                            <small style="color: #9ca3af;">Ex: 2.0 = 2x XP, 3.0 = 3x XP</small>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">⏱️ Duração (minutos)</label>
+                            <input type="number" id="xp-boost-duration" class="form-input" value="60" min="1">
+                            <small style="color: #9ca3af;">Quanto tempo o boost vai durar</small>
+                        </div>
+                        
+                        <button class="btn btn-primary" onclick="createXPBoost()" style="width: 100%; padding: 12px; margin-top: 10px;">🚀 Ativar Boost Agora</button>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
     
     <!-- 🤖 ROBITO HELPER - ASSISTENTE FLUTUANTE -->
@@ -2898,6 +3180,210 @@ Você ganhou **{{{{prize}}}}**!
             // Marcar botão como ativo
             event.target.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
         }}
+        
+        // ==================== FUNÇÕES DO SISTEMA XP ====================
+        
+        // Navegação entre abas de XP
+        function showXPTab(tab) {{
+            // Esconder todas as abas XP
+            document.querySelectorAll('.xp-tab').forEach(t => t.style.display = 'none');
+            
+            // Remover active de todos os botões
+            const buttons = document.querySelectorAll('#xp-system-page .btn');
+            buttons.forEach(b => b.style.background = 'rgba(255,255,255,0.1)');
+            
+            // Mostrar aba selecionada
+            document.getElementById('xp-tab-' + tab).style.display = 'block';
+            
+            // Marcar botão como ativo
+            event.target.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+        }}
+        
+        // Salvar configuração geral
+        async function saveXPGeneral() {{
+            const data = {{
+                is_enabled: document.getElementById('xp-system-enabled').checked,
+                cooldown: parseInt(document.getElementById('xp-cooldown').value),
+                min_xp: parseInt(document.getElementById('xp-min').value),
+                max_xp: parseInt(document.getElementById('xp-max').value),
+                log_channel: document.getElementById('xp-log-channel').value || null
+            }};
+            
+            try {{
+                const response = await fetch('/api/xp/{{{{GUILD_ID}}}}/config/general', {{
+                    method: 'POST',
+                    headers: {{ 'Content-Type': 'application/json' }},
+                    body: JSON.stringify(data)
+                }});
+                const result = await response.json();
+                showToast(result.message || 'Configurações salvas!', result.success ? 'success' : 'error');
+            }} catch (error) {{
+                showToast('Erro ao salvar: ' + error, 'error');
+            }}
+        }}
+        
+        // Salvar recompensas
+        async function saveXPRewards() {{
+            const data = {{
+                reward_mode: document.querySelector('input[name="xp-reward-mode"]:checked').value,
+                bonus_on_levelup: parseInt(document.getElementById('xp-bonus-levelup').value)
+            }};
+            
+            try {{
+                const response = await fetch('/api/xp/{{{{GUILD_ID}}}}/config/rewards', {{
+                    method: 'POST',
+                    headers: {{ 'Content-Type': 'application/json' }},
+                    body: JSON.stringify(data)
+                }});
+                const result = await response.json();
+                showToast(result.message || 'Recompensas salvas!', result.success ? 'success' : 'error');
+            }} catch (error) {{
+                showToast('Erro ao salvar: ' + error, 'error');
+            }}
+        }}
+        
+        // Salvar bloqueios
+        async function saveXPBlocks() {{
+            const blockedRoles = document.getElementById('xp-blocked-roles').value.split(',').map(id => id.trim()).filter(id => id);
+            const blockedChannels = document.getElementById('xp-blocked-channels').value.split(',').map(id => id.trim()).filter(id => id);
+            
+            const data = {{
+                blocked_roles: blockedRoles,
+                blocked_channels: blockedChannels
+            }};
+            
+            try {{
+                const response = await fetch('/api/xp/{{{{GUILD_ID}}}}/config/blocks', {{
+                    method: 'POST',
+                    headers: {{ 'Content-Type': 'application/json' }},
+                    body: JSON.stringify(data)
+                }});
+                const result = await response.json();
+                showToast(result.message || 'Bloqueios salvos!', result.success ? 'success' : 'error');
+            }} catch (error) {{
+                showToast('Erro ao salvar: ' + error, 'error');
+            }}
+        }}
+        
+        // Salvar mensagens
+        async function saveXPMessages() {{
+            const data = {{
+                announce_mode: document.querySelector('input[name="xp-announce-mode"]:checked').value,
+                announce_type: document.querySelector('input[name="xp-announce-type"]:checked').value,
+                announce_channel: document.getElementById('xp-announce-channel').value || null,
+                message_template: document.getElementById('xp-message-template').value
+            }};
+            
+            try {{
+                const response = await fetch('/api/xp/{{{{GUILD_ID}}}}/config/messages', {{
+                    method: 'POST',
+                    headers: {{ 'Content-Type': 'application/json' }},
+                    body: JSON.stringify(data)
+                }});
+                const result = await response.json();
+                showToast(result.message || 'Mensagens salvas!', result.success ? 'success' : 'error');
+            }} catch (error) {{
+                showToast('Erro ao salvar: ' + error, 'error');
+            }}
+        }}
+        
+        // Salvar rank card
+        async function saveXPRankCard() {{
+            const data = {{
+                image_bg_color: document.getElementById('xp-bg-color').value,
+                image_bg_url: document.getElementById('xp-bg-url').value || null,
+                image_bar_color: document.getElementById('xp-bar-color').value,
+                image_text_color: document.getElementById('xp-text-color').value
+            }};
+            
+            try {{
+                const response = await fetch('/api/xp/{{{{GUILD_ID}}}}/config/rankcard', {{
+                    method: 'POST',
+                    headers: {{ 'Content-Type': 'application/json' }},
+                    body: JSON.stringify(data)
+                }});
+                const result = await response.json();
+                showToast(result.message || 'Rank card salva!', result.success ? 'success' : 'error');
+            }} catch (error) {{
+                showToast('Erro ao salvar: ' + error, 'error');
+            }}
+        }}
+        
+        // Salvar níveis
+        async function saveXPLevels() {{
+            showToast('Função em desenvolvimento!', 'warning');
+        }}
+        
+        // Reset XP de todos
+        async function resetAllXP() {{
+            if (!confirm('⚠️ ATENÇÃO! Esta ação é IRREVERSÍVEL!\\n\\nDeseja realmente ZERAR o XP de TODOS os usuários?')) {{
+                return;
+            }}
+            
+            const confirmText = prompt('Digite "CONFIRMAR RESET" para continuar:');
+            if (confirmText !== 'CONFIRMAR RESET') {{
+                showToast('Operação cancelada', 'error');
+                return;
+            }}
+            
+            try {{
+                const response = await fetch('/api/xp/{{{{GUILD_ID}}}}/reset', {{
+                    method: 'POST',
+                    headers: {{ 'Content-Type': 'application/json' }}
+                }});
+                const result = await response.json();
+                showToast(result.message || 'XP resetado!', result.success ? 'success' : 'error');
+            }} catch (error) {{
+                showToast('Erro: ' + error, 'error');
+            }}
+        }}
+        
+        // Criar boost
+        async function createXPBoost() {{
+            const multiplier = parseFloat(document.getElementById('xp-boost-mult').value);
+            const duration = parseInt(document.getElementById('xp-boost-duration').value);
+            
+            const data = {{ multiplier, duration }};
+            
+            try {{
+                const response = await fetch('/api/xp/{{{{GUILD_ID}}}}/boost', {{
+                    method: 'POST',
+                    headers: {{ 'Content-Type': 'application/json' }},
+                    body: JSON.stringify(data)
+                }});
+                const result = await response.json();
+                showToast(result.message || 'Boost ativado!', result.success ? 'success' : 'error');
+                
+                if (result.success) {{
+                    setTimeout(() => location.reload(), 1500);
+                }}
+            }} catch (error) {{
+                showToast('Erro: ' + error, 'error');
+            }}
+        }}
+        
+        // Exportar CSV
+        function exportXPCSV() {{
+            window.location.href = '/api/xp/{{{{GUILD_ID}}}}/export/csv';
+            showToast('Baixando CSV...', 'success');
+        }}
+        
+        // Listener para mostrar/ocultar canal personalizado
+        document.addEventListener('DOMContentLoaded', function() {{
+            const announceRadios = document.querySelectorAll('input[name="xp-announce-mode"]');
+            announceRadios.forEach(radio => {{
+                radio.addEventListener('change', () => {{
+                    const customChannelGroup = document.getElementById('xp-custom-channel-group');
+                    if (radio.value === 'custom' && radio.checked) {{
+                        customChannelGroup.style.display = 'block';
+                    }} else {{
+                        customChannelGroup.style.display = 'none';
+                    }}
+                }});
+            }});
+        }});
+        
+        // ==================== FIM FUNÇÕES XP ====================
         
         // Notificação com som
         function showToast(message, type = 'success') {{
