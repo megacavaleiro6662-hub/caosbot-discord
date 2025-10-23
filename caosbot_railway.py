@@ -1157,7 +1157,7 @@ def dashboard():
             padding: 10px;
         }}
         
-        .main {{ margin-left: 280px; padding: 32px; position: relative; z-index: 1; will-change: auto; transform: translateZ(0); isolation: isolate; max-width: calc(100vw - 280px); box-sizing: border-box; }}
+        .main {{ margin-left: 280px; padding: 32px; position: relative; z-index: 1; will-change: auto; transform: translateZ(0); isolation: isolate; max-width: calc(100vw - 280px); box-sizing: border-box; overflow-x: hidden; }}
         .header {{ background: linear-gradient(135deg, rgba(0, 100, 255, 0.15) 0%, rgba(0, 150, 255, 0.1) 100%); backdrop-filter: blur(10px); border: 2px solid #0066ff; border-radius: 0; padding: 32px; margin-bottom: 32px; box-shadow: 0 8px 32px rgba(0, 100, 255, 0.4); display: flex; justify-content: space-between; align-items: center; will-change: auto; transform: translateZ(0); isolation: isolate; width: 100%; box-sizing: border-box; max-width: 100%; }}
         .header-left h1 {{ font-size: 32px; font-weight: 800; margin-bottom: 8px; text-shadow: 0 0 10px rgba(0, 150, 255, 0.5), 0 0 20px rgba(0, 100, 255, 0.3); color: #00ccff; }}
         .header-left p {{ color: #66aaff; font-size: 16px; }}
@@ -1187,9 +1187,9 @@ def dashboard():
         .btn-primary:hover {{ background: linear-gradient(135deg, #0033ff, #0000cc); box-shadow: 0 6px 20px rgba(0, 100, 255, 0.6), 0 0 20px rgba(0, 150, 255, 0.4); transform: translateY(-2px); }}
         .btn-danger {{ background: linear-gradient(135deg, #0000cc, #000099); color: white; border-color: #0000cc; box-shadow: 0 4px 15px rgba(0, 100, 200, 0.4); }}
         .btn-danger:hover {{ background: linear-gradient(135deg, #000099, #000066); box-shadow: 0 6px 20px rgba(0, 100, 200, 0.6); transform: translateY(-2px); }}
-        .section {{ margin-bottom: 32px; width: 100%; box-sizing: border-box; max-width: 100%; overflow-y: auto; max-height: calc(100vh - 200px); }}
+        .section {{ margin-bottom: 32px; width: 100%; box-sizing: border-box; max-width: 100%; overflow-y: auto; overflow-x: hidden; max-height: calc(100vh - 200px); }}
         .section-title {{ font-size: 20px; font-weight: 700; margin-bottom: 16px; color: #00ccff; text-shadow: 0 0 8px rgba(100, 200, 255, 0.4); word-wrap: break-word; overflow-wrap: break-word; max-width: 100%; }}
-        .page {{ display: none; width: 100%; box-sizing: border-box; max-width: 100%; }}
+        .page {{ display: none; width: 100%; box-sizing: border-box; max-width: 100%; overflow-x: hidden; }}
         .page.active {{ display: block; }}
         .form-group {{ margin-bottom: 16px; width: 100%; max-width: 100%; box-sizing: border-box; }}
         .form-label {{ display: block; margin-bottom: 8px; font-size: 14px; font-weight: 600; color: #66aaff; word-wrap: break-word; overflow-wrap: break-word; max-width: 100%; }}
@@ -2733,7 +2733,7 @@ Você ganhou **{{{{prize}}}}**!
                 <h2 class="section-title">💎 Sistema de XP e Níveis</h2>
                 
                 <!-- Sub-tabs do XP -->
-                <div style="display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; overflow-x: auto;">
+                <div style="display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap;">
                     <button class="btn btn-primary" style="padding: 8px 16px; font-size: 13px;" onclick="showXPTab('geral')">⚙️ Geral</button>
                     <button class="btn" style="padding: 8px 16px; font-size: 13px; background: rgba(255,255,255,0.1);" onclick="showXPTab('niveis')">🎯 Níveis</button>
                     <button class="btn" style="padding: 8px 16px; font-size: 13px; background: rgba(255,255,255,0.1);" onclick="showXPTab('recompensas')">🎁 Recompensas</button>
