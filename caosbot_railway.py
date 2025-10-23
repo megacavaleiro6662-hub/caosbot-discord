@@ -27,13 +27,14 @@ from urllib.parse import urlencode
 # ==================== SISTEMA DE XP ====================
 try:
     from xp_database import xp_db
-    from xp_system import setup_xp_system, XPSystem
-    from xp_commands import XPCommands
+    from xp_system import setup_xp_system, process_xp_gain
     XP_SYSTEM_ENABLED = True
     print('✅ Sistema de XP importado com sucesso!')
 except Exception as e:
     XP_SYSTEM_ENABLED = False
     print(f'⚠️ Sistema de XP não disponível: {e}')
+    import traceback
+    traceback.print_exc()
 
 # ========================================
 # FIGURINHAS DO ROBITO (MASCOTE DO BOT)
@@ -5633,12 +5634,13 @@ bot = commands.Bot(command_prefix='.', intents=intents)
 # ==================== INICIALIZAR SISTEMA DE XP ====================
 if XP_SYSTEM_ENABLED:
     try:
-        # Inicializar sistema de XP
-        xp_system_instance = setup_xp_system(bot)
+        # Configurar hook de mensagens para XP
+        setup_xp_system(bot)
         print('✅ Sistema de XP inicializado no bot!')
         
         # Carregar comandos de XP
         async def load_xp_commands():
+            from xp_commands import XPCommands
             await bot.add_cog(XPCommands(bot))
             print('✅ Comandos de XP carregados!')
         
@@ -5646,6 +5648,8 @@ if XP_SYSTEM_ENABLED:
         bot.loop.create_task(load_xp_commands())
     except Exception as e:
         print(f'❌ Erro ao inicializar sistema de XP: {e}')
+        import traceback
+        traceback.print_exc()
 
 # Sistema de XP - Cooldown para ganhar XP (antigo, será substituído pelo novo)
 xp_cooldowns = {}
