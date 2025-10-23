@@ -12598,7 +12598,180 @@ def xp_dashboard_page(guild_id):
     except Exception as e:
         return f"Erro: {e}", 500
 
-# APIs REST para XP
+# ==================== APIs AUXILIARES (DROPDOWNS) ====================
+
+@app.route('/api/guild/<guild_id>/categories')
+@login_required
+def get_guild_categories(guild_id):
+    """Retorna categorias do servidor para dropdown"""
+    try:
+        guild = bot.get_guild(int(guild_id))
+        if not guild:
+            return jsonify({"categories": []})
+        
+        categories = [
+            {"id": str(cat.id), "name": cat.name}
+            for cat in guild.categories
+        ]
+        return jsonify({"categories": categories})
+    except:
+        return jsonify({"categories": []})
+
+@app.route('/api/guild/<guild_id>/channels')
+@login_required
+def get_guild_channels(guild_id):
+    """Retorna canais do servidor (opcionalmente por categoria)"""
+    try:
+        guild = bot.get_guild(int(guild_id))
+        if not guild:
+            return jsonify({"channels": []})
+        
+        category_id = request.args.get('category_id')
+        
+        if category_id:
+            # Filtrar por categoria
+            channels = [
+                {"id": str(ch.id), "name": ch.name}
+                for ch in guild.text_channels
+                if ch.category_id == int(category_id)
+            ]
+        else:
+            # Todos os canais de texto
+            channels = [
+                {"id": str(ch.id), "name": ch.name, "category": ch.category.name if ch.category else "Sem categoria"}
+                for ch in guild.text_channels
+            ]
+        
+        return jsonify({"channels": channels})
+    except:
+        return jsonify({"channels": []})
+
+@app.route('/api/guild/<guild_id>/roles')
+@login_required
+def get_guild_roles(guild_id):
+    """Retorna cargos do servidor para dropdown"""
+    try:
+        guild = bot.get_guild(int(guild_id))
+        if not guild:
+            return jsonify({"roles": []})
+        
+        roles = [
+            {"id": str(role.id), "name": role.name, "color": str(role.color)}
+            for role in guild.roles
+            if not role.is_default()  # Excluir @everyone
+        ]
+        return jsonify({"roles": roles})
+    except:
+        return jsonify({"roles": []})
+
+# ==================== APIs DE MULTIPLICADORES ====================
+
+@app.route('/api/xp/<guild_id>/multipliers', methods=['GET'])
+@login_required
+def get_xp_multipliers(guild_id):
+    """Lista multiplicadores"""
+    if not XP_SYSTEM_ENABLED:
+        return jsonify({"multipliers": []})
+    
+    multipliers = xp_db.get_multipliers(int(guild_id))
+    return jsonify({
+        "multipliers": [
+            {"id": m.id, "role_id": m.role_id, "role_name": m.role_name, "multiplier": m.multiplier}
+            for m in multipliers
+        ]
+    })
+
+@app.route('/api/xp/<guild_id>/multipliers', methods=['POST'])
+@login_required
+def add_xp_multiplier(guild_id):
+    """Adiciona multiplicador"""
+    if not XP_SYSTEM_ENABLED:
+        return jsonify({"success": False})
+    
+    data = request.json
+    xp_db.add_multiplier(
+        int(guild_id),
+        int(data['role_id']),
+        data['role_name'],
+        float(data['multiplier'])
+    )
+    return jsonify({"success": True, "message": "Multiplicador adicionado!"})
+
+@app.route('/api/xp/<guild_id>/multipliers/<int:mult_id>', methods=['DELETE'])
+@login_required
+def delete_xp_multiplier(guild_id, mult_id):
+    """Remove multiplicador"""
+    if not XP_SYSTEM_ENABLED:
+        return jsonify({"success": False})
+    
+    xp_db.delete_multiplier(mult_id)
+    return jsonify({"success": True, "message": "Multiplicador removido!"})
+
+# ==================== APIs DE BLOQUEIOS ====================
+
+@app.route('/api/xp/<guild_id>/blocked-roles', methods=['GET'])
+@login_required
+def get_blocked_roles(guild_id):
+    """Lista cargos bloqueados"""
+    if not XP_SYSTEM_ENABLED:
+        return jsonify({"blocked_roles": []})
+    
+    blocked = xp_db.get_blocked_roles(int(guild_id))
+    return jsonify({"blocked_roles": blocked})
+
+@app.route('/api/xp/<guild_id>/blocked-roles', methods=['POST'])
+@login_required
+def add_blocked_role(guild_id):
+    """Bloqueia cargo"""
+    if not XP_SYSTEM_ENABLED:
+        return jsonify({"success": False})
+    
+    data = request.json
+    xp_db.add_blocked_role(int(guild_id), int(data['role_id']))
+    return jsonify({"success": True})
+
+@app.route('/api/xp/<guild_id>/blocked-roles/<int:role_id>', methods=['DELETE'])
+@login_required
+def remove_blocked_role(guild_id, role_id):
+    """Desbloqueia cargo"""
+    if not XP_SYSTEM_ENABLED:
+        return jsonify({"success": False})
+    
+    xp_db.remove_blocked_role(int(guild_id), role_id)
+    return jsonify({"success": True})
+
+@app.route('/api/xp/<guild_id>/blocked-channels', methods=['GET'])
+@login_required
+def get_blocked_channels(guild_id):
+    """Lista canais bloqueados"""
+    if not XP_SYSTEM_ENABLED:
+        return jsonify({"blocked_channels": []})
+    
+    blocked = xp_db.get_blocked_channels(int(guild_id))
+    return jsonify({"blocked_channels": blocked})
+
+@app.route('/api/xp/<guild_id>/blocked-channels', methods=['POST'])
+@login_required
+def add_blocked_channel(guild_id):
+    """Bloqueia canal"""
+    if not XP_SYSTEM_ENABLED:
+        return jsonify({"success": False})
+    
+    data = request.json
+    xp_db.add_blocked_channel(int(guild_id), int(data['channel_id']))
+    return jsonify({"success": True})
+
+@app.route('/api/xp/<guild_id>/blocked-channels/<int:channel_id>', methods=['DELETE'])
+@login_required
+def remove_blocked_channel(guild_id, channel_id):
+    """Desbloqueia canal"""
+    if not XP_SYSTEM_ENABLED:
+        return jsonify({"success": False})
+    
+    xp_db.remove_blocked_channel(int(guild_id), channel_id)
+    return jsonify({"success": True})
+
+# APIs REST para XP (CONFIG)
 @app.route('/api/xp/<guild_id>/config/general', methods=['POST'])
 @login_required
 def update_xp_general(guild_id):
