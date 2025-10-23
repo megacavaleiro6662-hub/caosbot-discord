@@ -7587,8 +7587,198 @@ async def ship_command(ctx, user1: discord.Member = None, user2: discord.Member 
         icon_url=ctx.author.display_avatar.url
     )
     
-    # Enviar embed (sem imagem)
-    await ctx.reply(embed=embed)
+    # GERAR PNG ULTRA DETALHADO
+    try:
+        from PIL import Image, ImageDraw, ImageFont, ImageFilter
+        import io
+        import aiohttp
+        
+        # Baixar avatares e robito
+        async with aiohttp.ClientSession() as session:
+            # Avatar 1
+            async with session.get(str(user1.display_avatar.url)) as resp:
+                avatar1_data = await resp.read()
+                avatar1 = Image.open(io.BytesIO(avatar1_data)).convert('RGBA').resize((200, 200))
+            
+            # Avatar 2
+            async with session.get(str(user2.display_avatar.url)) as resp:
+                avatar2_data = await resp.read()
+                avatar2 = Image.open(io.BytesIO(avatar2_data)).convert('RGBA').resize((200, 200))
+            
+            # ROBITO APAIXONADO
+            async with session.get(ROBITO_IMAGES['apaixonado']) as resp:
+                robito_data = await resp.read()
+                robito = Image.open(io.BytesIO(robito_data)).convert('RGBA').resize((180, 180))
+        
+        # Canvas 800x400
+        img = Image.new('RGBA', (800, 400), (0, 0, 0, 0))
+        
+        # GRADIENTE DE FUNDO BASEADO NA %
+        bg = Image.new('RGB', (800, 400), (20, 20, 40))
+        draw_bg = ImageDraw.Draw(bg)
+        
+        # Gradiente vertical
+        for y in range(400):
+            # Cor baseada na porcentagem
+            if ship_value >= 70:
+                r = int(255 * (1 - y/400) + 180 * (y/400))
+                g = int(20 * (1 - y/400) + 100 * (y/400))
+                b = int(147 * (1 - y/400) + 180 * (y/400))
+            elif ship_value >= 40:
+                r = int(255 * (1 - y/400) + 100 * (y/400))
+                g = int(140 * (1 - y/400) + 80 * (y/400))
+                b = int(0 * (1 - y/400) + 150 * (y/400))
+            else:
+                r = int(80 * (1 - y/400) + 50 * (y/400))
+                g = int(80 * (1 - y/400) + 50 * (y/400))
+                b = int(100 * (1 - y/400) + 80 * (y/400))
+            
+            draw_bg.line([(0, y), (800, y)], fill=(r, g, b))
+        
+        img.paste(bg, (0, 0))
+        draw = ImageDraw.Draw(img)
+        
+        # Carregar fontes
+        try:
+            font_title = ImageFont.truetype('/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf', 48)
+            font_percent = ImageFont.truetype('/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf', 72)
+            font_text = ImageFont.truetype('/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf', 28)
+            font_small = ImageFont.truetype('/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf', 22)
+        except:
+            font_title = ImageFont.load_default()
+            font_percent = ImageFont.load_default()
+            font_text = ImageFont.load_default()
+            font_small = ImageFont.load_default()
+        
+        # AVATARES CIRCULARES COM BORDA
+        # Avatar 1 (esquerda)
+        mask1 = Image.new('L', (200, 200), 0)
+        draw_mask1 = ImageDraw.Draw(mask1)
+        draw_mask1.ellipse([0, 0, 200, 200], fill=255)
+        
+        avatar1_circle = Image.new('RGBA', (220, 220), (0, 0, 0, 0))
+        # Sombra
+        draw.ellipse([40, 130, 260, 350], fill=(0, 0, 0, 100))
+        # Borda
+        draw.ellipse([45, 135, 255, 345], fill=(255, 255, 255), outline=(255, 255, 255), width=8)
+        # Avatar
+        img.paste(avatar1, (55, 145), mask1)
+        
+        # Avatar 2 (direita)
+        mask2 = Image.new('L', (200, 200), 0)
+        draw_mask2 = ImageDraw.Draw(mask2)
+        draw_mask2.ellipse([0, 0, 200, 200], fill=255)
+        
+        # Sombra
+        draw.ellipse([540, 130, 760, 350], fill=(0, 0, 0, 100))
+        # Borda
+        draw.ellipse([545, 135, 755, 345], fill=(255, 255, 255), outline=(255, 255, 255), width=8)
+        # Avatar
+        img.paste(avatar2, (555, 145), mask2)
+        
+        # ROBITO NO CENTRO
+        robito_x, robito_y = 310, 180
+        # Sombra robito
+        shadow = Image.new('RGBA', (180, 180), (0, 0, 0, 0))
+        draw_shadow = ImageDraw.Draw(shadow)
+        draw_shadow.ellipse([0, 0, 180, 180], fill=(0, 0, 0, 120))
+        shadow = shadow.filter(ImageFilter.GaussianBlur(15))
+        img.paste(shadow, (robito_x, robito_y + 10), shadow)
+        # Robito
+        img.paste(robito, (robito_x, robito_y), robito)
+        
+        # TÍTULO NO TOPO
+        title_text = f"💘 {ship_name.upper()} 💘"
+        bbox = draw.textbbox((0, 0), title_text, font=font_title)
+        title_w = bbox[2] - bbox[0]
+        title_x = (800 - title_w) // 2
+        # Sombra
+        draw.text((title_x + 3, 33), title_text, font=font_title, fill=(0, 0, 0))
+        # Texto
+        draw.text((title_x, 30), title_text, font=font_title, fill=(255, 255, 255))
+        
+        # PORCENTAGEM GRANDE NO CENTRO
+        percent_text = f"{ship_value}%"
+        bbox = draw.textbbox((0, 0), percent_text, font=font_percent)
+        percent_w = bbox[2] - bbox[0]
+        percent_x = (800 - percent_w) // 2
+        # Sombra
+        draw.text((percent_x + 4, 84), percent_text, font=font_percent, fill=(0, 0, 0))
+        # Texto
+        if ship_value >= 70:
+            color = (255, 100, 150)
+        elif ship_value >= 40:
+            color = (255, 200, 0)
+        else:
+            color = (150, 150, 150)
+        draw.text((percent_x, 80), percent_text, font=font_percent, fill=color)
+        
+        # BARRA DE COMPATIBILIDADE
+        bar_x, bar_y = 100, 160
+        bar_w, bar_h = 600, 40
+        
+        # Borda da barra
+        draw.rectangle([bar_x - 3, bar_y - 3, bar_x + bar_w + 3, bar_y + bar_h + 3], 
+                      outline=(255, 255, 255), width=3)
+        # Fundo da barra
+        draw.rectangle([bar_x, bar_y, bar_x + bar_w, bar_y + bar_h], fill=(40, 40, 60))
+        
+        # Preenchimento gradiente
+        filled_w = int(bar_w * (ship_value / 100))
+        for x in range(filled_w):
+            progress = x / bar_w
+            if ship_value >= 70:
+                r = int(255 - (80 * progress))
+                g = int(50 + (100 * progress))
+                b = int(150 + (50 * progress))
+            elif ship_value >= 40:
+                r = int(255 - (50 * progress))
+                g = int(200 - (50 * progress))
+                b = int(100 * progress)
+            else:
+                r = int(100 + (50 * progress))
+                g = int(100 + (50 * progress))
+                b = int(120 + (50 * progress))
+            
+            draw.line([(bar_x + x, bar_y), (bar_x + x, bar_y + bar_h)], fill=(r, g, b))
+        
+        # MENSAGEM EMBAIXO
+        bbox = draw.textbbox((0, 0), message, font=font_text)
+        msg_w = bbox[2] - bbox[0]
+        msg_x = (800 - msg_w) // 2
+        # Sombra
+        draw.text((msg_x + 2, 372), message, font=font_text, fill=(0, 0, 0))
+        # Texto
+        draw.text((msg_x, 370), message, font=font_text, fill=(255, 255, 255))
+        
+        # Salvar PNG
+        buffer = io.BytesIO()
+        img = img.convert('RGB')
+        img.save(buffer, format='PNG', optimize=True)
+        buffer.seek(0)
+        
+        file = discord.File(buffer, filename=f'ship_{ship_name}.png')
+        
+        # Embed simplificado
+        embed_simple = discord.Embed(
+            title=f'💘 SHIPAGEM: {ship_name.upper()}',
+            description=f'**{user1.display_name}** {emoji} **{user2.display_name}**\n\n'
+                       f'**Compatibilidade:** {ship_value}%\n'
+                       f'**Resultado:** {message}',
+            color=cor
+        )
+        embed_simple.set_image(url=f'attachment://ship_{ship_name}.png')
+        embed_simple.set_footer(
+            text=f'Ship feito por {ctx.author.name} • PNG Ultra Detalhado',
+            icon_url=ctx.author.display_avatar.url
+        )
+        
+        await ctx.reply(embed=embed_simple, file=file)
+        
+    except Exception as e:
+        # Se falhar, envia o embed normal
+        await ctx.reply(embed=embed)
+        print(f"Erro ao gerar PNG: {e}")
 
 # ========================================
 # COMANDOS DE ZOEIRA PESADA
