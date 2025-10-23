@@ -7593,7 +7593,6 @@ async def ship_command(ctx, user1: discord.Member = None, user2: discord.Member 
         import io
         import aiohttp
         import math
-        import random
         
         # Baixar avatares e robito
         async with aiohttp.ClientSession() as session:
