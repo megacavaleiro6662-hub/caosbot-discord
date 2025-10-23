@@ -7687,8 +7687,8 @@ async def ship_command(ctx, user1: discord.Member = None, user2: discord.Member 
         # Robito
         img.paste(robito, (robito_x, robito_y), robito)
         
-        # TÍTULO NO TOPO
-        title_text = f"💘 {ship_name.upper()} 💘"
+        # TÍTULO NO TOPO (SEM EMOJI - DEJAVU NÃO SUPORTA)
+        title_text = f"SHIPAGEM: {ship_name.upper()}"
         bbox = draw.textbbox((0, 0), title_text, font=font_title)
         title_w = bbox[2] - bbox[0]
         title_x = (800 - title_w) // 2
