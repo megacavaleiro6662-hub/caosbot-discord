@@ -5253,10 +5253,23 @@ async def on_ready():
     
     # LIMPAR COMANDOS SLASH ANTIGOS (REMOVER TODOS)
     try:
-        print('🧹 Limpando comandos slash antigos...')
-        bot.tree.clear_commands(guild=None)  # Limpar comandos globais
-        await bot.tree.sync()  # Sincronizar (remove todos)
-        print('✅ Comandos slash removidos! Use apenas comandos com PONTO (.)')
+        print('🧹 Limpando TODOS os comandos slash (globais e de servidores)...')
+        
+        # Limpar comandos globais
+        bot.tree.clear_commands(guild=None)
+        await bot.tree.sync()
+        print('✅ Comandos slash GLOBAIS removidos!')
+        
+        # Limpar comandos de cada servidor
+        for guild in bot.guilds:
+            try:
+                bot.tree.clear_commands(guild=guild)
+                await bot.tree.sync(guild=guild)
+                print(f'✅ Comandos slash removidos do servidor: {guild.name}')
+            except Exception as e:
+                print(f'⚠️ Erro ao limpar comandos do servidor {guild.name}: {e}')
+        
+        print('🎉 TODOS os comandos slash foram removidos! Use apenas comandos com PONTO (.)')
     except Exception as e:
         print(f'⚠️ Aviso ao limpar comandos slash: {e}')
     
