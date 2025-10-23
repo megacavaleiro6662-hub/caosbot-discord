@@ -10443,43 +10443,13 @@ async def help_command(ctx, categoria=None):
         )
         
         embed.add_field(
-            name="⚙️ `.xpsetup` (Admin)",
-            value="**Inicializa sistema de XP**\n*Cria os 8 níveis padrão no banco*\n**Use 1x:** Apenas ao configurar pela primeira vez\n**Requer:** Administrador",
-            inline=False
-        )
-        
-        embed.add_field(
-            name="🗑️ `.xpreset @usuário` (Admin)",
-            value="**Reseta XP** de um usuário específico\n**Exemplo:** `.xpreset @João`\n**Requer:** Administrador",
-            inline=False
-        )
-        
-        embed.add_field(
-            name="💥 `.xpresetall` (Admin)",
-            value="**RESETA XP DE TODOS**\n⚠️ CUIDADO! Ação irreversível\n*Confirmação dupla necessária*\n**Requer:** Administrador",
-            inline=False
-        )
-        
-        embed.add_field(
-            name="🚀 `.xpboost <multiplicador> <minutos>` (Admin)",
-            value="**Boost temporário de XP**\n**Exemplos:**\n• `.xpboost 2.0 60` - 2x XP por 1 hora\n• `.xpboost 3.0 30` - 3x XP por 30min\n**Requer:** Administrador",
-            inline=False
-        )
-        
-        embed.add_field(
-            name="📊 `.xpconfig` (Admin)",
-            value="**Ver configuração atual**\n*Mostra: cooldown, XP min/max, modo recompensa, bloqueios*\n**Readonly:** Para editar use o dashboard\n**Requer:** Administrador",
-            inline=False
-        )
-        
-        embed.add_field(
-            name="🌐 **DASHBOARD WEB**",
-            value="Configure TUDO pelo painel:\n• 8 seções editáveis\n• Preview de mensagens em tempo real\n• Personalizar rank cards\n• Estatísticas e logs\n• Exportar CSV\n**Acesse:** https://seu-app.onrender.com/dashboard",
+            name="🌐 **DASHBOARD WEB - CONFIGURE TUDO AQUI!**",
+            value="⚙️ **Acesse:** https://seu-app.onrender.com/dashboard\n\n**8 Seções de Configuração:**\n• ⚙️ Geral (toggle ON/OFF, cooldown, XP min/max, zerar todos)\n• 🎯 Níveis (criar, editar, remover níveis e cargos)\n• 🎁 Recompensas (empilhar/substituir cargos, bônus)\n• 🚫 Bloqueios (cargos e canais sem XP)\n• 💬 Mensagens (personalizar anúncios, preview em tempo real)\n• 🎨 Rank Card (cores, imagem de fundo)\n• 📊 Estatísticas (logs, exportar CSV)\n• 🚀 Boosts (criar boosts temporários)\n\n**Tudo configurável pelo dashboard! Sem comandos de admin no Discord!**",
             inline=False
         )
         
         embed.set_thumbnail(url=ROBITO_IMAGES['rico'])
-        embed.set_footer(text="💎 Sistema de XP Completo • Configurável pelo Dashboard")
+        embed.set_footer(text="💎 Configure TUDO no Dashboard Web • Comandos Discord apenas para visualização")
         
     else:
         embed = discord.Embed(
