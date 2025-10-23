@@ -2825,6 +2825,31 @@ Você ganhou **{{{{prize}}}}**!
                         </div>
                         
                         <button class="btn btn-primary" onclick="saveXPRewards()" style="width: 100%; padding: 12px; margin-top: 10px;">💾 Salvar Recompensas</button>
+                        
+                        <hr style="border: 1px solid rgba(255,255,255,0.1); margin: 20px 0;">
+                        
+                        <h3 style="margin-bottom: 20px;">⚡ Taxa de XP para Cargos</h3>
+                        <p style="color: #9ca3af; margin-bottom: 20px;">Você pode configurar que cargos específicos ganhem mais/menos experiência que outros membros. Ótimo para recompensar membros ativos do seu servidor com um bônus de experiência a cada mensagem que eles enviam!</p>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Adicionar Multiplicador</label>
+                            <div style="display: grid; grid-template-columns: 2fr 1fr auto; gap: 10px; align-items: end;">
+                                <div>
+                                    <select id="xp-mult-role-selector" class="form-select">
+                                        <option value="">Selecione um cargo...</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <input type="number" id="xp-mult-value" class="form-input" placeholder="Ex: 2.0" step="0.1" min="0.1" max="10">
+                                    <small style="color: #9ca3af; font-size: 11px;">2.0 = 2x XP</small>
+                                </div>
+                                <button class="btn" onclick="addMultiplier()" style="padding: 11px 20px;">➕ Adicionar</button>
+                            </div>
+                        </div>
+                        
+                        <div id="xp-multipliers-list" style="display: flex; flex-direction: column; gap: 8px; margin-top: 15px; max-height: 300px; overflow-y: auto;">
+                            <!-- Multiplicadores aparecerão aqui -->
+                        </div>
                     </div>
                 </div>
                 
