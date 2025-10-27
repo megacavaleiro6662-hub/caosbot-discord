@@ -24,6 +24,22 @@ from io import BytesIO
 import sqlite3
 from urllib.parse import urlencode
 
+# ==================== RATE LIMITING PARA DASHBOARD ====================
+# Proteção contra rate limit do Discord API
+login_attempts = {}  # {ip: timestamp}
+LOGIN_COOLDOWN = 15  # segundos entre tentativas de login
+
+def check_rate_limit(ip):
+    """Verifica se o IP pode fazer login (cooldown de 15s)"""
+    current_time = time.time()
+    if ip in login_attempts:
+        last_attempt = login_attempts[ip]
+        time_passed = current_time - last_attempt
+        if time_passed < LOGIN_COOLDOWN:
+            return False, int(LOGIN_COOLDOWN - time_passed)
+    login_attempts[ip] = current_time
+    return True, 0
+
 # ==================== SISTEMA DE XP ====================
 try:
     from xp_database import xp_db
@@ -299,25 +315,30 @@ def get_bin_id():
 # ========================================
 @app.route('/login')
 def login_page():
-    """Página de login - TEMPORARIAMENTE DESABILITADO"""
-    # DASHBOARD DESABILITADO PARA EVITAR RATE LIMIT!
-    return """
-    <html>
-    <head>
-        <title>Dashboard em Manutenção</title>
-        <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&display=swap" rel="stylesheet">
-    </head>
-    <body style="background:#000;color:#ff3300;text-align:center;padding-top:100px;font-family:Orbitron,sans-serif;">
-        <h1 style="font-size:48px;text-shadow:0 0 20px #ff3300;">🚧 DASHBOARD EM MANUTENÇÃO</h1>
-        <p style="color:#ff9966;font-size:18px;margin-top:20px;">O dashboard está temporariamente desabilitado para evitar rate limits.</p>
-        <p style="color:#999;font-size:14px;margin-top:10px;">O BOT continua funcionando normalmente no Discord (.ping, .ship, etc).</p>
-        <p style="color:#666;font-size:12px;margin-top:30px;">Em breve será reabilitado com proteção melhorada.</p>
-    </body>
-    </html>
-    """
+    """Página de login com proteção contra rate limit"""
+    # PROTEÇÃO: Rate limiting por IP
+    user_ip = request.remote_addr
+    can_login, wait_time = check_rate_limit(user_ip)
     
-    # CÓDIGO ORIGINAL COMENTADO:
-    # session.clear()
+    if not can_login:
+        return f"""
+        <html>
+        <head>
+            <title>Aguarde...</title>
+            <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&display=swap" rel="stylesheet">
+        </head>
+        <body style="background:#000;color:#ff9900;text-align:center;padding-top:100px;font-family:Orbitron,sans-serif;">
+            <h1 style="font-size:48px;text-shadow:0 0 20px #ff9900;">⏳ AGUARDE {wait_time}s</h1>
+            <p style="color:#ffcc66;font-size:18px;margin-top:20px;">Você pode fazer login novamente em {wait_time} segundos.</p>
+            <p style="color:#999;font-size:14px;margin-top:10px;">Proteção contra rate limit do Discord API.</p>
+            <p style="color:#666;font-size:12px;margin-top:30px;">Página recarregará automaticamente...</p>
+            <script>setTimeout(function(){{location.reload();}}, {wait_time * 1000});</script>
+        </body>
+        </html>
+        """
+    
+    # Limpa sessão ao acessar página de login
+    session.clear()
     
     html = f"""
 <html>
@@ -617,24 +638,9 @@ def login_page():
 
 @app.route('/callback')
 def callback():
-    """Callback do Discord OAuth2 - TEMPORARIAMENTE DESABILITADO"""
-    # DASHBOARD DESABILITADO PARA EVITAR RATE LIMIT!
-    return """
-    <html>
-    <head>
-        <title>Dashboard em Manutenção</title>
-        <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&display=swap" rel="stylesheet">
-    </head>
-    <body style="background:#000;color:#ff3300;text-align:center;padding-top:100px;font-family:Orbitron,sans-serif;">
-        <h1 style="font-size:48px;text-shadow:0 0 20px #ff3300;">🚧 DASHBOARD EM MANUTENÇÃO</h1>
-        <p style="color:#ff9966;font-size:18px;margin-top:20px;">O dashboard está temporariamente desabilitado para evitar rate limits.</p>
-        <p style="color:#999;font-size:14px;margin-top:10px;">O BOT continua funcionando normalmente no Discord (.ping, .ship, etc).</p>
-    </body>
-    </html>
-    """
-    
-    # CÓDIGO ORIGINAL COMENTADO:
-    # session.clear()
+    """Callback do Discord OAuth2 com proteção contra rate limit"""
+    # Limpa qualquer sessão antiga antes de começar
+    session.clear()
     
     code = request.args.get('code')
     if not code:
