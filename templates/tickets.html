@@ -408,14 +408,72 @@
             event.target.classList.add('active');
         }
 
+        // Popular checkboxes de categorias
+        function populateCategoriesCheckboxes(categoriesEnabled) {
+            const categoriesList = document.getElementById('categories-list');
+            
+            const defaultCategories = {
+                'geral': { emoji: '📁', name: 'Geral', description: 'Assuntos gerais' },
+                'compras': { emoji: '🛒', name: 'Compras', description: 'Dúvidas sobre compras' },
+                'suporte': { emoji: '🔧', name: 'Suporte Técnico', description: 'Problemas técnicos' },
+                'denuncia': { emoji: '🚨', name: 'Denúncia', description: 'Reportar usuário/conteúdo' },
+                'parceria': { emoji: '🤝', name: 'Parceria', description: 'Proposta de parceria' },
+                'sorteios': { emoji: '✨', name: 'Sorteios', description: 'Participar de sorteios' },
+                'financeiro': { emoji: '💰', name: 'Financeiro', description: 'Questões de pagamento' },
+                'moderacao': { emoji: '🛡️', name: 'Moderação', description: 'Questões de moderação' },
+                'bug': { emoji: '🐛', name: 'Bug', description: 'Reportar bugs' }
+            };
+            
+            categoriesList.innerHTML = '';
+            
+            for (const [catId, catData] of Object.entries(defaultCategories)) {
+                const isChecked = categoriesEnabled && categoriesEnabled[catId] !== false;
+                
+                const checkboxGroup = document.createElement('div');
+                checkboxGroup.className = 'checkbox-group';
+                checkboxGroup.innerHTML = `
+                    <input type="checkbox" id="cat_${catId}" ${isChecked ? 'checked' : ''}>
+                    <label for="cat_${catId}">${catData.emoji} ${catData.name}</label>
+                `;
+                
+                categoriesList.appendChild(checkboxGroup);
+            }
+        }
+        
         // Carregar dados iniciais
         async function loadInitialData() {
-            // Carregar categorias e canais
-            // TODO: Implementar
+            try {
+                // Carregar config do backend
+                const response = await fetch(`/api/tickets/config?guild_id=${currentGuildId}`);
+                const data = await response.json();
+                
+                if (data.success && data.config) {
+                    const config = data.config;
+                    
+                    // Popular categorias
+                    populateCategoriesCheckboxes(config.categories_enabled);
+                    
+                    console.log('✅ Config carregada:', config);
+                } else {
+                    // Se não tem config, criar com todas ativadas
+                    populateCategoriesCheckboxes({});
+                }
+            } catch (error) {
+                console.error('❌ Erro ao carregar config:', error);
+                populateCategoriesCheckboxes({});
+            }
         }
 
         // Salvar configurações
         async function saveAllConfig() {
+            // 🔥 COLETAR CATEGORIAS ATIVAS/INATIVAS
+            const categoriesEnabled = {};
+            const categoryCheckboxes = document.querySelectorAll('input[type="checkbox"][id^="cat_"]');
+            categoryCheckboxes.forEach(checkbox => {
+                const catId = checkbox.id.replace('cat_', '');
+                categoriesEnabled[catId] = checkbox.checked;
+            });
+            
             const config = {
                 // Básico
                 category_id: document.getElementById('category_id').value,
@@ -427,6 +485,9 @@
                 panel_description: document.getElementById('panel_description').value,
                 panel_color: document.getElementById('panel_color').value,
                 button_text: document.getElementById('button_text').value,
+                
+                // 🔥 CATEGORIAS (SINCRONIZAÇÃO)
+                categories_enabled: categoriesEnabled,
                 
                 // Prioridades
                 priority_enabled: document.getElementById('priority_enabled').checked,
@@ -463,6 +524,10 @@
                 log_show_duration: document.getElementById('log_show_duration').checked
             };
 
+            // 🔥 LOG DE DEBUG
+            console.log('📤 Salvando config:', config);
+            console.log('📁 Categorias ativas:', Object.keys(categoriesEnabled).filter(k => categoriesEnabled[k]));
+            
             try {
                 const response = await fetch('/api/tickets/config', {
                     method: 'POST',
@@ -473,11 +538,14 @@
                 const data = await response.json();
                 
                 if (data.success) {
-                    alert('✅ Configurações salvas com sucesso!');
+                    const activeCount = Object.values(categoriesEnabled).filter(v => v).length;
+                    const totalCount = Object.keys(categoriesEnabled).length;
+                    alert(`✅ Configurações salvas com sucesso!\n\n📁 Categorias ativas: ${activeCount}/${totalCount}\n⚡ Prioridades: ${config.priority_enabled ? 'Ativadas' : 'Desativadas'}`);
                 } else {
                     alert('❌ Erro: ' + data.message);
                 }
             } catch (error) {
+                console.error('❌ Erro ao salvar:', error);
                 alert('❌ Erro de conexão: ' + error);
             }
         }
