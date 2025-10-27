@@ -620,14 +620,48 @@ def callback():
         }
         headers = {'Content-Type': 'application/x-www-form-urlencoded'}
         r = requests.post('https://discord.com/api/oauth2/token', data=data, headers=headers)
+        
+        # TRATAMENTO DE RATE LIMIT (429)
+        if r.status_code == 429:
+            retry_after = r.json().get('retry_after', 60)
+            print(f"⚠️ [LOGIN] Rate limit! Aguarde {retry_after}s")
+            return f"""
+            <html>
+            <head><title>Aguarde...</title><link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&display=swap" rel="stylesheet"></head>
+            <body style="background:#000;color:#ff9900;text-align:center;padding-top:100px;font-family:Orbitron,sans-serif;">
+                <h1 style="font-size:48px;text-shadow:0 0 20px #ff9900;">⏳ AGUARDE</h1>
+                <p style="color:#ffcc66;font-size:18px;">Discord bloqueou temporariamente (muitas requisições).</p>
+                <p style="color:#999;font-size:16px;">Aguarde {int(retry_after)} segundos e tente novamente.</p>
+                <a href="/login" style="color:#ff9900;font-size:16px;text-decoration:none;">← Voltar ao Login</a>
+            </body>
+            </html>
+            """
+        
         r.raise_for_status()
         token_data = r.json()
         access_token = token_data['access_token']
         
         # Pegar informações do usuário
         headers = {'Authorization': f'Bearer {access_token}'}
-        user_data = requests.get('https://discord.com/api/users/@me', headers=headers).json()
+        user_response = requests.get('https://discord.com/api/users/@me', headers=headers)
         
+        # TRATAMENTO DE RATE LIMIT (429)
+        if user_response.status_code == 429:
+            retry_after = user_response.json().get('retry_after', 60)
+            print(f"⚠️ [LOGIN] Rate limit ao buscar user! Aguarde {retry_after}s")
+            return f"""
+            <html>
+            <head><title>Aguarde...</title><link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&display=swap" rel="stylesheet"></head>
+            <body style="background:#000;color:#ff9900;text-align:center;padding-top:100px;font-family:Orbitron,sans-serif;">
+                <h1 style="font-size:48px;text-shadow:0 0 20px #ff9900;">⏳ AGUARDE</h1>
+                <p style="color:#ffcc66;font-size:18px;">Discord bloqueou temporariamente (muitas requisições).</p>
+                <p style="color:#999;font-size:16px;">Aguarde {int(retry_after)} segundos e tente novamente.</p>
+                <a href="/login" style="color:#ff9900;font-size:16px;text-decoration:none;">← Voltar ao Login</a>
+            </body>
+            </html>
+            """
+        
+        user_data = user_response.json()
         print(f"🔐 [LOGIN] Usuário tentando login: {user_data.get('username')} (ID: {user_data.get('id')})")
         
         # VERIFICAÇÃO PERFEITA: Usar Bot Token para pegar cargos do servidor CAOS Hub
@@ -644,6 +678,23 @@ def callback():
         member_response = requests.get(member_url, headers=bot_headers)
         
         print(f"📡 [LOGIN] Status da API: {member_response.status_code}")
+        
+        # TRATAMENTO DE RATE LIMIT (429) - PRIORIDADE!
+        if member_response.status_code == 429:
+            retry_after = member_response.json().get('retry_after', 60)
+            print(f"⚠️ [LOGIN] Rate limit ao buscar membro! Aguarde {retry_after}s")
+            return f"""
+            <html>
+            <head><title>Aguarde...</title><link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&display=swap" rel="stylesheet"></head>
+            <body style="background:#000;color:#ff9900;text-align:center;padding-top:100px;font-family:Orbitron,sans-serif;">
+                <h1 style="font-size:48px;text-shadow:0 0 20px #ff9900;">⏳ AGUARDE</h1>
+                <p style="color:#ffcc66;font-size:18px;">Discord bloqueou temporariamente (muitas requisições).</p>
+                <p style="color:#999;font-size:16px;">Aguarde {int(retry_after)} segundos e tente novamente.</p>
+                <p style="color:#666;font-size:12px;">Isso acontece quando muitas pessoas tentam fazer login ao mesmo tempo.</p>
+                <a href="/login" style="color:#ff9900;font-size:16px;text-decoration:none;">← Voltar ao Login</a>
+            </body>
+            </html>
+            """
         
         if member_response.status_code == 404:
             print(f"❌ [LOGIN] Usuário não encontrado no servidor")
