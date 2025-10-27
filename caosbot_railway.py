@@ -5478,9 +5478,12 @@ def get_ticket_config_route():
         if not guild_id:
             return jsonify({'success': False, 'message': 'Guild ID não especificado'}), 400
         
-        # Se não existe config, retorna padrão
+        # Se não existe config, CRIA e SALVA uma padrão
         if guild_id not in ticket_config:
+            print(f"🔧 Criando config padrão para guild {guild_id}")
             config = get_default_ticket_config(guild_id)
+            ticket_config[guild_id] = config
+            save_ticket_config()
         else:
             config = ticket_config[guild_id]
         
@@ -5616,15 +5619,18 @@ def send_ticket_panel():
         if not channel_id:
             return jsonify({'success': False, 'message': 'Canal não especificado'}), 400
         
-        # CARREGAR OU CRIAR CONFIGURAÇÃO COMPLETA
+        # CARREGAR CONFIGURAÇÃO EXISTENTE DO DASHBOARD
         if bot.guilds:
             guild_id = str(bot.guilds[0].id)
             
-            # Se não existe config, criar padrão
+            # 🔥 NÃO criar config padrão aqui! Usar a que já foi salva pelo dashboard
             if guild_id not in ticket_config:
-                ticket_config[guild_id] = get_default_ticket_config(guild_id)
+                return jsonify({
+                    'success': False, 
+                    'message': '⚠️ Configure as categorias e prioridades primeiro no dashboard antes de enviar o painel!'
+                }), 400
             
-            # Atualizar campos do dashboard (mantém outras configs existentes)
+            # Atualizar APENAS os campos do "Básico" (mantém categories_enabled, priority_enabled, etc)
             ticket_config[guild_id]['category_id'] = int(category_id) if category_id else None
             ticket_config[guild_id]['log_channel_id'] = int(log_channel_id) if log_channel_id else None
             ticket_config[guild_id]['staff_roles'] = [int(r) if isinstance(r, str) else r for r in staff_roles] if staff_roles else []
