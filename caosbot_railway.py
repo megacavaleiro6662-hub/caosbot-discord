@@ -11867,25 +11867,27 @@ def get_default_ticket_config(guild_id):
         'panel_color': '0x5865F2',
         'button_text': 'Abrir Ticket',
         
-        # Categorias Ativas (8 categorias)
+        # Categorias Ativas (9 categorias) - SINCRONIZADO COM DASHBOARD
         'categories_enabled': {
             'geral': True,
             'compras': True,
             'suporte': True,
             'denuncia': True,
             'parceria': True,
+            'sorteios': True,
             'financeiro': True,
             'moderacao': True,
             'bug': True
         },
         
-        # Customização de Categorias
+        # Customização de Categorias - SINCRONIZADO COM DASHBOARD
         'categories_custom': {
             'geral': {'emoji': '📁', 'name': 'Geral', 'description': 'Assuntos gerais'},
             'compras': {'emoji': '🛒', 'name': 'Compras', 'description': 'Dúvidas sobre compras'},
             'suporte': {'emoji': '🔧', 'name': 'Suporte Técnico', 'description': 'Problemas técnicos'},
             'denuncia': {'emoji': '🚨', 'name': 'Denúncia', 'description': 'Reportar usuário/conteúdo'},
             'parceria': {'emoji': '🤝', 'name': 'Parceria', 'description': 'Proposta de parceria'},
+            'sorteios': {'emoji': '✨', 'name': 'Sorteios', 'description': 'Participar de sorteios'},
             'financeiro': {'emoji': '💰', 'name': 'Financeiro', 'description': 'Questões de pagamento'},
             'moderacao': {'emoji': '🛡️', 'name': 'Moderação', 'description': 'Questões de moderação'},
             'bug': {'emoji': '🐛', 'name': 'Bug', 'description': 'Reportar bugs'}
@@ -12206,13 +12208,14 @@ class TicketCategoryView(discord.ui.View):
         print(f"📁 Categories Enabled recebidas: {categories_enabled}")
         print(f"📊 Total de categorias ativas: {sum(1 for v in categories_enabled.values() if v)}")
         
-        # Mapeamento padrão (fallback)
+        # Mapeamento padrão (fallback) - SINCRONIZADO COM DASHBOARD
         default_categories = {
             'geral': {'emoji': '📁', 'name': 'Geral', 'description': 'Assuntos gerais'},
             'compras': {'emoji': '🛒', 'name': 'Compras', 'description': 'Dúvidas sobre compras'},
             'suporte': {'emoji': '🔧', 'name': 'Suporte Técnico', 'description': 'Problemas técnicos'},
             'denuncia': {'emoji': '🚨', 'name': 'Denúncia', 'description': 'Reportar usuário/conteúdo'},
             'parceria': {'emoji': '🤝', 'name': 'Parceria', 'description': 'Proposta de parceria'},
+            'sorteios': {'emoji': '✨', 'name': 'Sorteios', 'description': 'Participar de sorteios'},
             'financeiro': {'emoji': '💰', 'name': 'Financeiro', 'description': 'Questões de pagamento'},
             'moderacao': {'emoji': '🛡️', 'name': 'Moderação', 'description': 'Questões de moderação'},
             'bug': {'emoji': '🐛', 'name': 'Bug', 'description': 'Reportar bugs'}
