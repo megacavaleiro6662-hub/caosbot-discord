@@ -13855,42 +13855,20 @@ def public_leaderboard(guild_id):
                          levels=levels)
 
 def run_discord_bot():
-    """Executa o bot Discord em thread separada com proteção contra rate limit"""
+    """Executa o bot Discord em thread separada - SIMPLES"""
     import time
     time.sleep(5)  # Aguarda Flask iniciar primeiro
     
-    max_retries = 3
-    retry_count = 0
-    base_delay = 60  # 60 segundos base
-    
-    while retry_count < max_retries:
-        try:
-            print(f'🚀 Iniciando bot Discord... (tentativa {retry_count + 1}/{max_retries})')
-            bot.run(TOKEN)
-            break  # Se conectou com sucesso, sai do loop
-        except discord.errors.HTTPException as e:
-            if '429' in str(e) or 'Too Many Requests' in str(e):
-                retry_count += 1
-                wait_time = base_delay * (2 ** retry_count)  # Backoff exponencial
-                print(f'⚠️ RATE LIMIT (429)! Discord bloqueou temporariamente.')
-                print(f'🕐 Aguardando {wait_time}s antes de tentar novamente...')
-                print(f'💡 Tentativa {retry_count}/{max_retries}')
-                
-                if retry_count < max_retries:
-                    time.sleep(wait_time)
-                else:
-                    print(f'❌ Máximo de tentativas atingido. Bot ficará offline até próximo deploy.')
-                    print(f'💡 O Flask continuará rodando (para manter o serviço ativo).')
-            else:
-                print(f'❌ Erro no bot Discord: {e}')
-                import traceback
-                traceback.print_exc()
-                break
-        except Exception as e:
-            print(f'❌ Erro inesperado no bot Discord: {e}')
-            import traceback
-            traceback.print_exc()
-            break
+    try:
+        print('🚀 Iniciando bot Discord...')
+        bot.run(TOKEN)
+    except Exception as e:
+        print(f'❌ Erro no bot Discord: {e}')
+        if '429' in str(e) or 'Too Many Requests' in str(e):
+            print('⚠️ RATE LIMIT ATIVO! Discord bloqueou o IP temporariamente.')
+            print('💡 Aguarde 1-2 horas e faça um redeploy manual no Render.')
+        import traceback
+        traceback.print_exc()
 
 if __name__ == '__main__':
     print('=' * 60)
