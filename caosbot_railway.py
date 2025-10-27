@@ -299,9 +299,25 @@ def get_bin_id():
 # ========================================
 @app.route('/login')
 def login_page():
-    """Página de login"""
-    # Limpa sessão ao acessar página de login
-    session.clear()
+    """Página de login - TEMPORARIAMENTE DESABILITADO"""
+    # DASHBOARD DESABILITADO PARA EVITAR RATE LIMIT!
+    return """
+    <html>
+    <head>
+        <title>Dashboard em Manutenção</title>
+        <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&display=swap" rel="stylesheet">
+    </head>
+    <body style="background:#000;color:#ff3300;text-align:center;padding-top:100px;font-family:Orbitron,sans-serif;">
+        <h1 style="font-size:48px;text-shadow:0 0 20px #ff3300;">🚧 DASHBOARD EM MANUTENÇÃO</h1>
+        <p style="color:#ff9966;font-size:18px;margin-top:20px;">O dashboard está temporariamente desabilitado para evitar rate limits.</p>
+        <p style="color:#999;font-size:14px;margin-top:10px;">O BOT continua funcionando normalmente no Discord (.ping, .ship, etc).</p>
+        <p style="color:#666;font-size:12px;margin-top:30px;">Em breve será reabilitado com proteção melhorada.</p>
+    </body>
+    </html>
+    """
+    
+    # CÓDIGO ORIGINAL COMENTADO:
+    # session.clear()
     
     html = f"""
 <html>
@@ -601,9 +617,24 @@ def login_page():
 
 @app.route('/callback')
 def callback():
-    """Callback do Discord OAuth2 - VERIFICAÇÃO PERFEITA DE CARGOS"""
-    # Limpa qualquer sessão antiga antes de começar
-    session.clear()
+    """Callback do Discord OAuth2 - TEMPORARIAMENTE DESABILITADO"""
+    # DASHBOARD DESABILITADO PARA EVITAR RATE LIMIT!
+    return """
+    <html>
+    <head>
+        <title>Dashboard em Manutenção</title>
+        <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&display=swap" rel="stylesheet">
+    </head>
+    <body style="background:#000;color:#ff3300;text-align:center;padding-top:100px;font-family:Orbitron,sans-serif;">
+        <h1 style="font-size:48px;text-shadow:0 0 20px #ff3300;">🚧 DASHBOARD EM MANUTENÇÃO</h1>
+        <p style="color:#ff9966;font-size:18px;margin-top:20px;">O dashboard está temporariamente desabilitado para evitar rate limits.</p>
+        <p style="color:#999;font-size:14px;margin-top:10px;">O BOT continua funcionando normalmente no Discord (.ping, .ship, etc).</p>
+    </body>
+    </html>
+    """
+    
+    # CÓDIGO ORIGINAL COMENTADO:
+    # session.clear()
     
     code = request.args.get('code')
     if not code:
