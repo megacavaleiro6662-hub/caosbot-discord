@@ -5499,6 +5499,14 @@ def save_ticket_config_route():
         if not guild_id or not config:
             return jsonify({'success': False, 'message': 'Dados incompletos'}), 400
         
+        # 🔥 LOG DETALHADO
+        print(f"\n{'='*50}")
+        print(f"💾 SALVANDO CONFIG DE TICKETS")
+        print(f"📊 Guild ID: {guild_id}")
+        print(f"📁 Categorias Enabled: {config.get('categories_enabled', {})}")
+        print(f"⚡ Priority Enabled: {config.get('priority_enabled', True)}")
+        print(f"{'='*50}\n")
+        
         # Salvar configuração
         ticket_config[guild_id] = config
         save_ticket_config()
@@ -12177,6 +12185,11 @@ class TicketCategoryView(discord.ui.View):
         # SELECT DE CATEGORIA - SINCRONIZADO COM DASHBOARD
         categories_enabled = self.config.get('categories_enabled', {})
         categories_custom = self.config.get('categories_custom', {})
+        
+        # 🔥 LOG DEBUG
+        print(f"\n🎫 CRIANDO SELECTS DE TICKET")
+        print(f"📁 Categories Enabled recebidas: {categories_enabled}")
+        print(f"📊 Total de categorias ativas: {sum(1 for v in categories_enabled.values() if v)}")
         
         # Mapeamento padrão (fallback)
         default_categories = {
