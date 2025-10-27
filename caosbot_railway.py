@@ -5907,8 +5907,9 @@ def run_web():
 intents = discord.Intents.default()
 intents.message_content = True
 intents.guilds = True
-intents.members = True  # NECESSÁRIO para eventos de entrada/saída/ban
-intents.presences = True  # NECESSÁRIO para ver status online/offline dos membros
+# TEMPORARIAMENTE DESABILITADOS (ativar no Discord Developer Portal!)
+# intents.members = True  # NECESSÁRIO para eventos de entrada/saída/ban
+# intents.presences = True  # NECESSÁRIO para ver status online/offline dos membros
 
 # Bot configurado com PREFIXO (.)
 bot = commands.Bot(command_prefix='.', intents=intents)
