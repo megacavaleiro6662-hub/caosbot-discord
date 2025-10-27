@@ -358,7 +358,6 @@ def login_page():
             display: flex;
             align-items: center;
             justify-content: center;
-            overflow-y: auto;
         }}
         @keyframes oceanGlow {{
             0%, 100% {{ background-position: 0% 50%; }}
@@ -960,8 +959,9 @@ def dashboard():
         }}
         
         html, body {{
-            overflow-x: hidden;
+            overflow: hidden;
             max-width: 100vw;
+            max-height: 100vh;
         }}
         
         body {{ 
@@ -970,9 +970,8 @@ def dashboard():
             background-size: 400% 400%;
             animation: oceanGlow 20s ease infinite;
             min-height: 100vh; 
-            max-height: 100vh;
             color: #fff; 
-            overflow-y: auto;
+            overflow-y: visible;
             position: relative;
             transform: translateZ(0);
             perspective: 1000px;
@@ -1027,7 +1026,6 @@ def dashboard():
             left: 0;
             width: 100%;
             height: 100%;
-            overflow-y: auto;
             pointer-events: none;
             z-index: 0;
             will-change: contents;
@@ -1149,7 +1147,6 @@ def dashboard():
             padding: 32px 24px; 
             z-index: 10; 
             box-shadow: 5px 0 30px rgba(0, 100, 255, 0.3);
-            overflow-y: auto;
             overflow-x: hidden;
             will-change: transform;
             transform: translateZ(0);
@@ -1296,7 +1293,7 @@ def dashboard():
         .form-label {{ display: block; margin-bottom: 8px; font-size: 14px; font-weight: 600; color: #66aaff; word-wrap: break-word; overflow-wrap: break-word; max-width: 100%; }}
         .form-input, .form-select, .form-textarea {{ width: 100%; max-width: 100%; padding: 10px 14px; background: rgba(0, 0, 0, 0.5); border: 2px solid #0066ff; border-radius: 0; color: #00ccff; font-family: 'Inter', 'Roboto', sans-serif; font-size: 14px; transition: all 0.3s; box-sizing: border-box; }}
         .form-input:focus, .form-select:focus, .form-textarea:focus {{ outline: none; border-color: #0033ff; box-shadow: 0 0 10px rgba(0, 100, 255, 0.4), inset 0 0 5px rgba(0, 150, 255, 0.2); background: rgba(0, 10, 30, 0.6); }}
-        .form-textarea {{ resize: vertical; min-height: 100px; }}
+        .form-textarea {{ resize: vertical; min-height: 100px; overflow-y: auto; }}
         .toast {{ position: fixed; top: 24px; right: 24px; background: linear-gradient(135deg, rgba(0, 0, 0, 0.9), rgba(0, 20, 50, 0.9)); border: 2px solid #0066ff; border-radius: 0; padding: 16px; min-width: 300px; opacity: 0; transform: translateX(400px); transition: all 0.3s; z-index: 1000; box-shadow: 0 8px 32px rgba(0, 100, 255, 0.5), 0 0 20px rgba(0, 150, 255, 0.3); }}
         .toast.show {{ opacity: 1; transform: translateX(0); }}
         .toast-success {{ border-color: #00ccff; box-shadow: 0 8px 32px rgba(100, 200, 255, 0.5), 0 0 20px rgba(100, 200, 255, 0.3); }}
@@ -2428,7 +2425,7 @@ def dashboard():
                         
                         <div class="form-group">
                             <label class="form-label">👥 4. Cargos da Staff (quem vê tickets)</label>
-                            <div id="ticket-staff-roles" style="display: grid; gap: 8px; padding: 12px; background: rgba(255,255,255,0.05); border-radius: 8px; max-height: 200px; overflow-y: auto;">
+                            <div id="ticket-staff-roles" style="display: grid; gap: 8px; padding: 12px; background: rgba(255,255,255,0.05); border-radius: 8px;">
                                 <div style="color: #9ca3af;">Carregando cargos...</div>
                             </div>
                             <small style="color: #9ca3af; margin-top: 5px; display: block;">✅ Selecione os cargos que poderão ver os tickets</small>
@@ -2759,7 +2756,7 @@ Você ganhou **{{{{prize}}}}**!
                                     </select>
                                 </div>
                             </div>
-                            <div id="embed-preview" style="background: #2b2d31; padding: 16px; border-radius: 4px; min-height: 300px; max-height: 600px; overflow-y: auto;">
+                            <div id="embed-preview" style="background: #2b2d31; padding: 16px; border-radius: 4px; min-height: 300px;">
                                 <div style="color: #b9bbbe; text-align: center; padding: 40px 20px;">
                                     📝 Configure o embed ao lado para ver o preview aqui
                                 </div>
@@ -2935,7 +2932,7 @@ Você ganhou **{{{{prize}}}}**!
                             </div>
                         </div>
                         
-                        <div id="xp-multipliers-list" style="display: flex; flex-direction: column; gap: 8px; margin-top: 15px; max-height: 300px; overflow-y: auto;">
+                        <div id="xp-multipliers-list" style="display: flex; flex-direction: column; gap: 8px; margin-top: 15px;">
                             <!-- Multiplicadores aparecerão aqui -->
                         </div>
                     </div>
@@ -2953,7 +2950,7 @@ Você ganhou **{{{{prize}}}}**!
                                 <option value="">Selecione um cargo...</option>
                             </select>
                             <button class="btn" onclick="addBlockedRole()" style="width: 100%; margin-bottom: 15px;">➕ Adicionar Cargo</button>
-                            <div id="xp-blocked-roles-list" style="display: flex; flex-direction: column; gap: 8px; max-height: 200px; overflow-y: auto;">
+                            <div id="xp-blocked-roles-list" style="display: flex; flex-direction: column; gap: 8px;">
                                 <!-- Cargos bloqueados aparecerão aqui -->
                             </div>
                         </div>
@@ -2967,7 +2964,7 @@ Você ganhou **{{{{prize}}}}**!
                                 <option value="">Selecione um canal...</option>
                             </select>
                             <button class="btn" onclick="addBlockedChannel()" style="width: 100%; margin-bottom: 15px;">➕ Adicionar Canal</button>
-                            <div id="xp-blocked-channels-list" style="display: flex; flex-direction: column; gap: 8px; max-height: 200px; overflow-y: auto;">
+                            <div id="xp-blocked-channels-list" style="display: flex; flex-direction: column; gap: 8px;">
                                 <!-- Canais bloqueados aparecerão aqui -->
                             </div>
                         </div>
@@ -3097,7 +3094,7 @@ Você ganhou **{{{{prize}}}}**!
                         </div>
                         
                         <h4 style="color: #00ccff; margin: 20px 0 10px 0;">📜 Logs Recentes</h4>
-                        <div id="xp-logs-list" style="max-height: 300px; overflow-y: auto; background: rgba(0,0,0,0.3); padding: 15px; border-radius: 8px;">
+                        <div id="xp-logs-list" style="background: rgba(0,0,0,0.3); padding: 15px; border-radius: 8px;">
                             <p style="color: #9ca3af;">⏳ Carregando logs...</p>
                         </div>
                         
