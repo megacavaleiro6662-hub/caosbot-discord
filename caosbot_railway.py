@@ -1255,7 +1255,7 @@ def dashboard():
             padding: 10px;
         }}
         
-        .main {{ margin-left: 280px; padding: 32px; position: relative; z-index: 1; will-change: auto; transform: translateZ(0); isolation: isolate; max-width: calc(100vw - 280px); box-sizing: border-box; overflow-x: hidden; }}
+        .main {{ margin-left: 280px; padding: 32px; position: relative; z-index: 1; will-change: auto; transform: translateZ(0); isolation: isolate; max-width: calc(100vw - 280px); max-height: calc(100vh - 80px); overflow-y: auto; overflow-x: hidden; box-sizing: border-box; }}
         .header {{ background: linear-gradient(135deg, rgba(0, 100, 255, 0.15) 0%, rgba(0, 150, 255, 0.1) 100%); backdrop-filter: blur(10px); border: 2px solid #0066ff; border-radius: 0; padding: 32px; margin-bottom: 32px; box-shadow: 0 8px 32px rgba(0, 100, 255, 0.4); display: flex; justify-content: space-between; align-items: center; will-change: auto; transform: translateZ(0); isolation: isolate; width: 100%; box-sizing: border-box; max-width: 100%; }}
         .header-left h1 {{ font-size: 32px; font-weight: 800; margin-bottom: 8px; text-shadow: 0 0 10px rgba(0, 150, 255, 0.5), 0 0 20px rgba(0, 100, 255, 0.3); color: #00ccff; }}
         .header-left p {{ color: #66aaff; font-size: 16px; }}
@@ -3150,10 +3150,9 @@ Você ganhou **{{{{prize}}}}**!
     <!-- Toast Notification -->
     <div id="toast" class="toast"></div>
     
-    <!-- Notification Sound (som épico mais longo) -->
-    <audio id="notif-sound" preload="auto">
+    <!-- Notification Sound -->
+    <audio id="notif-sound" preload="auto" style="display: none;">
         <source src="https://www.soundjay.com/misc/sounds/bell-ringing-05.wav" type="audio/wav">
-        <source src="data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBSuBzvLZiTYIG2m98OScTgwOUarm7blmHgU4kNXzzn0vBSF1xe/eizEIHWq+8+OWT" type="audio/wav">
     </audio>
     
     <script>
@@ -3793,26 +3792,21 @@ Você ganhou **{{{{prize}}}}**!
             `;
             toast.className = `toast toast-${{type}} show`;
             
-            // Tocar som com fallback
-            if (sound) {{
-                sound.currentTime = 0;
-                sound.play().catch(() => {{
-                    // Fallback: criar beep via Web Audio API
-                    try {{
-                        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-                        const oscillator = audioContext.createOscillator();
-                        const gainNode = audioContext.createGain();
-                        oscillator.connect(gainNode);
-                        gainNode.connect(audioContext.destination);
-                        oscillator.frequency.value = type === 'error' ? 300 : 600;
-                        oscillator.type = 'sine';
-                        gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
-                        oscillator.start();
-                        oscillator.stop(audioContext.currentTime + 0.2);
-                    }} catch (e) {{
-                        console.log('Som não disponível');
-                    }}
-                }});
+            // Tocar som simples
+            try {{
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+                oscillator.frequency.value = type === 'error' ? 400 : 800;
+                oscillator.type = 'sine';
+                gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+                oscillator.start();
+                oscillator.stop(audioContext.currentTime + 0.3);
+            }} catch (e) {{
+                console.log('🔊 Som não disponível');
             }}
             
             setTimeout(() => toast.classList.remove('show'), 3000);
@@ -3887,8 +3881,29 @@ Você ganhou **{{{{prize}}}}**!
         // Iniciar polling a cada 2 segundos
         setInterval(syncDashboardConfigs, 2000);
         
-        // Sincronizar imediatamente ao carregar
-        syncDashboardConfigs();
+        // Carregar configurações iniciais do JSONBin
+        async function loadInitialConfigs() {{
+            try {{
+                const response = await fetch('/api/config/load-from-jsonbin', {{
+                    method: 'POST'
+                }});
+                const result = await response.json();
+                if (result.success) {{
+                    console.log('✅ Configurações carregadas do JSONBin');
+                    // Sincronizar imediatamente após carregar
+                    setTimeout(syncDashboardConfigs, 500);
+                }} else {{
+                    console.log('⚠️ Usando configurações padrão');
+                    syncDashboardConfigs();
+                }}
+            }} catch (error) {{
+                console.log('⚠️ Erro ao carregar do JSONBin, usando padrão');
+                syncDashboardConfigs();
+            }}
+        }}
+        
+        // Carregar configurações ao inicializar
+        loadInitialConfigs();
         
         // 📱 MENU MOBILE - Controle do hamburger
         const mobileMenuBtn = document.getElementById('mobile-menu-btn');
@@ -5344,6 +5359,21 @@ def toggle_config_api():
             'new_value': config[key],
             'message': f'{key} agora está {"ativado" if config[key] else "desativado"}'
         })
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+@app.route('/api/config/load-from-jsonbin', methods=['POST'])
+def load_from_jsonbin_api():
+    """Força carregamento das configurações do JSONBin"""
+    try:
+        global welcome_config
+        config_from_bin = load_config_from_jsonbin()
+        if config_from_bin:
+            welcome_config.update(config_from_bin)
+            save_config_dashboard(welcome_config)
+            return jsonify({'success': True, 'message': 'Configurações carregadas do JSONBin'})
+        else:
+            return jsonify({'success': False, 'message': 'Não foi possível carregar do JSONBin'})
     except Exception as e:
         return jsonify({'success': False, 'message': str(e)}), 500
 
