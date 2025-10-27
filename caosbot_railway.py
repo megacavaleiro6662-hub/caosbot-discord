@@ -5608,18 +5608,22 @@ def send_ticket_panel():
         if not channel_id:
             return jsonify({'success': False, 'message': 'Canal não especificado'}), 400
         
-        # SALVAR CONFIGURAÇÃO (category_id, log_channel_id, staff_roles)
+        # CARREGAR OU CRIAR CONFIGURAÇÃO COMPLETA
         if bot.guilds:
             guild_id = str(bot.guilds[0].id)
-            ticket_config[guild_id] = {
-                'category_id': int(category_id) if category_id else None,
-                'log_channel_id': int(log_channel_id) if log_channel_id else None,
-                'staff_roles': [int(r) if isinstance(r, str) else r for r in staff_roles] if staff_roles else [],
-                'max_tickets_per_user': ticket_config.get(guild_id, {}).get('max_tickets_per_user', 1)
-            }
+            
+            # Se não existe config, criar padrão
+            if guild_id not in ticket_config:
+                ticket_config[guild_id] = get_default_ticket_config(guild_id)
+            
+            # Atualizar campos do dashboard (mantém outras configs existentes)
+            ticket_config[guild_id]['category_id'] = int(category_id) if category_id else None
+            ticket_config[guild_id]['log_channel_id'] = int(log_channel_id) if log_channel_id else None
+            ticket_config[guild_id]['staff_roles'] = [int(r) if isinstance(r, str) else r for r in staff_roles] if staff_roles else []
+            
             # Salvar no arquivo
             save_ticket_config()
-            print(f"✅ Config de tickets salva: {ticket_config[guild_id]}")
+            print(f"✅ Config de tickets salva com {len(ticket_config[guild_id])} campos")
         
         # Agendar envio do painel
         async def send_panel():
@@ -5636,8 +5640,12 @@ def send_ticket_panel():
                 )
                 embed.set_footer(text='Sistema de Tickets • Gilipe Server')
                 
-                # Usar o sistema de BOTÃO com TicketView
-                view = TicketView()
+                # Carregar config completa do guild
+                guild_id = str(channel.guild.id)
+                config = ticket_config.get(guild_id, get_default_ticket_config(guild_id))
+                
+                # Usar o sistema de BOTÃO com TicketView (PASSANDO CONFIG)
+                view = TicketView(config)
                 
                 await channel.send(embed=embed, view=view)
                 return True
@@ -12212,24 +12220,48 @@ class TicketCategoryView(discord.ui.View):
         self.select_cat.callback = self.category_callback
         self.add_item(self.select_cat)
         
-        # SELECT DE PRIORIDADE
-        priority_options = [
-            discord.SelectOption(label="Baixa", description="Não é urgente", emoji="🟢", value="baixa", default=(self.priority_value=="baixa")),
-            discord.SelectOption(label="Média", description="Prioridade normal", emoji="🟡", value="media", default=(self.priority_value=="media")),
-            discord.SelectOption(label="Alta", description="Precisa de atenção", emoji="🟠", value="alta", default=(self.priority_value=="alta")),
-            discord.SelectOption(label="Urgente", description="Muito urgente!", emoji="🔴", value="urgente", default=(self.priority_value=="urgente")),
-        ]
+        # SELECT DE PRIORIDADE - SINCRONIZADO COM DASHBOARD
+        priority_enabled = self.config.get('priority_enabled', True)
         
-        self.select_pri = discord.ui.Select(
-            placeholder="⚡ Selecione a Prioridade",
-            options=priority_options,
-            row=1
-        )
-        self.select_pri.callback = self.priority_callback
-        self.add_item(self.select_pri)
+        if priority_enabled:
+            # Usar customização do dashboard
+            priority_custom = self.config.get('priority_custom', {})
+            
+            # Fallback para prioridades padrão
+            default_priorities = {
+                'baixa': {'emoji': '🟢', 'name': 'Baixa', 'description': 'Não é urgente'},
+                'media': {'emoji': '🟡', 'name': 'Média', 'description': 'Prioridade normal'},
+                'alta': {'emoji': '🟠', 'name': 'Alta', 'description': 'Precisa de atenção'},
+                'urgente': {'emoji': '🔴', 'name': 'Urgente', 'description': 'Muito urgente!'}
+            }
+            
+            priority_options = []
+            for pri_id in ['baixa', 'media', 'alta', 'urgente']:
+                pri_data = priority_custom.get(pri_id, default_priorities.get(pri_id, {}))
+                priority_options.append(
+                    discord.SelectOption(
+                        label=pri_data.get('name', pri_id.capitalize()),
+                        description=pri_data.get('description', ''),
+                        emoji=pri_data.get('emoji', '⚪'),
+                        value=pri_id,
+                        default=(self.priority_value == pri_id)
+                    )
+                )
+            
+            self.select_pri = discord.ui.Select(
+                placeholder="⚡ Selecione a Prioridade",
+                options=priority_options,
+                row=1
+            )
+            self.select_pri.callback = self.priority_callback
+            self.add_item(self.select_pri)
+        else:
+            # Se prioridade desativada, definir valor padrão
+            self.selected_priority = "🟡 Média"
+            self.priority_value = "media"
         
-        # 🔥 RECRIAR BOTÃO CONTINUAR!
-        button_disabled = not (self.selected_category and self.selected_priority)
+        # 🔥 BOTÃO CONTINUAR - Depende de categoria (prioridade é opcional)
+        button_disabled = not self.selected_category
         self.btn_continue = discord.ui.Button(
             label="Continuar",
             style=discord.ButtonStyle.green,
@@ -12287,8 +12319,9 @@ class TicketCategoryView(discord.ui.View):
             await interaction.response.send_message("❌ Este painel não é seu!", ephemeral=True)
             return
         
-        if not self.selected_category or not self.selected_priority:
-            await interaction.response.send_message("❌ Selecione a categoria e prioridade primeiro!", ephemeral=True)
+        # Verificar apenas categoria (prioridade é opcional agora)
+        if not self.selected_category:
+            await interaction.response.send_message("❌ Selecione a categoria primeiro!", ephemeral=True)
             return
         
         # Passar VIEW para o modal poder parar o timer!
@@ -12576,8 +12609,9 @@ class TicketModal(discord.ui.Modal, title="🎫 Informações do Ticket"):
 
 # View com botão para abrir ticket
 class TicketView(discord.ui.View):
-    def __init__(self):
+    def __init__(self, config=None):
         super().__init__(timeout=None)
+        self.config = config  # Armazenar config para usar no botão
     
     @discord.ui.button(label="Abrir Ticket", style=discord.ButtonStyle.green, emoji="🎫", custom_id="open_ticket")
     async def open_ticket(self, interaction: discord.Interaction, button: discord.ui.Button):
@@ -12589,12 +12623,14 @@ class TicketView(discord.ui.View):
             await interaction.response.send_message("❌ Sistema de tickets desativado no dashboard!", ephemeral=True)
             return
         
-        # Verificar se tem configuração específica do ticket
-        if guild_id not in ticket_config:
+        # Usar config armazenada ou carregar do ticket_config
+        if self.config:
+            config = self.config
+        elif guild_id in ticket_config:
+            config = ticket_config[guild_id]
+        else:
             await interaction.response.send_message("❌ Sistema de tickets não configurado! Configure pelo dashboard.", ephemeral=True)
             return
-        
-        config = ticket_config[guild_id]
         category_id = config.get('category_id')
         
         if not category_id:
