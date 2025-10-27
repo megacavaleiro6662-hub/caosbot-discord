@@ -162,17 +162,20 @@ def home():
 @app.route('/ping')
 def ping():
     """Rota para keep-alive (evitar sleep do Render) + status real do bot"""
-    bot_status = "ONLINE ✅" if bot.is_ready() else "OFFLINE ❌"
-    bot_latency = f"{round(bot.latency * 1000)}ms" if bot.is_ready() else "N/A"
-    guilds_count = len(bot.guilds) if bot.is_ready() else 0
-    
-    return {
-        "status": "alive",
-        "bot_discord": bot_status,
-        "latency": bot_latency,
-        "guilds": guilds_count,
-        "timestamp": str(datetime.datetime.now())
-    }, 200
+    try:
+        bot_status = "ONLINE ✅" if bot.is_ready() else "OFFLINE ❌"
+        bot_latency = f"{round(bot.latency * 1000)}ms" if bot.is_ready() else "N/A"
+        guilds_count = len(bot.guilds) if bot.is_ready() else 0
+        
+        return {
+            "status": "alive",
+            "bot_discord": bot_status,
+            "latency": bot_latency,
+            "guilds": guilds_count,
+            "timestamp": str(datetime.now())
+        }, 200
+    except Exception as e:
+        return {"status": "error", "message": str(e)}, 500
 
 @app.route('/test')
 def test():
