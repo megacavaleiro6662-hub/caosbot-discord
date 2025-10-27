@@ -559,12 +559,34 @@
                 return;
             }
 
+            // 🔥 COLETAR CATEGORIAS ATIVAS/INATIVAS
+            const categoriesEnabled = {};
+            const categoryCheckboxes = document.querySelectorAll('input[type="checkbox"][id^="cat_"]');
+            categoryCheckboxes.forEach(checkbox => {
+                const catId = checkbox.id.replace('cat_', '');
+                categoriesEnabled[catId] = checkbox.checked;
+            });
+            
+            // Contar categorias ativas
+            const activeCount = Object.values(categoriesEnabled).filter(v => v).length;
+            
+            if (activeCount === 0) {
+                alert('❌ Selecione pelo menos 1 categoria antes de enviar o painel!');
+                return;
+            }
+
             const data = {
                 channel_id: channelId,
                 title: document.getElementById('panel_title').value,
                 description: document.getElementById('panel_description').value,
-                color: document.getElementById('panel_color').value
+                color: document.getElementById('panel_color').value,
+                // 🔥 ENVIAR CATEGORIAS E PRIORIDADES DIRETO!
+                categories_enabled: categoriesEnabled,
+                priority_enabled: document.getElementById('priority_enabled').checked
             };
+            
+            console.log('📤 Enviando painel com config:', data);
+            console.log(`📁 ${activeCount}/${Object.keys(categoriesEnabled).length} categorias ativas`);
 
             try {
                 const response = await fetch('/api/tickets/panel/send', {
@@ -576,11 +598,12 @@
                 const result = await response.json();
                 
                 if (result.success) {
-                    alert('✅ Painel enviado com sucesso!');
+                    alert(`✅ Painel enviado com sucesso!\n\n📁 ${activeCount} categorias ativas\n⚡ Prioridades: ${data.priority_enabled ? 'Ativadas' : 'Desativadas'}`);
                 } else {
                     alert('❌ Erro: ' + result.message);
                 }
             } catch (error) {
+                console.error('❌ Erro:', error);
                 alert('❌ Erro de conexão: ' + error);
             }
         }

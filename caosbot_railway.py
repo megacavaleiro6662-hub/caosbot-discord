@@ -5610,43 +5610,54 @@ def delete_ticket_profile():
 
 @app.route('/api/tickets/panel/send', methods=['POST'])
 def send_ticket_panel():
-    """Envia painel de ticket COMPLETO com categorias"""
+    """Envia painel de ticket COMPLETO com categorias DIRETO DO DASHBOARD"""
     try:
         data = request.get_json()
         channel_id = data.get('channel_id')
         category_id = data.get('category_id')
         log_channel_id = data.get('log_channel_id')
-        staff_roles = data.get('staff_roles', [])  # Array de IDs de staff
+        staff_roles = data.get('staff_roles', [])
         title = data.get('title', '🎫 SISTEMA DE TICKETS')
         description = data.get('description', 'Selecione uma categoria abaixo para abrir um ticket!')
         color = data.get('color', '0x5865F2')
         
+        # 🔥 RECEBER CATEGORIAS E PRIORIDADES DIRETO DO DASHBOARD!
+        categories_enabled = data.get('categories_enabled', {})
+        priority_enabled = data.get('priority_enabled', True)
+        
         if not channel_id:
             return jsonify({'success': False, 'message': 'Canal não especificado'}), 400
         
-        # CARREGAR CONFIGURAÇÃO EXISTENTE DO DASHBOARD
+        # CRIAR/ATUALIZAR CONFIGURAÇÃO COM OS DADOS DO DASHBOARD
         if bot.guilds:
             guild_id = str(bot.guilds[0].id)
             
-            # Se não tem config, usar a config atual que foi salva anteriormente
-            # (O dashboard DEVE ter chamado POST /api/tickets/config antes)
+            # Carregar config existente ou criar nova
             if guild_id not in ticket_config:
-                # Tentar carregar do arquivo
                 load_ticket_config()
             
-            # Se AINDA não existe, criar padrão MAS manter categories/priorities que vieram do dashboard
             if guild_id not in ticket_config:
-                print(f"⚠️ Config não encontrada, criando padrão para guild {guild_id}")
                 ticket_config[guild_id] = get_default_ticket_config(guild_id)
             
-            # Atualizar APENAS os campos do "Básico" (mantém categories_enabled, priority_enabled, etc)
+            # 🔥 ATUALIZAR COM DADOS DO DASHBOARD (INCLUINDO CATEGORIAS!)
             ticket_config[guild_id]['category_id'] = int(category_id) if category_id else None
             ticket_config[guild_id]['log_channel_id'] = int(log_channel_id) if log_channel_id else None
             ticket_config[guild_id]['staff_roles'] = [int(r) if isinstance(r, str) else r for r in staff_roles] if staff_roles else []
+            ticket_config[guild_id]['categories_enabled'] = categories_enabled  # 🔥 DIRETO DO DASHBOARD!
+            ticket_config[guild_id]['priority_enabled'] = priority_enabled  # 🔥 DIRETO DO DASHBOARD!
+            
+            # Log detalhado
+            cats_ativas = [k for k, v in categories_enabled.items() if v]
+            print(f"\n{'='*60}")
+            print(f"📤 ENVIANDO PAINEL DE TICKETS")
+            print(f"📁 Categorias recebidas do dashboard: {categories_enabled}")
+            print(f"✅ Categorias ATIVAS: {cats_ativas} ({len(cats_ativas)}/{len(categories_enabled)})")
+            print(f"⚡ Priority enabled: {priority_enabled}")
+            print(f"{'='*60}\n")
             
             # Salvar no arquivo
             save_ticket_config()
-            print(f"✅ Config de tickets salva com {len(ticket_config[guild_id])} campos")
+            print(f"✅ Config salva com categorias do dashboard")
         
         # Agendar envio do painel
         async def send_panel():
