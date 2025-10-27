@@ -5685,8 +5685,8 @@ def send_giveaway():
             from datetime import datetime, timedelta
             
             # Calcular tempo de fim
-            duration = giveaway_data.get('duration', 7)
-            time_unit = giveaway_data.get('time_unit', 'd')
+            duration = int(giveaway_data.get('duration', 7))
+            time_unit = giveaway_data.get('timeUnit', giveaway_data.get('time_unit', 'd'))
             
             if time_unit == 'm':
                 end_time = datetime.utcnow() + timedelta(minutes=duration)
@@ -5722,9 +5722,9 @@ def send_giveaway():
                     emoji = '🎉'
                 
                 # Agendar sorteio automático
-                duration = giveaway_data.get('duration', 7)
-                time_unit = giveaway_data.get('time_unit', 'd')
-                winners_count = giveaway_data.get('winners', 1)
+                duration = int(giveaway_data.get('duration', 7))
+                time_unit = giveaway_data.get('timeUnit', giveaway_data.get('time_unit', 'd'))
+                winners_count = int(giveaway_data.get('winners', 1))
                 prize = giveaway_data.get('prize', 'Prêmio')
                 
                 # Calcular tempo em segundos
