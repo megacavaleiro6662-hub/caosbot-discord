@@ -5507,6 +5507,91 @@ def save_ticket_config_route():
     except Exception as e:
         return jsonify({'success': False, 'message': str(e)}), 500
 
+@app.route('/api/tickets/profile/save', methods=['POST'])
+def save_ticket_profile():
+    """Salva um perfil de configuração de tickets"""
+    try:
+        data = request.json
+        guild_id = data.get('guild_id')
+        profile_name = data.get('profile_name')
+        profile_config = data.get('config')
+        
+        if not guild_id or not profile_name or not profile_config:
+            return jsonify({'success': False, 'message': 'Dados incompletos'}), 400
+        
+        if guild_id not in ticket_config:
+            ticket_config[guild_id] = get_default_ticket_config(guild_id)
+        
+        if 'saved_profiles' not in ticket_config[guild_id]:
+            ticket_config[guild_id]['saved_profiles'] = {}
+        
+        ticket_config[guild_id]['saved_profiles'][profile_name] = profile_config
+        save_ticket_config()
+        
+        return jsonify({'success': True, 'message': f'Perfil "{profile_name}" salvo com sucesso!'})
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+@app.route('/api/tickets/profile/load', methods=['POST'])
+def load_ticket_profile():
+    """Carrega um perfil de configuração de tickets"""
+    try:
+        data = request.json
+        guild_id = data.get('guild_id')
+        profile_name = data.get('profile_name')
+        
+        if not guild_id or not profile_name:
+            return jsonify({'success': False, 'message': 'Dados incompletos'}), 400
+        
+        if guild_id not in ticket_config or 'saved_profiles' not in ticket_config[guild_id]:
+            return jsonify({'success': False, 'message': 'Nenhum perfil encontrado'}), 404
+        
+        profile = ticket_config[guild_id]['saved_profiles'].get(profile_name)
+        if not profile:
+            return jsonify({'success': False, 'message': 'Perfil não encontrado'}), 404
+        
+        return jsonify({'success': True, 'profile': profile})
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+@app.route('/api/tickets/profile/list', methods=['GET'])
+def list_ticket_profiles():
+    """Lista todos os perfis salvos"""
+    try:
+        guild_id = request.args.get('guild_id')
+        
+        if not guild_id:
+            return jsonify({'success': False, 'message': 'Guild ID não especificado'}), 400
+        
+        if guild_id not in ticket_config or 'saved_profiles' not in ticket_config[guild_id]:
+            return jsonify({'success': True, 'profiles': []})
+        
+        profiles = list(ticket_config[guild_id]['saved_profiles'].keys())
+        return jsonify({'success': True, 'profiles': profiles})
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+@app.route('/api/tickets/profile/delete', methods=['POST'])
+def delete_ticket_profile():
+    """Deleta um perfil salvo"""
+    try:
+        data = request.json
+        guild_id = data.get('guild_id')
+        profile_name = data.get('profile_name')
+        
+        if not guild_id or not profile_name:
+            return jsonify({'success': False, 'message': 'Dados incompletos'}), 400
+        
+        if guild_id in ticket_config and 'saved_profiles' in ticket_config[guild_id]:
+            if profile_name in ticket_config[guild_id]['saved_profiles']:
+                del ticket_config[guild_id]['saved_profiles'][profile_name]
+                save_ticket_config()
+                return jsonify({'success': True, 'message': f'Perfil "{profile_name}" deletado!'})
+        
+        return jsonify({'success': False, 'message': 'Perfil não encontrado'}), 404
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)}), 500
+
 @app.route('/api/tickets/panel/send', methods=['POST'])
 def send_ticket_panel():
     """Envia painel de ticket COMPLETO com categorias"""
@@ -6186,6 +6271,16 @@ async def create_ticket_channel_complete(interaction, category_name, category_em
         
         # Enviar mensagem no canal do ticket
         await ticket_channel.send(f"{member.mention}", embed=embed, view=TicketManageView(ticket_channel))
+        
+        # AVISO DE VERSÃO DESATUALIZADA
+        config_version = config.get('version', '1.0')
+        if config_version != TICKET_CONFIG_VERSION:
+            warning_embed = discord.Embed(
+                title="⚠️ Ticket Desatualizado",
+                description=f"Este ticket foi criado com uma versão antiga da configuração.\n\n**Versão do Ticket:** `{config_version}`\n**Versão Atual:** `{TICKET_CONFIG_VERSION}`\n\n*Isso pode resultar em erros! Recomendamos atualizar as configurações no dashboard.*",
+                color=0xffaa00
+            )
+            await ticket_channel.send(embed=warning_embed)
         
         # LOG
         log_channel = discord.utils.get(guild.text_channels, name='ticket-logs')
@@ -11716,6 +11811,9 @@ async def on_message_old(message):
 # Configurações de ticket COMPLETAS (salvas em arquivo JSON)
 ticket_config = {}
 
+# VERSIONAMENTO - Para compatibilidade retroativa
+TICKET_CONFIG_VERSION = "2.0"  # Atualizar quando houver mudanças estruturais
+
 # Rastrear cooldown de criação de painel (anti-spam)
 ticket_panel_cooldowns = {}  # {user_id: timestamp}
 
@@ -11725,9 +11823,11 @@ ticket_user_cooldowns = {}  # {user_id: timestamp}
 def get_default_ticket_config(guild_id):
     """Retorna configuração padrão de tickets"""
     return {
+        'version': TICKET_CONFIG_VERSION,  # Versionamento
         'enabled': False,
         'category_id': None,
-        'staff_role_ids': [],
+        'staff_roles': [],  # IDs dos cargos selecionados no dashboard
+        'staff_role_ids': [],  # Compatibilidade com código antigo
         'log_channel_id': None,
         
         # Personalização do Painel
@@ -11800,22 +11900,59 @@ def get_default_ticket_config(guild_id):
         'log_include_stats': True,
         'log_attach_transcript': True,
         'log_show_participants': True,
-        'log_show_duration': True
+        'log_show_duration': True,
+        
+        # Sistema de Perfis Salvos
+        'saved_profiles': {}  # {profile_name: {all_config_above}}
     }
+
+def migrate_ticket_config(config, guild_id):
+    """Migra configurações antigas para nova versão"""
+    current_version = config.get('version', '1.0')
+    
+    if current_version != TICKET_CONFIG_VERSION:
+        print(f"🔄 Migrando config de tickets v{current_version} → v{TICKET_CONFIG_VERSION}")
+        
+        # Migração v1.0 → v2.0
+        if 'staff_role_ids' in config and 'staff_roles' not in config:
+            config['staff_roles'] = config.get('staff_role_ids', [])
+        
+        # Adicionar campos novos se não existirem
+        default_config = get_default_ticket_config(guild_id)
+        for key, value in default_config.items():
+            if key not in config:
+                config[key] = value
+        
+        config['version'] = TICKET_CONFIG_VERSION
+        print(f"✅ Migração concluída!")
+    
+    return config
 
 def load_ticket_config():
     """Carrega configurações de ticket"""
     global ticket_config
     try:
         with open('ticket_config.json', 'r') as f:
-            ticket_config = json.load(f)
-    except:
+            loaded_config = json.load(f)
+            
+            # Migrar cada guild_id
+            for guild_id, config in loaded_config.items():
+                loaded_config[guild_id] = migrate_ticket_config(config, guild_id)
+            
+            ticket_config = loaded_config
+            print(f"✅ {len(ticket_config)} configurações de ticket carregadas")
+    except Exception as e:
+        print(f"⚠️ Erro ao carregar ticket_config.json: {e}")
         ticket_config = {}
 
 def save_ticket_config():
     """Salva configurações de ticket"""
-    with open('ticket_config.json', 'w') as f:
-        json.dump(ticket_config, f, indent=4)
+    try:
+        with open('ticket_config.json', 'w') as f:
+            json.dump(ticket_config, f, indent=4)
+        print(f"💾 Configurações de tickets salvas")
+    except Exception as e:
+        print(f"❌ Erro ao salvar ticket_config.json: {e}")
 
 # Carregar configurações ao iniciar
 load_ticket_config()
@@ -12029,16 +12166,43 @@ class TicketCategoryView(discord.ui.View):
     
     def _create_selects(self):
         """Cria os selects com as opções corretas (marcando selecionadas)"""
-        # SELECT DE CATEGORIA
-        category_options = [
-            discord.SelectOption(label="Geral", description="Assuntos gerais", emoji="📁", value="geral", default=(self.category_value=="geral")),
-            discord.SelectOption(label="Compras", description="Dúvidas sobre compras", emoji="🛒", value="compras", default=(self.category_value=="compras")),
-            discord.SelectOption(label="Suporte Técnico", description="Problemas técnicos", emoji="🔧", value="tecnico", default=(self.category_value=="tecnico")),
-            discord.SelectOption(label="Denúncia", description="Reportar usuário/conteúdo", emoji="🚨", value="denuncia", default=(self.category_value=="denuncia")),
-            discord.SelectOption(label="Parceria", description="Proposta de parceria", emoji="🤝", value="parceria", default=(self.category_value=="parceria")),
-            discord.SelectOption(label="Financeiro", description="Questões de pagamento", emoji="💰", value="financeiro", default=(self.category_value=="financeiro")),
-            discord.SelectOption(label="Moderação", description="Questões de moderação", emoji="🛡️", value="moderacao", default=(self.category_value=="moderacao")),
-        ]
+        # SELECT DE CATEGORIA - SINCRONIZADO COM DASHBOARD
+        categories_enabled = self.config.get('categories_enabled', {})
+        categories_custom = self.config.get('categories_custom', {})
+        
+        # Mapeamento padrão (fallback)
+        default_categories = {
+            'geral': {'emoji': '📁', 'name': 'Geral', 'description': 'Assuntos gerais'},
+            'compras': {'emoji': '🛒', 'name': 'Compras', 'description': 'Dúvidas sobre compras'},
+            'suporte': {'emoji': '🔧', 'name': 'Suporte Técnico', 'description': 'Problemas técnicos'},
+            'denuncia': {'emoji': '🚨', 'name': 'Denúncia', 'description': 'Reportar usuário/conteúdo'},
+            'parceria': {'emoji': '🤝', 'name': 'Parceria', 'description': 'Proposta de parceria'},
+            'financeiro': {'emoji': '💰', 'name': 'Financeiro', 'description': 'Questões de pagamento'},
+            'moderacao': {'emoji': '🛡️', 'name': 'Moderação', 'description': 'Questões de moderação'},
+            'bug': {'emoji': '🐛', 'name': 'Bug', 'description': 'Reportar bugs'}
+        }
+        
+        # Criar opções APENAS para categorias ATIVADAS
+        category_options = []
+        for cat_id, enabled in categories_enabled.items():
+            if enabled:  # Somente se estiver ativada no dashboard
+                cat_data = categories_custom.get(cat_id, default_categories.get(cat_id, {}))
+                if cat_data:
+                    category_options.append(
+                        discord.SelectOption(
+                            label=cat_data.get('name', cat_id.capitalize()),
+                            description=cat_data.get('description', ''),
+                            emoji=cat_data.get('emoji', '📁'),
+                            value=cat_id,
+                            default=(self.category_value == cat_id)
+                        )
+                    )
+        
+        # Se nenhuma categoria ativada, mostrar apenas Geral
+        if not category_options:
+            category_options = [
+                discord.SelectOption(label="Geral", description="Assuntos gerais", emoji="📁", value="geral", default=True)
+            ]
         
         self.select_cat = discord.ui.Select(
             placeholder="🏷️ Selecione a Categoria do Ticket",
@@ -12081,18 +12245,15 @@ class TicketCategoryView(discord.ui.View):
             await interaction.response.send_message("❌ Este painel não é seu!", ephemeral=True)
             return
         
-        category_map = {
-            "geral": "📁 Geral",
-            "compras": "🛒 Compras",
-            "tecnico": "🔧 Suporte Técnico",
-            "denuncia": "🚨 Denúncia",
-            "parceria": "🤝 Parceria",
-            "financeiro": "💰 Financeiro",
-            "moderacao": "🛡️ Moderação"
-        }
-        
+        # Usar categorias customizadas do dashboard
+        categories_custom = self.config.get('categories_custom', {})
         self.category_value = self.select_cat.values[0]
-        self.selected_category = category_map.get(self.category_value, "📁 Geral")
+        
+        cat_data = categories_custom.get(self.category_value, {})
+        emoji = cat_data.get('emoji', '📁')
+        name = cat_data.get('name', self.category_value.capitalize())
+        
+        self.selected_category = f"{emoji} {name}"
         
         # Recriar view com seleção marcada (botão é recriado automaticamente!)
         self.clear_items()
