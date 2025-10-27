@@ -5503,11 +5503,16 @@ def save_ticket_config_route():
             return jsonify({'success': False, 'message': 'Dados incompletos'}), 400
         
         # 🔥 LOG DETALHADO
+        cats_enabled = config.get('categories_enabled', {})
+        cats_ativas = [k for k, v in cats_enabled.items() if v]
+        
         print(f"\n{'='*50}")
-        print(f"💾 SALVANDO CONFIG DE TICKETS")
+        print(f"💾 SALVANDO CONFIG DE TICKETS VIA DASHBOARD")
         print(f"📊 Guild ID: {guild_id}")
-        print(f"📁 Categorias Enabled: {config.get('categories_enabled', {})}")
+        print(f"📁 Categorias Ativas: {cats_ativas}")
+        print(f"📁 Total: {len(cats_ativas)}/{len(cats_enabled)}")
         print(f"⚡ Priority Enabled: {config.get('priority_enabled', True)}")
+        print(f"👥 Staff Roles: {config.get('staff_roles', [])}")
         print(f"{'='*50}\n")
         
         # Salvar configuração
@@ -5623,12 +5628,16 @@ def send_ticket_panel():
         if bot.guilds:
             guild_id = str(bot.guilds[0].id)
             
-            # 🔥 NÃO criar config padrão aqui! Usar a que já foi salva pelo dashboard
+            # Se não tem config, usar a config atual que foi salva anteriormente
+            # (O dashboard DEVE ter chamado POST /api/tickets/config antes)
             if guild_id not in ticket_config:
-                return jsonify({
-                    'success': False, 
-                    'message': '⚠️ Configure as categorias e prioridades primeiro no dashboard antes de enviar o painel!'
-                }), 400
+                # Tentar carregar do arquivo
+                load_ticket_config()
+            
+            # Se AINDA não existe, criar padrão MAS manter categories/priorities que vieram do dashboard
+            if guild_id not in ticket_config:
+                print(f"⚠️ Config não encontrada, criando padrão para guild {guild_id}")
+                ticket_config[guild_id] = get_default_ticket_config(guild_id)
             
             # Atualizar APENAS os campos do "Básico" (mantém categories_enabled, priority_enabled, etc)
             ticket_config[guild_id]['category_id'] = int(category_id) if category_id else None
