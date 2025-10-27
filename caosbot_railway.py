@@ -12757,6 +12757,17 @@ class TicketView(discord.ui.View):
         )
         panel_embed.set_footer(text="⏱️ Tempo restante: 60 segundos")
         
+        # 🔥 LOG DETALHADO DA CONFIG
+        cats_enabled = config.get('categories_enabled', {})
+        cats_ativas = [k for k, v in cats_enabled.items() if v]
+        print(f"\n{'='*60}")
+        print(f"🎫 ABRINDO PAINEL DE TICKET")
+        print(f"👤 Usuário: {interaction.user.name}")
+        print(f"📁 Categorias na config: {cats_enabled}")
+        print(f"✅ Categorias ATIVAS: {cats_ativas} ({len(cats_ativas)}/{len(cats_enabled)})")
+        print(f"⚡ Priority enabled: {config.get('priority_enabled', True)}")
+        print(f"{'='*60}\n")
+        
         # Criar View ANTES de enviar
         panel_view = TicketCategoryView(config, category, interaction.user, None)
         
