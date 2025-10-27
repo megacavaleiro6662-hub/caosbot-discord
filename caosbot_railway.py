@@ -161,8 +161,18 @@ def home():
 
 @app.route('/ping')
 def ping():
-    """Rota para keep-alive (evitar sleep do Render)"""
-    return {"status": "alive", "bot": "online", "uptime": "running"}, 200
+    """Rota para keep-alive (evitar sleep do Render) + status real do bot"""
+    bot_status = "ONLINE ✅" if bot.is_ready() else "OFFLINE ❌"
+    bot_latency = f"{round(bot.latency * 1000)}ms" if bot.is_ready() else "N/A"
+    guilds_count = len(bot.guilds) if bot.is_ready() else 0
+    
+    return {
+        "status": "alive",
+        "bot_discord": bot_status,
+        "latency": bot_latency,
+        "guilds": guilds_count,
+        "timestamp": str(datetime.datetime.now())
+    }, 200
 
 @app.route('/test')
 def test():
@@ -5907,9 +5917,8 @@ def run_web():
 intents = discord.Intents.default()
 intents.message_content = True
 intents.guilds = True
-# TEMPORARIAMENTE DESABILITADOS (ativar no Discord Developer Portal!)
-# intents.members = True  # NECESSÁRIO para eventos de entrada/saída/ban
-# intents.presences = True  # NECESSÁRIO para ver status online/offline dos membros
+intents.members = True  # Ativo no Discord Portal
+intents.presences = True  # Ativo no Discord Portal
 
 # Bot configurado com PREFIXO (.)
 bot = commands.Bot(command_prefix='.', intents=intents)
