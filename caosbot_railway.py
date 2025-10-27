@@ -1293,7 +1293,7 @@ def dashboard():
         .form-label {{ display: block; margin-bottom: 8px; font-size: 14px; font-weight: 600; color: #66aaff; word-wrap: break-word; overflow-wrap: break-word; max-width: 100%; }}
         .form-input, .form-select, .form-textarea {{ width: 100%; max-width: 100%; padding: 10px 14px; background: rgba(0, 0, 0, 0.5); border: 2px solid #0066ff; border-radius: 0; color: #00ccff; font-family: 'Inter', 'Roboto', sans-serif; font-size: 14px; transition: all 0.3s; box-sizing: border-box; }}
         .form-input:focus, .form-select:focus, .form-textarea:focus {{ outline: none; border-color: #0033ff; box-shadow: 0 0 10px rgba(0, 100, 255, 0.4), inset 0 0 5px rgba(0, 150, 255, 0.2); background: rgba(0, 10, 30, 0.6); }}
-        .form-textarea {{ resize: vertical; min-height: 100px; overflow-y: auto; }}
+        .form-textarea {{ resize: vertical; min-height: 100px; max-height: 200px; overflow-y: auto; }}
         .toast {{ position: fixed; top: 24px; right: 24px; background: linear-gradient(135deg, rgba(0, 0, 0, 0.9), rgba(0, 20, 50, 0.9)); border: 2px solid #0066ff; border-radius: 0; padding: 16px; min-width: 300px; opacity: 0; transform: translateX(400px); transition: all 0.3s; z-index: 1000; box-shadow: 0 8px 32px rgba(0, 100, 255, 0.5), 0 0 20px rgba(0, 150, 255, 0.3); }}
         .toast.show {{ opacity: 1; transform: translateX(0); }}
         .toast-success {{ border-color: #00ccff; box-shadow: 0 8px 32px rgba(100, 200, 255, 0.5), 0 0 20px rgba(100, 200, 255, 0.3); }}
@@ -3152,7 +3152,10 @@ Você ganhou **{{{{prize}}}}**!
     
     <!-- Notification Sound (som épico mais longo) -->
     <audio id="notif-sound" preload="auto">
-        <source src="https://cdn.pixabay.com/download/audio/2022/03/10/audio_c8c6c7c579.mp3" type="audio/mpeg">
+        <source src="https://www.soundjay.com/misc/sounds/bell-ringing-05.wav" type="audio/wav">
+        <source src="data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBSuBzvLZiTYIG2m98OScTgwOUarm7blmHgU4kNXzzn0vBSF1xe/eizEIHWq+8+OWT" type="audio/wav">
+    </audio>
+    
     <script>
         // ⚙️ SISTEMA DE QUALIDADE GRÁFICA
         (function() {{
@@ -3789,7 +3792,29 @@ Você ganhou **{{{{prize}}}}**!
                 </div>
             `;
             toast.className = `toast toast-${{type}} show`;
-            sound.play().catch(() => {{}});
+            
+            // Tocar som com fallback
+            if (sound) {{
+                sound.currentTime = 0;
+                sound.play().catch(() => {{
+                    // Fallback: criar beep via Web Audio API
+                    try {{
+                        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                        const oscillator = audioContext.createOscillator();
+                        const gainNode = audioContext.createGain();
+                        oscillator.connect(gainNode);
+                        gainNode.connect(audioContext.destination);
+                        oscillator.frequency.value = type === 'error' ? 300 : 600;
+                        oscillator.type = 'sine';
+                        gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+                        oscillator.start();
+                        oscillator.stop(audioContext.currentTime + 0.2);
+                    }} catch (e) {{
+                        console.log('Som não disponível');
+                    }}
+                }});
+            }}
+            
             setTimeout(() => toast.classList.remove('show'), 3000);
         }}
         
