@@ -7616,49 +7616,30 @@ async def ship_command(ctx, user1: discord.Member = None, user2: discord.Member 
         width, height = 1000, 600
         img = Image.new('RGBA', (width, height), (0, 0, 0, 0))
         
-        # GRADIENTE 2D ULTRA DETALHADO
+        # GRADIENTE VERTICAL RÁPIDO (só 600 linhas, não 600.000 pixels!)
         bg = Image.new('RGB', (width, height), (20, 20, 40))
         draw_bg = ImageDraw.Draw(bg)
         
-        # Gradiente radial + vertical + horizontal COMBINADOS
-        center_x, center_y = width // 2, height // 2
-        max_dist = math.sqrt(center_x**2 + center_y**2)
-        
         for y in range(height):
-            for x in range(width):
-                # Múltiplos gradientes
-                vert_prog = y / height
-                horiz_prog = x / width
-                
-                # Distância do centro (efeito radial)
-                dist = math.sqrt((x - center_x)**2 + (y - center_y)**2)
-                radial_prog = dist / max_dist
-                
-                # Combinar progressos
-                combined = (vert_prog * 0.4 + horiz_prog * 0.3 + radial_prog * 0.3)
-                
-                if ship_value >= 70:
-                    # Rosa vibrante
-                    r = int(255 * (1 - combined) + 200 * combined - 20 * math.sin(horiz_prog * 3.14))
-                    g = int(30 * (1 - combined) + 140 * combined + 30 * math.cos(vert_prog * 3.14))
-                    b = int(147 * (1 - combined) + 220 * combined)
-                elif ship_value >= 40:
-                    # Dourado/Roxo
-                    r = int(255 * (1 - combined) + 150 * combined)
-                    g = int(200 * (1 - combined) + 120 * combined)
-                    b = int(60 * (1 - combined) + 200 * combined)
-                else:
-                    # Cinza azulado
-                    r = int(100 * (1 - combined) + 70 * combined)
-                    g = int(100 * (1 - combined) + 70 * combined)
-                    b = int(140 * (1 - combined) + 110 * combined)
-                
-                # Limitar valores
-                r = max(0, min(255, r))
-                g = max(0, min(255, g))
-                b = max(0, min(255, b))
-                
-                draw_bg.point((x, y), fill=(r, g, b))
+            progress = y / height
+            
+            if ship_value >= 70:
+                # Rosa vibrante
+                r = int(255 * (1 - progress) + 180 * progress)
+                g = int(30 * (1 - progress) + 120 * progress)
+                b = int(147 * (1 - progress) + 200 * progress)
+            elif ship_value >= 40:
+                # Dourado/Roxo
+                r = int(255 * (1 - progress) + 130 * progress)
+                g = int(200 * (1 - progress) + 100 * progress)
+                b = int(60 * (1 - progress) + 180 * progress)
+            else:
+                # Cinza azulado
+                r = int(100 * (1 - progress) + 60 * progress)
+                g = int(100 * (1 - progress) + 60 * progress)
+                b = int(140 * (1 - progress) + 100 * progress)
+            
+            draw_bg.line([(0, y), (width, y)], fill=(r, g, b))
         
         img.paste(bg, (0, 0))
         
@@ -7697,37 +7678,26 @@ async def ship_command(ctx, user1: discord.Member = None, user2: discord.Member 
         avatar1 = avatar1.resize((avatar_size, avatar_size))
         avatar2 = avatar2.resize((avatar_size, avatar_size))
         
-        # Avatar 1 (esquerda)
+        # Avatar 1 (esquerda) - SIMPLIFICADO
         av1_x, av1_y = 80, 250
         
-        # Múltiplas sombras (profundidade)
-        for offset in range(5, 0, -1):
-            alpha = int(40 - offset * 5)
-            draw.ellipse([av1_x - offset*3, av1_y - offset*3, 
-                         av1_x + avatar_size + offset*3, av1_y + avatar_size + offset*3],
-                        fill=(0, 0, 0, alpha))
-        
-        # Glow externo (baseado na %)
+        # Glow (baseado na %)
         if ship_value >= 70:
-            glow_color = (255, 50, 150, 100)
+            glow_color = (255, 50, 150)
         elif ship_value >= 40:
-            glow_color = (255, 200, 50, 100)
+            glow_color = (255, 200, 50)
         else:
-            glow_color = (100, 100, 150, 80)
+            glow_color = (100, 100, 150)
         
-        for i in range(15, 0, -1):
-            alpha = int(i * 4)
-            draw.ellipse([av1_x - i, av1_y - i, 
-                         av1_x + avatar_size + i, av1_y + avatar_size + i],
-                        outline=glow_color, width=2)
-        
-        # Borda tripla
+        # Sombra simples
         draw.ellipse([av1_x - 8, av1_y - 8, av1_x + avatar_size + 8, av1_y + avatar_size + 8],
-                    outline=(255, 255, 255), width=10)
-        draw.ellipse([av1_x - 4, av1_y - 4, av1_x + avatar_size + 4, av1_y + avatar_size + 4],
-                    outline=(200, 200, 255), width=6)
+                    fill=(0, 0, 0))
+        
+        # Borda colorida
+        draw.ellipse([av1_x - 6, av1_y - 6, av1_x + avatar_size + 6, av1_y + avatar_size + 6],
+                    outline=glow_color, width=8)
         draw.ellipse([av1_x - 2, av1_y - 2, av1_x + avatar_size + 2, av1_y + avatar_size + 2],
-                    outline=(255, 255, 255), width=3)
+                    outline=(255, 255, 255), width=4)
         
         # Máscara circular
         mask1 = Image.new('L', (avatar_size, avatar_size), 0)
@@ -7737,30 +7707,18 @@ async def ship_command(ctx, user1: discord.Member = None, user2: discord.Member 
         # Avatar
         img.paste(avatar1, (av1_x, av1_y), mask1)
         
-        # Avatar 2 (direita)
+        # Avatar 2 (direita) - SIMPLIFICADO
         av2_x, av2_y = 700, 250
         
-        # Múltiplas sombras
-        for offset in range(5, 0, -1):
-            alpha = int(40 - offset * 5)
-            draw.ellipse([av2_x - offset*3, av2_y - offset*3,
-                         av2_x + avatar_size + offset*3, av2_y + avatar_size + offset*3],
-                        fill=(0, 0, 0, alpha))
-        
-        # Glow externo
-        for i in range(15, 0, -1):
-            alpha = int(i * 4)
-            draw.ellipse([av2_x - i, av2_y - i,
-                         av2_x + avatar_size + i, av2_y + avatar_size + i],
-                        outline=glow_color, width=2)
-        
-        # Borda tripla
+        # Sombra simples
         draw.ellipse([av2_x - 8, av2_y - 8, av2_x + avatar_size + 8, av2_y + avatar_size + 8],
-                    outline=(255, 255, 255), width=10)
-        draw.ellipse([av2_x - 4, av2_y - 4, av2_x + avatar_size + 4, av2_y + avatar_size + 4],
-                    outline=(200, 200, 255), width=6)
+                    fill=(0, 0, 0))
+        
+        # Borda colorida
+        draw.ellipse([av2_x - 6, av2_y - 6, av2_x + avatar_size + 6, av2_y + avatar_size + 6],
+                    outline=glow_color, width=8)
         draw.ellipse([av2_x - 2, av2_y - 2, av2_x + avatar_size + 2, av2_y + avatar_size + 2],
-                    outline=(255, 255, 255), width=3)
+                    outline=(255, 255, 255), width=4)
         
         # Máscara circular
         mask2 = Image.new('L', (avatar_size, avatar_size), 0)
@@ -7770,26 +7728,14 @@ async def ship_command(ctx, user1: discord.Member = None, user2: discord.Member 
         # Avatar
         img.paste(avatar2, (av2_x, av2_y), mask2)
         
-        # ROBITO NO CENTRO COM EFEITOS
-        robito_size = 250
+        # ROBITO NO CENTRO - SIMPLIFICADO
+        robito_size = 220
         robito = robito.resize((robito_size, robito_size))
-        robito_x, robito_y = (width - robito_size) // 2, 240
+        robito_x, robito_y = (width - robito_size) // 2, 250
         
-        # Múltiplas sombras no robito
-        for offset in range(8, 0, -1):
-            alpha = int(30 - offset * 2)
-            shadow = Image.new('RGBA', (robito_size + offset*4, robito_size + offset*4), (0, 0, 0, 0))
-            draw_shadow = ImageDraw.Draw(shadow)
-            draw_shadow.ellipse([0, 0, robito_size + offset*4, robito_size + offset*4], fill=(0, 0, 0, alpha))
-            shadow = shadow.filter(ImageFilter.GaussianBlur(offset*2))
-            img.paste(shadow, (robito_x - offset*2, robito_y + offset), shadow)
-        
-        # Glow colorido no robito
-        for i in range(20, 0, -1):
-            alpha = int(i * 3)
-            draw.ellipse([robito_x - i, robito_y - i,
-                         robito_x + robito_size + i, robito_y + robito_size + i],
-                        outline=glow_color, width=1)
+        # Glow simples
+        draw.ellipse([robito_x - 10, robito_y - 10, robito_x + robito_size + 10, robito_y + robito_size + 10],
+                    outline=glow_color, width=8)
         
         # Robito
         img.paste(robito, (robito_x, robito_y), robito)
@@ -7798,28 +7744,20 @@ async def ship_command(ctx, user1: discord.Member = None, user2: discord.Member 
         panel_y = 20
         panel_h = 140
         
-        # Painel com gradiente
-        for y in range(panel_h):
-            alpha = int(180 - (y / panel_h) * 100)
-            draw.line([(50, panel_y + y), (width - 50, panel_y + y)], 
-                     fill=(20, 20, 50, alpha), width=1)
-        
-        # Bordas decorativas do painel
+        # Painel simples
         draw.rectangle([50, panel_y, width - 50, panel_y + panel_h], 
-                      outline=(255, 255, 255), width=5)
-        draw.rectangle([55, panel_y + 5, width - 55, panel_y + panel_h - 5],
-                      outline=(200, 200, 255), width=3)
+                      fill=(20, 20, 50, 150))
+        draw.rectangle([50, panel_y, width - 50, panel_y + panel_h], 
+                      outline=(255, 255, 255), width=4)
         
-        # TÍTULO NO TOPO COM MÚLTIPLAS SOMBRAS
+        # TÍTULO NO TOPO - SIMPLIFICADO
         title_text = f"SHIPAGEM: {ship_name.upper()}"
         bbox = draw.textbbox((0, 0), title_text, font=font_title)
         title_w = bbox[2] - bbox[0]
         title_x = (width - title_w) // 2
         
-        # Múltiplas sombras no título
-        for offset in range(5, 0, -1):
-            draw.text((title_x + offset, panel_y + 25 + offset), title_text, 
-                     font=font_title, fill=(0, 0, 0, 180 - offset*30))
+        # Sombra simples
+        draw.text((title_x + 3, panel_y + 28), title_text, font=font_title, fill=(0, 0, 0))
         # Texto principal
         draw.text((title_x, panel_y + 25), title_text, font=font_title, fill=(255, 255, 255))
         
@@ -7841,13 +7779,11 @@ async def ship_command(ctx, user1: discord.Member = None, user2: discord.Member 
             color = (150, 150, 200)
             outline_color = (200, 200, 230)
         
-        # Múltiplas sombras na porcentagem
-        for offset in range(8, 0, -1):
-            draw.text((percent_x + offset, panel_y + 70 + offset), percent_text,
-                     font=font_percent_mega, fill=(0, 0, 0, 160 - offset*15))
+        # Sombra simples na porcentagem
+        draw.text((percent_x + 4, panel_y + 74), percent_text, font=font_percent_mega, fill=(0, 0, 0))
         
-        # Outline (borda no texto)
-        for dx, dy in [(-2, -2), (-2, 2), (2, -2), (2, 2), (-3, 0), (3, 0), (0, -3), (0, 3)]:
+        # Outline simples (apenas 4 direções)
+        for dx, dy in [(-2, 0), (2, 0), (0, -2), (0, 2)]:
             draw.text((percent_x + dx, panel_y + 70 + dy), percent_text,
                      font=font_percent_mega, fill=outline_color)
         
@@ -7858,13 +7794,9 @@ async def ship_command(ctx, user1: discord.Member = None, user2: discord.Member 
         bar_x, bar_y = 100, 520
         bar_w, bar_h = 800, 50
         
-        # Múltiplas bordas
-        for i in range(3, 0, -1):
-            thickness = i * 2
-            offset = (3 - i) * 2
-            draw.rectangle([bar_x - offset, bar_y - offset, 
-                           bar_x + bar_w + offset, bar_y + bar_h + offset],
-                          outline=(255, 255, 255, 200 - i*40), width=thickness)
+        # Borda simples
+        draw.rectangle([bar_x - 4, bar_y - 4, bar_x + bar_w + 4, bar_y + bar_h + 4],
+                      outline=(255, 255, 255), width=4)
         
         # Sombra interna
         shadow_layer = Image.new('RGBA', (bar_w, bar_h), (0, 0, 0, 0))
@@ -7872,44 +7804,26 @@ async def ship_command(ctx, user1: discord.Member = None, user2: discord.Member 
         shadow_draw.rectangle([0, 0, bar_w, 10], fill=(0, 0, 0, 100))
         img.paste(shadow_layer, (bar_x, bar_y), shadow_layer)
         
-        # Fundo da barra com gradiente
-        for y in range(bar_h):
-            shade = int(40 + (y / bar_h) * 30)
-            draw.line([(bar_x, bar_y + y), (bar_x + bar_w, bar_y + y)],
-                     fill=(shade, shade, shade + 20))
+        # Fundo da barra - SIMPLES
+        draw.rectangle([bar_x, bar_y, bar_x + bar_w, bar_y + bar_h], fill=(50, 50, 70))
         
-        # Preenchimento com gradiente complexo
+        # Preenchimento simples
         filled_w = int(bar_w * (ship_value / 100))
         
-        for x in range(filled_w):
-            for y in range(bar_h):
-                x_progress = x / bar_w
-                y_progress = y / bar_h
-                
-                # Gradiente horizontal + vertical
-                if ship_value >= 70:
-                    r = int(255 - (60 * x_progress) + (30 * y_progress))
-                    g = int(50 + (120 * x_progress) - (20 * y_progress))
-                    b = int(150 + (70 * x_progress) + (20 * y_progress))
-                elif ship_value >= 40:
-                    r = int(255 - (40 * x_progress) + (20 * y_progress))
-                    g = int(200 - (80 * x_progress) - (30 * y_progress))
-                    b = int(50 + (150 * x_progress) + (10 * y_progress))
-                else:
-                    r = int(120 + (30 * x_progress) - (10 * y_progress))
-                    g = int(120 + (30 * x_progress) - (10 * y_progress))
-                    b = int(150 + (50 * x_progress) + (20 * y_progress))
-                
-                r = max(0, min(255, r))
-                g = max(0, min(255, g))
-                b = max(0, min(255, b))
-                
-                draw.point((bar_x + x, bar_y + y), fill=(r, g, b))
+        if ship_value >= 70:
+            fill_color = (255, 100, 180)
+        elif ship_value >= 40:
+            fill_color = (255, 200, 50)
+        else:
+            fill_color = (120, 120, 180)
         
-        # Brilho no topo da barra preenchida
+        # Retângulo preenchido simples
         if filled_w > 0:
+            draw.rectangle([bar_x, bar_y, bar_x + filled_w, bar_y + bar_h], fill=fill_color)
+            
+            # Brilho simples no topo
             for x in range(filled_w):
-                alpha = int(150 - (x / filled_w) * 100)
+                alpha = int(120 - (x / filled_w) * 80)
                 draw.line([(bar_x + x, bar_y + 2), (bar_x + x, bar_y + 8)],
                          fill=(255, 255, 255, alpha))
         
